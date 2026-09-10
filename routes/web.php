@@ -1,16 +1,16 @@
 <?php
 
-use App\Http\Controllers\InstitutionWebController;
+use App\Http\Controllers\InstitutionController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
-Route::get('/dashboard', [InstitutionWebController::class, 'dashboard'])->name('dashboard');
+Route::get('/dashboard', [InstitutionController::class, 'dashboard'])->name('dashboard');
 
 Route::prefix('institutions')->group(function () {
-    Route::get('/', [InstitutionWebController::class, 'search'])->name('institutions.index');
-    Route::post('/search', [InstitutionWebController::class, 'search'])->name('institutions.search');
-    Route::get('/export/csv', [InstitutionWebController::class, 'exportCsv'])->name('institutions.export');
-    Route::get('/{institution}', [InstitutionWebController::class, 'show'])->name('institutions.show');
+    Route::get('/', [InstitutionController::class, 'search'])->name('institutions.index');
+    Route::post('/search', [InstitutionController::class, 'search'])->name('institutions.search');
+    Route::get('/export/csv', [InstitutionController::class, 'exportCsv'])->name('institutions.export');
+    Route::get('/{institution}', [InstitutionController::class, 'show'])->name('institutions.show');
 });
 
 Route::prefix('rfps')->group(function () {

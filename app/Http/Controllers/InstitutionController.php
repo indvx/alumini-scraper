@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class InstitutionWebController extends Controller
+class InstitutionController extends Controller
 {
     public function __construct(
         protected InstitutionRepositoryInterface $institutionRepository,
@@ -66,6 +66,8 @@ class InstitutionWebController extends Controller
 
     public function show(Institution $institution)
     {
+        $institution->update(['last_view' => now()]);
+        $institution->fresh();
         $institution->load('search');
 
         $nearbyInstitutions = [];
@@ -142,14 +144,14 @@ class InstitutionWebController extends Controller
         $totalInstitutions = Institution::count();
         $totalSearches = LocationSearch::count();
         $recentSearches = LocationSearch::latest('searched_at')->limit(5)->get();
-        $recentInstitutions = Institution::latest()->limit(6)->get();
+        $recentInstitutions = Institution::latest('last_view')->limit(6)->get();
 
         $typeCounts = Institution::query()
             ->select('type', DB::raw('count(*) as count'))
             ->groupBy('type')
             ->pluck('count', 'type')
             ->toArray();
-
+        // dd($recentInstitutions);
         return view('dashboard', [
             'totalInstitutions' => $totalInstitutions,
             'totalSearches' => $totalSearches,
