@@ -17,7 +17,7 @@
             </div>
 
             <!-- Location Search Form -->
-            <form action="{{ route('public.institutions.search') }}" method="POST" class="mt-6 max-w-3xl space-y-3">
+            <form action="{{ route('institutions.search') }}" method="POST" class="mt-6 max-w-3xl space-y-3">
                 @csrf
                 <div class="flex flex-col sm:flex-row gap-3">
                     <input type="text"
@@ -120,12 +120,12 @@
                     @foreach($recentInstitutions as $inst)
                     <div class="py-3 flex items-center justify-between">
                         <div>
-                            <a href="{{ route('public.institutions.show', $inst->id) }}" class="text-sm font-bold text-slate-900 dark:text-white hover:text-rose-600">
+                            <a href="{{ route('institutions.show', $inst->id) }}" class="text-sm font-bold text-slate-900 dark:text-white hover:text-rose-600">
                                 {{ $inst->name }}
                             </a>
                             <span class="text-xs text-slate-500 dark:text-slate-400 block capitalize">{{ $inst->type }} &bull; {{ $inst->city ?: $inst->state }}</span>
                         </div>
-                        <a href="{{ route('public.institutions.show', $inst->id) }}" class="text-xs font-semibold text-rose-600 hover:underline">
+                        <a href="{{ route('institutions.show', $inst->id) }}" class="text-xs font-semibold text-rose-600 hover:underline">
                             View
                         </a>
                     </div>

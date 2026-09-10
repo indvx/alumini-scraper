@@ -3,8 +3,8 @@
 
         <!-- Back Button -->
         <div>
-            <a href="{{ route('public.institutions.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-rose-600 hover:underline">
-                &larr; Back to Institutions Search
+            <a href="{{ route('institutions.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-rose-600 hover:underline">
+                Back to Institutions Search
             </a>
         </div>
 
@@ -118,7 +118,7 @@
                     <h3 class="text-base font-bold text-slate-900 dark:text-white">Nearby Institutions</h3>
                     <div class="space-y-3">
                         @foreach($nearbyInstitutions as $nearby)
-                        <a href="{{ route('public.institutions.show', $nearby->id) }}"
+                        <a href="{{ route('institutions.show', $nearby->id) }}"
                             class="block p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700 space-y-1 transition-all">
                             <div class="flex items-center justify-between">
                                 <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[180px]">{{ $nearby->name }}</h4>
@@ -151,8 +151,8 @@
                     return;
                 }
 
-                const lat = parseFloat(@js($institution->latitude));
-                const lon = parseFloat(@js($institution->longitude));
+                const lat = parseFloat(@js($institution -> latitude));
+                const lon = parseFloat(@js($institution -> longitude));
 
                 if (isNaN(lat) || isNaN(lon)) return;
 
@@ -172,8 +172,8 @@
                     });
                 }
 
-                const instName = @js($institution->name);
-                const instAddress = @js($institution->address ?? '');
+                const instName = @js($institution -> name);
+                const instAddress = @js($institution -> address ?? '');
 
                 L.marker([lat, lon])
                     .addTo(map)

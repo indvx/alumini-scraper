@@ -1,8 +1,8 @@
-<x-layouts.app title="Institution Discovery">
+<x-layouts.app title="Institution">
     <div class="flex h-full w-full flex-1 flex-col gap-6">
 
         <!-- Filter Bar & Results Catalog -->
-        <div class="space-y-6">
+        <div class="space-y-2">
             <!-- Catalog Header -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
@@ -10,7 +10,7 @@
                         Institutions List
                     </h2>
                 </div>
-                <a href="{{ route('public.institutions.export', request()->all()) }}"
+                <a href="{{ route('institutions.export', request()->all()) }}"
                     class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2 shadow-sm">
                     <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -20,7 +20,7 @@
             </div>
             <!-- Filter Form -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-                <form action="{{ route('public.institutions.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form action="{{ route('institutions.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     @if(request('search_id'))
                     <input type="hidden" name="search_id" value="{{ request('search_id') }}">
                     @endif
@@ -48,7 +48,7 @@
                         <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all shadow-sm">
                             Filter
                         </button>
-                        <a href="{{ route('public.institutions.index') }}" class="py-2 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold transition-colors">Reset</a>
+                        <a href="{{ route('institutions.index') }}" class="py-2 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold transition-colors">Reset</a>
                     </div>
                 </form>
             </div>
@@ -57,9 +57,9 @@
             </div>
             <!-- Grid of Cards -->
             @if($institutions->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 h-[54vh] overflow-y-scroll">
                 @foreach($institutions as $inst)
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between space-y-4 transition-all">
+                <div id="{{ $inst->id }}" class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-3 shadow-sm hover:border-slate-300 dark:hover:border-slate-900 flex flex-col justify-between space-y-1 transition-all">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="px-2.5 py-0.5 rounded text-xs font-extrabold uppercase tracking-wider 
@@ -75,7 +75,7 @@
                         </div>
 
                         <h3 class="text-base font-bold text-slate-900 dark:text-white hover:text-rose-600 transition-colors line-clamp-2">
-                            <a href="{{ route('public.institutions.show', $inst->id) }}">
+                            <a href="{{ route('institutions.show', $inst->id) }}">
                                 {{ $inst->name }}
                             </a>
                         </h3>
@@ -105,8 +105,8 @@
                             @endif
                         </div>
 
-                        <a href="{{ route('public.institutions.show', $inst->id) }}" class="text-rose-600 font-bold hover:underline">
-                            View Details &rarr;
+                        <a href="{{ route('institutions.show', $inst->id) }}" class="text-rose-600 font-bold hover:underline">
+                            View Details
                         </a>
                     </div>
                 </div>

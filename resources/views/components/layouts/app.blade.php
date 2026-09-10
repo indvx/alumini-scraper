@@ -43,9 +43,9 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 font-bold text-xl text-slate-900 dark:text-white">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-600 to-indigo-600 flex items-center justify-center text-white font-black text-sm">
+                        <!-- <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-600 to-indigo-600 flex items-center justify-center text-white font-black text-sm">
                             AS
-                        </div>
+                        </div> -->
                         <span>AlumniScraper</span>
                     </a>
                 </div>
@@ -54,8 +54,11 @@
                     <a href="{{ route('dashboard') }}" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
                         Dashboard
                     </a>
-                    <a href="{{ route('public.institutions.index') }}" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
+                    <a href="{{ route('institutions.index') }}" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
                         Institutions
+                    </a>
+                    <a href="{{ route('rfps.index') }}" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
+                        RFPs Platform
                     </a>
                 </div>
             </div>
@@ -68,13 +71,13 @@
     </main>
 
     <!-- Footer -->
-    <footer class="mt-auto bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
+    <footer class="fixed bottom-0 mt-auto bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
             <p>&copy; {{ date('Y') }} Alumni Scraper. Powered by OpenStreetMap &amp; Overpass API.</p>
-            <div class="flex items-center gap-4">
+            <!-- <div class="flex items-center gap-4">
                 <a href="/api/institutions" target="_blank" class="hover:underline">API Endpoint</a>
-                <a href="{{ route('public.institutions.index') }}" class="hover:underline">Institutions Search</a>
-            </div>
+                <a href="{{ route('institutions.index') }}" class="hover:underline">Institutions Search</a>
+            </div> -->
         </div>
     </footer>
 </body>
