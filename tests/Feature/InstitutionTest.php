@@ -24,7 +24,7 @@ test('institutions index page renders successfully', function () {
     $response = $this->get('/institutions');
 
     $response->assertStatus(200);
-    $response->assertSee('Discover Educational Institutions');
+    $response->assertSee('Institutions List');
 });
 
 test('institutions detail page renders successfully', function () {
