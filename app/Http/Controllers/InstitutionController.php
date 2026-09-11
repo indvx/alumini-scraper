@@ -52,7 +52,6 @@ class InstitutionController extends Controller
             ->pluck('count', 'type')
             ->toArray();
 
-
         return view('institutions.search', [
             'institutions' => $institutions,
             'recentSearches' => $recentSearches,
@@ -67,7 +66,7 @@ class InstitutionController extends Controller
     public function show(Institution $institution)
     {
         $institution->update(['last_view' => now()]);
-        $institution->fresh();
+        $institution->refresh();
         $institution->load('search');
 
         $nearbyInstitutions = [];
@@ -151,7 +150,7 @@ class InstitutionController extends Controller
             ->groupBy('type')
             ->pluck('count', 'type')
             ->toArray();
-        // dd($recentInstitutions);
+
         return view('dashboard', [
             'totalInstitutions' => $totalInstitutions,
             'totalSearches' => $totalSearches,

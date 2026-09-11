@@ -114,7 +114,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="pt-4">
+            <div class="pt-3">
                 {{ $institutions->appends(request()->all())->links() }}
             </div>
             @else

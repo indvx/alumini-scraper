@@ -1,12 +1,7 @@
 <x-layouts.app title="Dashboard">
-    <div class="space-y-8">
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Application Dashboard</h1>
-            <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Overview of ingested alumni educational institution records and OpenStreetMap geocoding activity.</p>
-        </div>
-
+    <div class="space-y-6">
         <!-- Header & Search Box -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 md:p-8 shadow-sm">
             <div class="max-w-3xl space-y-2">
                 <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                     Discover Educational Institutions
@@ -17,7 +12,7 @@
             </div>
 
             <!-- Location Search Form -->
-            <form action="{{ route('institutions.search') }}" method="POST" class="mt-6 max-w-3xl space-y-3">
+            <form action="{{ route('institutions.search') }}" method="POST" class="mt-2 max-w-3xl space-y-3">
                 @csrf
                 <div class="flex flex-col sm:flex-row gap-3">
                     <input type="text"
@@ -62,7 +57,7 @@
         </div>
 
         <!-- Metrics Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">Total Institutions</span>
                 <span class="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 block">{{ number_format($totalInstitutions) }}</span>
@@ -89,12 +84,12 @@
         </div>
 
         <!-- Content Split Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Recent Searches -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white">Recent Location Searches</h3>
                 @if(count($recentSearches) > 0)
-                <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                <div class="divide-y divide-slate-100 dark:divide-slate-800 h-[30vh] overflow-y-auto">
                     @foreach($recentSearches as $s)
                     <div class="py-3 flex items-center justify-between">
                         <div>
@@ -116,7 +111,7 @@
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white">Recently Discovered Institutions</h3>
                 @if(count($recentInstitutions) > 0)
-                <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                <div class="divide-y divide-slate-100 dark:divide-slate-800 h-[30vh] overflow-y-auto">
                     @foreach($recentInstitutions as $inst)
                     <div class="py-3 flex items-center justify-between">
                         <div>
