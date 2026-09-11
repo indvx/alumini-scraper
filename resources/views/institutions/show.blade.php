@@ -15,13 +15,13 @@
         </div>
 
         <!-- Main Detail Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
             <!-- Left 2 Columns: Profile & Map -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-1">
 
                 <!-- Profile Header -->
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-1">
                     <div class="flex items-center justify-between">
                         <span class="px-3 py-1 rounded-md text-xs font-extrabold uppercase tracking-wider 
                             {{ $institution->type == 'university' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : '' }}
@@ -50,14 +50,14 @@
 
                     <!-- Attributes Grid -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-sm">
-                        <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
                             <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">City / State</span>
                             <span class="text-slate-900 dark:text-white font-medium mt-0.5 block">
                                 {{ implode(', ', array_filter([$institution->city, $institution->state, $institution->postcode])) ?: 'N/A' }}
                             </span>
                         </div>
 
-                        <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
                             <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Coordinates</span>
                             <span class="text-slate-900 dark:text-white font-mono text-xs mt-0.5 block">
                                 @if($institution->latitude && $institution->longitude)
@@ -68,7 +68,7 @@
                             </span>
                         </div>
 
-                        <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
                             <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Phone</span>
                             @if($institution->phone)
                             <a href="tel:{{ $institution->phone }}" class="text-rose-600 font-semibold hover:underline mt-0.5 block">
@@ -79,7 +79,7 @@
                             @endif
                         </div>
 
-                        <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
                             <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Website</span>
                             @if($institution->website)
                             <a href="{{ $institution->website }}" target="_blank" rel="noopener" class="text-rose-600 font-semibold hover:underline mt-0.5 block truncate">
@@ -103,15 +103,15 @@
             </div>
 
             <!-- Right 1 Column: Location Search & Nearby -->
-            <div class="space-y-6">
+            <div class="space-y-1">
 
                 <!-- Discovery Origin -->
                 @if($institution->search)
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-2 text-sm">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-1 text-sm">
                     <span class="text-xs font-bold uppercase tracking-wider text-rose-600 block">Search Origin</span>
                     <strong class="text-slate-900 dark:text-white block text-base">{{ $institution->search->query }}</strong>
                     <span class="text-xs text-slate-500 dark:text-slate-400 block">{{ $institution->search->display_name }}</span>
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 flex justify-between">
+                    <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 flex justify-between">
                         <span>Found: {{ $institution->search->total_found }}</span>
                         <span>{{ $institution->search->searched_at ? $institution->search->searched_at->diffForHumans() : '' }}</span>
                     </div>
@@ -120,9 +120,9 @@
 
                 <!-- Nearby Institutions -->
                 @if(count($nearbyInstitutions) > 0)
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-1">
                     <h3 class="text-base font-bold text-slate-900 dark:text-white">Nearby Institutions</h3>
-                    <div class="space-y-3">
+                    <div class="space-y-1">
                         @foreach($nearbyInstitutions as $nearby)
                         <a href="{{ route('institutions.show', $nearby->id) }}"
                             class="block p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700 space-y-1 transition-all">

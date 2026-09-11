@@ -1,9 +1,9 @@
 <x-layouts.app title="Edit Institution">
-    <div class="max-w-3xl mx-auto space-y-6">
+    <div class="max-w-3xl mx-auto space-y-3">
 
         <!-- Back Button & Page Title -->
         <div class="flex items-center justify-between">
-            <a href="{{ route('institutions.show', $institution) }}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+            <a href="{{ route('institutions.show', $institution) }}" class="inline-flex items-center gap-1 text-xs font-bold tracking-wider text-rose-600 dark:text-rose-400 hover:underline">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -11,20 +11,20 @@
             </a>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <div class="border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 sm:p-5 shadow-sm">
+            <div class="border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                 <h1 class="text-xl font-black text-slate-900 dark:text-white">Edit Institution: {{ $institution->name }}</h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Update educational institution details, contact info, and geographical coordinates.
                 </p>
             </div>
 
-            <form action="{{ route('institutions.update', $institution) }}" method="POST" class="space-y-6">
+            <form action="{{ route('institutions.update', $institution) }}" method="POST" class="space-y-2">
                 @csrf
                 @method('PUT')
 
                 <!-- Basic Information -->
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Basic Information</h2>
 
                     <div>
@@ -52,7 +52,7 @@
                 </div>
 
                 <!-- Location Details Section -->
-                <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div class="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Location Details</h2>
 
                     <div>
@@ -100,7 +100,7 @@
                 </div>
 
                 <!-- Contact & Web Section -->
-                <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div class="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Contact &amp; Website</h2>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
