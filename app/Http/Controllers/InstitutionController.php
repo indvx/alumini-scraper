@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\SearchInstitutionsAction;
 use App\Models\Institution;
 use App\Models\LocationSearch;
 use App\Repositories\Contracts\InstitutionRepositoryInterface;
@@ -18,23 +17,8 @@ class InstitutionController extends Controller
         protected LocationSearchRepositoryInterface $searchRepository
     ) {}
 
-    public function search(Request $request, SearchInstitutionsAction $action)
+    public function index(Request $request)
     {
-        $searchResult = null;
-        $searchError = null;
-        $locationQuery = $request->input('location_query');
-
-        if ($locationQuery) {
-            try {
-                $searchResult = $action->execute(
-                    query: $locationQuery,
-                    forceRefresh: $request->boolean('force_refresh')
-                );
-            } catch (\Exception $e) {
-                $searchError = $e->getMessage();
-            }
-        }
-
         $filters = [
             'search' => $request->input('search'),
             'type' => $request->input('type'),
@@ -42,8 +26,6 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        // dd($filters);
-        // die;
         $institutions = $this->institutionRepository->getPaginated($filters, 15);
         $recentSearches = $this->searchRepository->getRecentSearches(10);
         $typeBreakdown = Institution::query()
@@ -56,10 +38,7 @@ class InstitutionController extends Controller
             'institutions' => $institutions,
             'recentSearches' => $recentSearches,
             'typeBreakdown' => $typeBreakdown,
-            'searchResult' => $searchResult,
-            'searchError' => $searchError,
             'filters' => $filters,
-            'locationQuery' => $locationQuery,
         ]);
     }
 

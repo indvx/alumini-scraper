@@ -17,7 +17,7 @@ test('dashboard renders successfully', function () {
     $response = $this->get('/dashboard');
 
     $response->assertStatus(200);
-    $response->assertSee('Application Dashboard');
+    $response->assertSee('Discover Educational Institutions');
 });
 
 test('institutions index page renders successfully', function () {
