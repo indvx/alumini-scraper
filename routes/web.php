@@ -5,8 +5,16 @@ use App\Http\Controllers\LocationSearchController;
 use App\Http\Controllers\RFPsPlatformController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\LocationLookupController;
+
 Route::view('/', 'welcome')->name('home');
 Route::get('/dashboard', [InstitutionController::class, 'dashboard'])->name('dashboard');
+
+Route::prefix('locations')->group(function () {
+    Route::get('/countries', [LocationLookupController::class, 'getCountries'])->name('locations.countries');
+    Route::get('/states', [LocationLookupController::class, 'getStates'])->name('locations.states');
+    Route::get('/cities', [LocationLookupController::class, 'getCities'])->name('locations.cities');
+});
 
 Route::prefix('institutions')->group(function () {
     Route::get('/', [InstitutionController::class, 'index'])->name('institutions.index');

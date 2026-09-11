@@ -9,22 +9,45 @@ use Illuminate\Database\Eloquent\Collection;
 
 class InstitutionRepository implements InstitutionRepositoryInterface
 {
-    public function getPaginated(array $filters, int $perPage = 20): LengthAwarePaginator
+    public function getList(array $filters, int $perPage = 20, $is_collection = false): LengthAwarePaginator | Collection
     {
-        return Institution::query()
-            ->with('search')
-            ->filter($filters)
+        $query = Institution::query()->with('search');
+
+        if (count($filters) > 0) {
+            if (!empty($filters['search']) && $filters['search'] != '') {
+                $query->where(function ($query) use ($filters) {
+                    $query->orWhere('name', 'like', "%{$filters['search']}%")
+                        ->orWhere('type', 'like', "%{$filters['search']}%")
+                        ->orWhere('postcode', 'like', "%{$filters['search']}%")
+                        ->orWhere('search_id', 'like', "%{$filters['search']}%")
+                        ->orWhere('city', 'like', "%{$filters['search']}%")
+                        ->orWhere('state', 'like', "%{$filters['search']}%")
+                        ->orWhereHas('search', function ($query) use ($filters) {
+                            $query->orWhere('country', 'like', "%{$filters['search']}%");
+                            $query->orWhere('state', 'like', "%{$filters['search']}%");
+                            $query->orWhere('query', 'like', "%{$filters['search']}%");
+                        });
+                });
+            }
+
+            if (!empty($filters['type']) && $filters['type'] != 'all') {
+                $query->where('type', $filters['type']);
+            }
+
+            if (!empty($filters['postcode']) && $filters['postcode'] != '') {
+                $query->where('postcode', $filters['postcode']);
+            }
+        }
+
+        if ($is_collection) {
+            return $query
+                ->orderBy('name', 'asc')
+                ->get();
+        }
+
+        return $query
             ->orderBy('name', 'asc')
             ->paginate($perPage);
-    }
-
-    public function getFilteredList(array $filters): Collection
-    {
-        return Institution::query()
-            ->with('search')
-            ->filter($filters)
-            ->orderBy('name', 'asc')
-            ->get();
     }
 
     public function findById(int $id): ?Institution

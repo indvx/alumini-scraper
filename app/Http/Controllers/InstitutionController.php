@@ -27,18 +27,10 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        $institutions = $this->institutionRepository->getPaginated($filters, 15);
-        $recentSearches = $this->searchRepository->getRecentSearches(10);
-        $typeBreakdown = Institution::query()
-            ->select('type', DB::raw('count(*) as count'))
-            ->groupBy('type')
-            ->pluck('count', 'type')
-            ->toArray();
+        $institutions = $this->institutionRepository->getList($filters, 15);
 
         return view('institutions.search', [
             'institutions' => $institutions,
-            'recentSearches' => $recentSearches,
-            'typeBreakdown' => $typeBreakdown,
             'filters' => $filters,
         ]);
     }
@@ -113,7 +105,7 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        $institutions = $this->institutionRepository->getFilteredList($filters);
+        $institutions = $this->institutionRepository->getList($filters, 0, true);
 
         $headers = [
             'Content-Type' => 'text/csv',

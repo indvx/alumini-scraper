@@ -61,7 +61,8 @@
                         <option value="all">All Types</option>
                         @foreach ($platformTypes as $type)
                             <option value="{{ $type }}"
-                                {{ ($filters['platform_type'] ?? '') == $type ? 'selected' : '' }}>{{ ucfirst($type) }}
+                                {{ ($filters['platform_type'] ?? '') == $type ? 'selected' : '' }}>
+                                {{ ucfirst($type) }}
                             </option>
                         @endforeach
                     </select>
@@ -75,7 +76,9 @@
                         <option value="all">All Countries</option>
                         @foreach ($countries as $c)
                             <option value="{{ $c }}"
-                                {{ ($filters['country'] ?? '') == $c ? 'selected' : '' }}>{{ $c }}</option>
+                                {{ ($filters['country'] ?? '') == $c ? 'selected' : '' }}>
+                                {{ $c }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -85,9 +88,11 @@
                         class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Status</label>
                     <select name="status"
                         class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
-                        <option value="all" {{ ($filters['status'] ?? '') == 'all' ? 'selected' : '' }}>All Statuses
+                        <option value="all" {{ ($filters['status'] ?? '') == 'all' ? 'selected' : '' }}>All
+                            Statuses
                         </option>
-                        <option value="active" {{ ($filters['status'] ?? '') == 'active' ? 'selected' : '' }}>Active
+                        <option value="active" {{ ($filters['status'] ?? '') == 'active' ? 'selected' : '' }}>
+                            Active
                         </option>
                         <option value="inactive" {{ ($filters['status'] ?? '') == 'inactive' ? 'selected' : '' }}>
                             Inactive</option>
@@ -163,7 +168,8 @@
                                             {{ $p->platform_type ?: 'General' }}
                                         </span>
                                         @if ($p->institution_type)
-                                            <div class="text-xs text-slate-500 mt-1">{{ $p->institution_type }}</div>
+                                            <div class="text-xs text-slate-500 mt-1">{{ $p->institution_type }}
+                                            </div>
                                         @endif
                                     </td>
                                     <td class="py-4 px-4 text-slate-600 dark:text-slate-300 text-xs">
@@ -266,7 +272,8 @@
                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             <h3 class="text-base font-bold text-slate-800 dark:text-slate-200">No RFP Platforms Found</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Try resetting filters or add a new RFP platform
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Try resetting filters or add a new RFP
+                platform
                 to get started.</p>
             <div class="mt-4">
                 <a href="{{ route('rfps-platform.create') }}"
@@ -286,15 +293,24 @@
     <div id="aiSearchModal"
         class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
         <div
-            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative space-y-6">
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full shadow-2xl relative space-y-6">
 
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div class="flex items-center gap-3">
+                    <div
+                        class="p-2 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
                     <div>
                         <h3 class="text-lg font-black text-slate-900 dark:text-white">Find Platforms by Location (AI)
                         </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Enter a location (state, city, or region)
-                            and AI will find &amp; generate platforms for that area.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Select Country &amp; State to discover or
+                            generate local procurement platforms.</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeAiSearchModal()"
@@ -306,43 +322,59 @@
                 </button>
             </div>
 
-            <form action="{{ route('rfps-platform.ai-search') }}" method="GET" class="space-y-5">
-                <div>
-                    <label
-                        class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Target
-                        Location</label>
-                    <textarea id="aiPromptInput" name="ai_prompt" rows="3" required placeholder="Texas"
-                        class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-inner">{{ $aiPrompt ?? '' }}</textarea>
-                </div>
+            <form action="{{ route('rfps-platform.ai-search') }}" method="GET" class="space-y-4"
+                id="aiSearchForm">
+                <!-- Location Fields in One Line -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
+                    <!-- Country Field (Mandatory) -->
+                    <div class="relative">
+                        <label for="aiCountryInput"
+                            class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                            Country <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="aiCountryInput" name="country" required autocomplete="off"
+                            placeholder="Select Country..."
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" />
+                        <input type="hidden" id="aiCountryId" name="country_id" />
 
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                        Suggested Location Examples</p>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="setAiPrompt('California, United States')"
-                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-purple-100 dark:bg-slate-800 dark:hover:bg-purple-950/60 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 border border-slate-200 dark:border-slate-700 transition-all">
-                            📍 California, United States
-                        </button>
-                        <button type="button" onclick="setAiPrompt('Texas, United States')"
-                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-purple-100 dark:bg-slate-800 dark:hover:bg-purple-950/60 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 border border-slate-200 dark:border-slate-700 transition-all">
-                            📍 Texas, United States
-                        </button>
-                        <button type="button" onclick="setAiPrompt('New Delhi, India')"
-                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-purple-100 dark:bg-slate-800 dark:hover:bg-purple-950/60 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 border border-slate-200 dark:border-slate-700 transition-all">
-                            📍 New Delhi, India
-                        </button>
-                        <button type="button" onclick="setAiPrompt('Florida, United States')"
-                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-purple-100 dark:bg-slate-800 dark:hover:bg-purple-950/60 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 border border-slate-200 dark:border-slate-700 transition-all">
-                            📍 Florida, United States
-                        </button>
-                        <button type="button" onclick="setAiPrompt('Frankfurt, Germany')"
-                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-purple-100 dark:bg-slate-800 dark:hover:bg-purple-950/60 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 border border-slate-200 dark:border-slate-700 transition-all">
-                            📍 Frankfurt, Germany
-                        </button>
-                        <button type="button" onclick="setAiPrompt('Paris, France')"
-                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-purple-100 dark:bg-slate-800 dark:hover:bg-purple-950/60 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 border border-slate-200 dark:border-slate-700 transition-all">
-                            📍 Paris, France
-                        </button>
+                        <!-- Suggestions Dropdown -->
+                        <div id="countrySuggestions"
+                            class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- State Field (Mandatory) -->
+                    <div id="stateContainer" class="relative">
+                        <label for="aiStateInput"
+                            class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                            State / Province <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="aiStateInput" name="state" required autocomplete="off"
+                            placeholder="Select State..."
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" />
+                        <input type="hidden" id="aiStateId" name="state_id" />
+
+                        <!-- Suggestions Dropdown -->
+                        <div id="stateSuggestions"
+                            class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- City Field (Optional) -->
+                    <div id="cityContainer" class="relative">
+                        <label for="aiCityInput"
+                            class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                            City <span class="text-slate-400 font-normal lowercase">(optional)</span>
+                        </label>
+                        <input type="text" id="aiCityInput" name="city" autocomplete="off"
+                            placeholder="Select City..."
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" />
+                        <input type="hidden" id="aiCityId" name="city_id" />
+
+                        <!-- Suggestions Dropdown -->
+                        <div id="citySuggestions"
+                            class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                        </div>
                     </div>
                 </div>
 
@@ -352,8 +384,8 @@
                         Cancel
                     </button>
                     <button type="submit"
-                        class="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-sm font-bold shadow-md shadow-slate-600/20 transition-all flex items-center gap-2">
-                        <span>Submit</span>
+                        class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold shadow-md shadow-purple-600/20 transition-all flex items-center gap-2">
+                        <span>Find Platforms</span>
                     </button>
                 </div>
             </form>
@@ -361,17 +393,190 @@
     </div>
 
     <script>
+        let currentCountryId = null;
+        let currentStateId = null;
+
         function openAiSearchModal() {
             document.getElementById('aiSearchModal').classList.remove('hidden');
+            fetchCountries('');
         }
 
         function closeAiSearchModal() {
             document.getElementById('aiSearchModal').classList.add('hidden');
+            closeAllLocationSuggestions();
         }
 
-        function setAiPrompt(text) {
-            document.getElementById('aiPromptInput').value = text;
+        function closeAllLocationSuggestions() {
+            document.getElementById('countrySuggestions').classList.add('hidden');
+            document.getElementById('stateSuggestions').classList.add('hidden');
+            document.getElementById('citySuggestions').classList.add('hidden');
         }
+
+        // Country search & suggestions
+        const countryInput = document.getElementById('aiCountryInput');
+        const countrySuggestions = document.getElementById('countrySuggestions');
+        const countryIdInput = document.getElementById('aiCountryId');
+
+        const stateContainer = document.getElementById('stateContainer');
+        const stateInput = document.getElementById('aiStateInput');
+        const stateSuggestions = document.getElementById('stateSuggestions');
+        const stateIdInput = document.getElementById('aiStateId');
+
+        const cityContainer = document.getElementById('cityContainer');
+        const cityInput = document.getElementById('aiCityInput');
+        const citySuggestions = document.getElementById('citySuggestions');
+        const cityIdInput = document.getElementById('aiCityId');
+
+        countryInput.addEventListener('focus', () => fetchCountries(countryInput.value));
+        countryInput.addEventListener('input', () => {
+            countryIdInput.value = '';
+            resetStateSelection();
+            fetchCountries(countryInput.value);
+        });
+
+        function fetchCountries(query) {
+            fetch(`/locations/countries?query=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data.length > 0) {
+                        countrySuggestions.innerHTML = data.data.map(item => `
+                            <div class="px-4 py-2.5 hover:bg-purple-50 dark:hover:bg-slate-700/80 cursor-pointer text-slate-800 dark:text-slate-200 transition-colors"
+                                onclick="selectCountry(${item.id}, '${escapeJsString(item.name)}')">
+                                ${escapeHtml(item.name)} <span class="text-xs text-slate-500 dark:text-slate-400">(${item.id})</span>
+                            </div>
+                        `).join('');
+                        countrySuggestions.classList.remove('hidden');
+                    } else {
+                        countrySuggestions.classList.add('hidden');
+                    }
+                })
+                .catch(() => countrySuggestions.classList.add('hidden'));
+        }
+
+        function selectCountry(id, name) {
+            countryInput.value = name;
+            countryIdInput.value = id;
+            currentCountryId = id;
+            countrySuggestions.classList.add('hidden');
+
+            // Reveal and require State
+            resetStateSelection();
+            stateContainer.classList.remove('hidden');
+            stateInput.setAttribute('required', 'required');
+            fetchStates('');
+        }
+
+        function resetStateSelection() {
+            currentStateId = null;
+            stateInput.value = '';
+            stateIdInput.value = '';
+            resetCitySelection();
+        }
+
+        // State search & suggestions
+        stateInput.addEventListener('focus', () => fetchStates(stateInput.value));
+        stateInput.addEventListener('input', () => {
+            stateIdInput.value = '';
+            resetCitySelection();
+            fetchStates(stateInput.value);
+        });
+
+        function fetchStates(query) {
+            const countryParam = currentCountryId ? `country_id=${currentCountryId}` :
+                `country=${encodeURIComponent(countryInput.value)}`;
+            fetch(`/locations/states?${countryParam}&query=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data.length > 0) {
+                        stateSuggestions.innerHTML = data.data.map(item => `
+                            <div class="px-4 py-2.5 hover:bg-purple-50 dark:hover:bg-slate-700/80 cursor-pointer text-slate-800 dark:text-slate-200 transition-colors flex justify-between items-center"
+                                onclick="selectState(${item.id}, '${escapeJsString(item.name)}')">
+                                <span>${escapeHtml(item.name)}</span>
+                                ${item.state_code ? `<span class="text-xs font-mono text-slate-400">${escapeHtml(item.state_code)}</span>` : ''}
+                            </div>
+                        `).join('');
+                        stateSuggestions.classList.remove('hidden');
+                    } else {
+                        stateSuggestions.classList.add('hidden');
+                    }
+                })
+                .catch(() => stateSuggestions.classList.add('hidden'));
+        }
+
+        function selectState(id, name) {
+            stateInput.value = name;
+            stateIdInput.value = id;
+            currentStateId = id;
+            stateSuggestions.classList.add('hidden');
+
+            // Reveal City (optional)
+            resetCitySelection();
+            cityContainer.classList.remove('hidden');
+            fetchCities('');
+        }
+
+        function resetCitySelection() {
+            cityInput.value = '';
+            cityIdInput.value = '';
+        }
+
+        // City search & suggestions
+        cityInput.addEventListener('focus', () => fetchCities(cityInput.value));
+        cityInput.addEventListener('input', () => {
+            cityIdInput.value = '';
+            fetchCities(cityInput.value);
+        });
+
+        function fetchCities(query) {
+            const stateParam = currentStateId ? `state_id=${currentStateId}` :
+                `state=${encodeURIComponent(stateInput.value)}`;
+            fetch(`/locations/cities?${stateParam}&query=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data.length > 0) {
+                        citySuggestions.innerHTML = data.data.map(item => `
+                            <div class="px-4 py-2.5 hover:bg-purple-50 dark:hover:bg-slate-700/80 cursor-pointer text-slate-800 dark:text-slate-200 transition-colors"
+                                onclick="selectCity(${item.id}, '${escapeJsString(item.name)}')">
+                                ${escapeHtml(item.name)}
+                            </div>
+                        `).join('');
+                        citySuggestions.classList.remove('hidden');
+                    } else {
+                        citySuggestions.classList.add('hidden');
+                    }
+                })
+                .catch(() => citySuggestions.classList.add('hidden'));
+        }
+
+        function selectCity(id, name) {
+            cityInput.value = name;
+            cityIdInput.value = id;
+            citySuggestions.classList.add('hidden');
+        }
+
+        // Helper functions
+        function escapeHtml(str) {
+            return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') :
+                '';
+        }
+
+        function escapeJsString(str) {
+            return str ? str.replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
+        }
+
+        // Close suggestions on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#aiSearchModal')) return;
+            if (!countryInput.contains(e.target) && !countrySuggestions.contains(e.target)) {
+                countrySuggestions.classList.add('hidden');
+            }
+            if (!stateInput.contains(e.target) && !stateSuggestions.contains(e.target)) {
+                stateSuggestions.classList.add('hidden');
+            }
+            if (!cityInput.contains(e.target) && !citySuggestions.contains(e.target)) {
+                citySuggestions.classList.add('hidden');
+            }
+        });
 
         // Close modal on escape key
         document.addEventListener('keydown', function(event) {
