@@ -9,34 +9,40 @@ use Illuminate\Database\Eloquent\Collection;
 
 class InstitutionRepository implements InstitutionRepositoryInterface
 {
-    public function getList(array $filters, int $perPage = 20, $is_collection = false): LengthAwarePaginator | Collection
+    private function getList(array $filters, int $perPage = 20, bool $is_collection = false): LengthAwarePaginator | Collection
     {
         $query = Institution::query()->with('search');
 
-        if (count($filters) > 0) {
-            if (!empty($filters['search']) && $filters['search'] != '') {
-                $query->where(function ($query) use ($filters) {
-                    $query->orWhere('name', 'like', "%{$filters['search']}%")
-                        ->orWhere('type', 'like', "%{$filters['search']}%")
-                        ->orWhere('postcode', 'like', "%{$filters['search']}%")
-                        ->orWhere('search_id', 'like', "%{$filters['search']}%")
-                        ->orWhere('city', 'like', "%{$filters['search']}%")
-                        ->orWhere('state', 'like', "%{$filters['search']}%")
-                        ->orWhereHas('search', function ($query) use ($filters) {
-                            $query->orWhere('country', 'like', "%{$filters['search']}%");
-                            $query->orWhere('state', 'like', "%{$filters['search']}%");
-                            $query->orWhere('query', 'like', "%{$filters['search']}%");
+        if (!empty($filters['search_id'])) {
+            $query->where('search_id', $filters['search_id']);
+        }
+
+        if (!empty($filters['search']) && trim($filters['search']) !== '') {
+            $search = strtolower(trim($filters['search']));
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(address) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(type) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(postcode) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(search_id) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(city) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(state) LIKE ?', ["%{$search}%"])
+                    ->orWhereHas('search', function ($subQuery) use ($search) {
+                        $subQuery->where(function ($sq) use ($search) {
+                            $sq->whereRaw('LOWER(country) LIKE ?', ["%{$search}%"])
+                                ->orWhereRaw('LOWER(state) LIKE ?', ["%{$search}%"])
+                                ->orWhereRaw('LOWER(query) LIKE ?', ["%{$search}%"]);
                         });
-                });
-            }
+                    });
+            });
+        }
 
-            if (!empty($filters['type']) && $filters['type'] != 'all') {
-                $query->where('type', $filters['type']);
-            }
+        if (!empty($filters['type']) && strtolower($filters['type']) !== 'all') {
+            $query->where('type', strtolower($filters['type']));
+        }
 
-            if (!empty($filters['postcode']) && $filters['postcode'] != '') {
-                $query->where('postcode', $filters['postcode']);
-            }
+        if (!empty($filters['postcode']) && trim($filters['postcode']) !== '') {
+            $query->where('postcode', 'like', '%' . trim($filters['postcode']) . '%');
         }
 
         if ($is_collection) {
@@ -48,6 +54,16 @@ class InstitutionRepository implements InstitutionRepositoryInterface
         return $query
             ->orderBy('name', 'asc')
             ->paginate($perPage);
+    }
+
+    public function getPaginated(array $filters, int $perPage = 20): LengthAwarePaginator
+    {
+        return $this->getList($filters, $perPage, false);
+    }
+
+    public function getFilteredList(array $filters): Collection
+    {
+        return $this->getList($filters, 0, true);
     }
 
     public function findById(int $id): ?Institution

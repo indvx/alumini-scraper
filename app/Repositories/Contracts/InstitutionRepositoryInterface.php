@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface InstitutionRepositoryInterface
 {
-    public function getList(array $filters, int $perPage = 20, bool $collection = false): LengthAwarePaginator | Collection;
+    public function getPaginated(array $filters, int $perPage = 20): LengthAwarePaginator;
+
+    public function getFilteredList(array $filters): Collection;
 
     public function findById(int $id): ?Institution;
 

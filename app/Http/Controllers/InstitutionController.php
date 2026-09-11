@@ -27,7 +27,7 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        $institutions = $this->institutionRepository->getList($filters, 15);
+        $institutions = $this->institutionRepository->getPaginated($filters, 15);
 
         return view('institutions.search', [
             'institutions' => $institutions,
@@ -105,7 +105,7 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        $institutions = $this->institutionRepository->getList($filters, 0, true);
+        $institutions = $this->institutionRepository->getFilteredList($filters);
 
         $headers = [
             'Content-Type' => 'text/csv',

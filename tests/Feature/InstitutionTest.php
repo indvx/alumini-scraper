@@ -137,3 +137,35 @@ test('institution can be updated with valid data', function () {
         'city' => 'Austin',
     ]);
 });
+
+test('institution repository search filters accurately', function () {
+    $search = LocationSearch::create([
+        'query' => 'Delhi, India',
+        'display_name' => 'Delhi, India',
+        'area_id' => 3600100000,
+        'searched_at' => now(),
+    ]);
+
+    Institution::create([
+        'search_id' => $search->id,
+        'name' => 'A block Primary School',
+        'address' => 'A block, Sector 14',
+        'type' => 'school',
+    ]);
+
+    Institution::create([
+        'search_id' => $search->id,
+        'name' => 'St Xavier High School',
+        'address' => 'Civil Lines',
+        'type' => 'school',
+    ]);
+
+    $repo = app(\App\Repositories\Contracts\InstitutionRepositoryInterface::class);
+
+    $results = $repo->getList(['search' => 'A block']);
+    expect($results->total())->toBe(1);
+    expect($results->first()->name)->toBe('A block Primary School');
+
+    $noResults = $repo->getList(['search' => 'NonExistentTerm12345']);
+    expect($noResults->total())->toBe(0);
+});
