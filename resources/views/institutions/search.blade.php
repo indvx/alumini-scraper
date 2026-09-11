@@ -105,9 +105,14 @@
                             @endif
                         </div>
 
-                        <a href="{{ route('institutions.show', $inst->id) }}" class="text-rose-600 font-bold hover:underline">
-                            View Details
-                        </a>
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('institutions.edit', $inst->id) }}" class="text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium">
+                                Edit
+                            </a>
+                            <a href="{{ route('institutions.show', $inst->id) }}" class="text-rose-600 font-bold hover:underline">
+                                View Details
+                            </a>
+                        </div>
                     </div>
                 </div>
                 @endforeach

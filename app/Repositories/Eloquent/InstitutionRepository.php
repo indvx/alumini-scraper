@@ -98,4 +98,11 @@ class InstitutionRepository implements InstitutionRepositoryInterface
 
         return $institution->fresh();
     }
+
+    public function update(Institution $institution, array $data): Institution
+    {
+        $institution->update($data);
+
+        return $institution->fresh();
+    }
 }

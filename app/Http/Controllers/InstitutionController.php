@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\LocationSearch;
 use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use App\Repositories\Contracts\LocationSearchRepositoryInterface;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -72,6 +73,35 @@ class InstitutionController extends Controller
             'institution' => $institution,
             'nearbyInstitutions' => $nearbyInstitutions,
         ]);
+    }
+
+    public function edit(Institution $institution)
+    {
+        return view('institutions.edit', [
+            'institution' => $institution,
+        ]);
+    }
+
+    public function update(Request $request, Institution $institution): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|in:school,college,university,kindergarten,other',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'postcode' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:50',
+            'website' => 'nullable|url|max:255',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+        ]);
+
+        $this->institutionRepository->update($institution, $validated);
+
+        return redirect()
+            ->route('institutions.show', $institution)
+            ->with('success', "Institution '{$institution->name}' updated successfully.");
     }
 
     public function exportCsv(Request $request): StreamedResponse

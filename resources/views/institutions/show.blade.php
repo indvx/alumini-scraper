@@ -1,10 +1,16 @@
 <x-layouts.app :title="$institution->name">
-    <div class="flex h-full w-full flex-1 flex-col gap-6">
+    <div class="flex h-full w-full flex-1 flex-col gap-3">
 
-        <!-- Back Button -->
-        <div>
+        <!-- Back Button & Actions -->
+        <div class="flex items-center justify-between">
             <a href="{{ route('institutions.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-rose-600 hover:underline">
                 Back to Institutions Search
+            </a>
+            <a href="{{ route('institutions.edit', $institution) }}" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Institution
             </a>
         </div>
 

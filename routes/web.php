@@ -13,6 +13,8 @@ Route::prefix('institutions')->group(function () {
     Route::post('/search', [LocationSearchController::class, 'search'])->name('institutions.search');
     Route::get('/export/csv', [InstitutionController::class, 'exportCsv'])->name('institutions.export');
     Route::get('/{institution}', [InstitutionController::class, 'show'])->name('institutions.show');
+    Route::get('/{institution}/edit', [InstitutionController::class, 'edit'])->name('institutions.edit');
+    Route::put('/{institution}', [InstitutionController::class, 'update'])->name('institutions.update');
 });
 
 Route::prefix('rfps-platform')->group(function () {
