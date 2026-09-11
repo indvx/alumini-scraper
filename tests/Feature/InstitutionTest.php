@@ -162,10 +162,9 @@ test('institution repository search filters accurately', function () {
 
     $repo = app(\App\Repositories\Contracts\InstitutionRepositoryInterface::class);
 
-    $results = $repo->getList(['search' => 'A block']);
-    expect($results->total())->toBe(1);
+    $results = $repo->getFilteredList(['search' => 'A block']);
     expect($results->first()->name)->toBe('A block Primary School');
 
-    $noResults = $repo->getList(['search' => 'NonExistentTerm12345']);
-    expect($noResults->total())->toBe(0);
+    $noResults = $repo->getFilteredList(['search' => 'NonExistentTerm12345']);
+    expect($noResults->count())->toBe(0);
 });

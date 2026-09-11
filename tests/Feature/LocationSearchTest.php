@@ -32,3 +32,26 @@ test('location search queries existing search from database cache', function () 
     $response->assertRedirect(route('institutions.index'));
     $response->assertSessionHas('searchResult');
 });
+
+test('location search combines country state city inputs if location_query is omitted', function () {
+    $search = LocationSearch::create([
+        'query' => 'Dallas, Texas, United States',
+        'display_name' => 'Dallas, Dallas County, Texas, United States',
+        'area_id' => 3600111115,
+        'place_name' => 'Dallas',
+        'state' => 'Texas',
+        'country' => 'United States',
+        'total_found' => 0,
+        'searched_at' => now(),
+    ]);
+
+    $response = $this->post('/institutions/search', [
+        'country' => 'United States',
+        'state' => 'Texas',
+        'city' => 'Dallas',
+    ]);
+
+    $response->assertRedirect(route('institutions.index'));
+    $response->assertSessionHas('locationQuery', 'Dallas, Texas, United States');
+    $response->assertSessionHas('searchResult');
+});

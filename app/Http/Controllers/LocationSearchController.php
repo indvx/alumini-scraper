@@ -24,11 +24,23 @@ class LocationSearchController extends Controller
      */
     public function search(Request $request): RedirectResponse
     {
-        $locationQuery = trim($request->input('location_query', ''));
+        $country = trim((string) $request->input('country', ''));
+        $state = trim((string) $request->input('state', ''));
+        $city = trim((string) $request->input('city', ''));
+
+        $locationQuery = trim((string) $request->input('location_query', ''));
+
+        if (empty($locationQuery)) {
+            $parts = array_filter([$city, $state, $country]);
+            $locationQuery = implode(', ', $parts);
+        }
+
         $forceRefresh = $request->boolean('force_refresh');
 
         if (empty($locationQuery)) {
-            return redirect()->back();
+            return redirect()->back()->with([
+                'searchError' => 'Please select a valid location (Country and State required).',
+            ]);
         }
 
         try {
@@ -36,11 +48,17 @@ class LocationSearchController extends Controller
 
             return redirect()->route('institutions.index')->with([
                 'locationQuery' => $locationQuery,
+                'country' => $country,
+                'state' => $state,
+                'city' => $city,
                 'searchResult' => $result,
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with([
                 'locationQuery' => $locationQuery,
+                'country' => $country,
+                'state' => $state,
+                'city' => $city,
                 'searchError' => $e->getMessage(),
             ]);
         }
