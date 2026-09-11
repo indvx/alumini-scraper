@@ -1,5 +1,5 @@
 <x-layouts.app title="Dashboard">
-    <div class="space-y-6">
+    <div class="space-y-5">
         <!-- Header & Search Box -->
         <x-location-search-card />
 
