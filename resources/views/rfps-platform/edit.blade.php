@@ -1,5 +1,5 @@
 <x-layouts.app title="Edit RFP Platform">
-    <div class="max-w-3xl mx-auto space-y-6">
+    <div class="max-w-3xl mx-auto space-y-1">
 
         <!-- Back Button & Page Title -->
         <div class="flex items-center justify-between">
@@ -14,16 +14,16 @@
         </div>
 
         <div
-            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <div class="border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
-                <h1 class="text-xl font-black text-slate-900 dark:text-white">Edit RFP Platform: {{ $platform->name }}
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm">
+            <div class="border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+                <h1 class="text-xl font-black text-slate-900 dark:text-white">Edit: {{ $platform->name }} Platform
                 </h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Update procurement platform configuration, domain links, location, and status.
                 </p>
             </div>
 
-            <form action="{{ route('rfps-platform.update', $platform) }}" method="POST" class="space-y-6">
+            <form action="{{ route('rfps-platform.update', $platform) }}" method="POST" class="space-y-2">
                 @csrf
                 @method('PUT')
 
