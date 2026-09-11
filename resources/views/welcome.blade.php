@@ -5,7 +5,8 @@
         </h1>
 
         <p class="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Ingest, search, filter, and export schools, colleges, universities, and kindergartens globally using OpenStreetMap Nominatim and Overpass APIs.
+            Ingest, search, filter, and export schools, colleges, universities, and kindergartens globally using
+            OpenStreetMap Nominatim and Overpass APIs.
         </p>
 
         <!-- <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
