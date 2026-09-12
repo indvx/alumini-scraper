@@ -138,10 +138,20 @@ class InstitutionRepository implements InstitutionRepositoryInterface
         return $institution->fresh();
     }
 
+    public function create(array $data): Institution
+    {
+        return Institution::create($data);
+    }
+
     public function update(Institution $institution, array $data): Institution
     {
         $institution->update($data);
 
         return $institution->fresh();
+    }
+
+    public function delete(Institution $institution): bool
+    {
+        return (bool) $institution->delete();
     }
 }

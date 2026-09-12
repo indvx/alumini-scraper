@@ -17,11 +17,14 @@ Route::prefix('locations')->group(function () {
 
 Route::prefix('institutions')->group(function () {
     Route::get('/', [InstitutionController::class, 'index'])->name('institutions.index');
+    Route::get('/create', [InstitutionController::class, 'create'])->name('institutions.create');
+    Route::post('/', [InstitutionController::class, 'store'])->name('institutions.store');
     Route::post('/search', [LocationSearchController::class, 'search'])->name('institutions.search');
     Route::get('/export/csv', [InstitutionController::class, 'exportCsv'])->name('institutions.export');
     Route::get('/{institution}', [InstitutionController::class, 'show'])->name('institutions.show');
     Route::get('/{institution}/edit', [InstitutionController::class, 'edit'])->name('institutions.edit');
     Route::put('/{institution}', [InstitutionController::class, 'update'])->name('institutions.update');
+    Route::delete('/{institution}', [InstitutionController::class, 'destroy'])->name('institutions.destroy');
 });
 
 Route::prefix('rfps-platform')->group(function () {

@@ -35,6 +35,38 @@ class InstitutionController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        $searches = LocationSearch::query()->latest('searched_at')->limit(50)->get();
+
+        return view('institutions.create', [
+            'searches' => $searches,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|in:school,college,university,kindergarten,other',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'postcode' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:50',
+            'website' => 'nullable|url|max:255',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'search_id' => 'nullable|exists:location_searches,id',
+        ]);
+
+        $institution = $this->institutionRepository->create($validated);
+
+        return redirect()
+            ->route('institutions.show', $institution)
+            ->with('success', "Institution '{$institution->name}' created successfully.");
+    }
+
     public function show(Institution $institution)
     {
         $institution->update(['last_view' => now()]);
@@ -98,6 +130,16 @@ class InstitutionController extends Controller
         return redirect()
             ->route('institutions.show', $institution)
             ->with('success', "Institution '{$institution->name}' updated successfully.");
+    }
+
+    public function destroy(Institution $institution): RedirectResponse
+    {
+        $name = $institution->name;
+        $this->institutionRepository->delete($institution);
+
+        return redirect()
+            ->route('institutions.index')
+            ->with('success', "Institution '{$name}' deleted successfully.");
     }
 
     public function exportCsv(Request $request): StreamedResponse
