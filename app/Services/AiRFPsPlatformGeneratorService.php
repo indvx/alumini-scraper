@@ -18,6 +18,12 @@ class AiRFPsPlatformGeneratorService
     public function generateFromPrompt(string $country, string $state, ?string $city = null): array
     {
 
+        $location = implode(', ', array_filter([
+            $country,
+            $state,
+            $city,
+        ]));
+
         $response = $this->aiService->client()->responses()->create([
             'model' => 'gpt-5.6-luna',
 
@@ -34,9 +40,9 @@ class AiRFPsPlatformGeneratorService
                         [
                             'type' => 'input_text',
                             'text' => <<<PROMPT
-                                    Find procurement platforms used by educational institutions in {$country}, {$state}.
+                                Find verified procurement platforms used by educational institutions in "{$location}".
 
-                                Search the web extensively.
+                                Perform no more than 8 web searches.
 
                                 Focus on:
                                     - Universities
@@ -46,40 +52,49 @@ class AiRFPsPlatformGeneratorService
                                     - School districts
 
                                 Find:
-                                    1. {$country} government/education procurement portals
-                                    2. Third-party procurement platforms used by {$country} institutions
-                                    3. Institution-specific procurement portals
+                                    1. Government procurement portals
+                                    2. Education procurement portals
+                                    3. Major third-party procurement platforms
+                                    4. Institution-specific procurement portals
 
                                 IMPORTANT:
-                                    - Do NOT return individual RFPs.
-                                    - Find the platforms/websites where RFPs, bids, tenders,
-                                    solicitations, or procurement opportunities are published.
-                                    - Search multiple {$country} educational institutions.
-                                    - Verify every platform using an institutional or government
-                                    evidence URL.
+                                    - Find platforms, NOT individual RFPs.
+                                    - A platform must be a website/system where procurement opportunities,
+                                    tenders, bids, solicitations, or RFPs are published.
+                                    - Verify each platform using a government, educational institution,
+                                    or other authoritative evidence URL.
                                     - Deduplicate platforms.
-                                    - Do not stop after finding only a few platforms.
-                                    - Continue searching until additional searches produce
-                                    no materially new platforms.
+                                    - Return a maximum of 15 platforms.
+                                    - Prefer high-confidence platforms over exhaustive low-confidence results.
+                                    - Do not perform additional searches after the 8-search limit.
 
-                                For each platform return:
-                                    name
-                                    domain
-                                    url
-                                    platform_type
-                                    country
-                                    state
-                                    city
-                                    institution_type
-                                    coverage
-                                    is_public
-                                    requires_login
-                                    evidence_url
-                                    institutions_using_it
-                                    confidence
+                                For each platform return exactly:
 
-                                Return JSON only.
-                        PROMPT
+                                {
+                                    "name": "string",
+                                    "domain": "string",
+                                    "url": "string",
+                                    "platform_type": "string",
+                                    "country": "string",
+                                    "state": "string|null",
+                                    "city": "string|null",
+                                    "institution_type": "string",
+                                    "coverage": "string",
+                                    "is_public": true,
+                                    "requires_login": false,
+                                    "evidence_url": "string",
+                                    "institutions_using_it": ["maximum 5 institutions"],
+                                    "confidence": "high"
+                                }
+
+                                Rules:
+                                    - is_public must be boolean true/false.
+                                    - requires_login must be boolean true/false.
+                                    - Never put explanations in is_public or requires_login.
+                                    - institutions_using_it must contain at most 5 institutions.
+                                    - confidence must be "high", "medium", or "low".
+                                    - Return JSON only.
+                            PROMPT
                         ],
                     ],
                 ],
@@ -99,7 +114,7 @@ class AiRFPsPlatformGeneratorService
 
         $formatString = function (mixed $value): ?string {
             if (is_array($value)) {
-                $filtered = array_filter($value, fn ($v) => is_scalar($v) && trim((string) $v) !== '');
+                $filtered = array_filter($value, fn($v) => is_scalar($v) && trim((string) $v) !== '');
                 return ! empty($filtered) ? implode(', ', $filtered) : null;
             }
 
