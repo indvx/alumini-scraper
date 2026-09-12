@@ -78,4 +78,50 @@ class Institution extends Model
             })
             ->when($filters['postcode'] ?? null, fn ($q, $zip) => $q->where('postcode', 'like', "%{$zip}%"));
     }
+
+    protected function country(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function ($value) {
+                if (! empty($value)) {
+                    return $value;
+                }
+                if ($this->relationLoaded('search') && $this->search) {
+                    return $this->search->country;
+                }
+                if ($this->search_id) {
+                    return $this->search?->country;
+                }
+                return null;
+            }
+        );
+    }
+
+    public function scopeByCountry(Builder $query, ?string $country): Builder
+    {
+        $country = trim((string) $country);
+        if ($country === '') {
+            return $query;
+        }
+
+        $isUs = in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america']);
+
+        return $query->where(function ($q) use ($country, $isUs) {
+            $q->where('country', 'like', "%{$country}%");
+            if ($isUs) {
+                $q->orWhereIn(\Illuminate\Support\Facades\DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+            }
+
+            $q->orWhere(function ($sub) use ($country, $isUs) {
+                $sub->where(function ($cEmpty) {
+                    $cEmpty->whereNull('country')->orWhere('country', '');
+                })->whereHas('search', function ($sQuery) use ($country, $isUs) {
+                    $sQuery->where('country', 'like', "%{$country}%");
+                    if ($isUs) {
+                        $sQuery->orWhereIn(\Illuminate\Support\Facades\DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+                    }
+                });
+            });
+        });
+    }
 }

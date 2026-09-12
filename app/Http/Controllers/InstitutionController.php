@@ -23,7 +23,12 @@ class InstitutionController extends Controller
     public function searchApi(Request $request): JsonResponse
     {
         $query = trim((string) $request->input('query', ''));
+        $country = trim((string) $request->input('country', ''));
         $builder = Institution::query();
+
+        if ($country !== '') {
+            $builder->byCountry($country);
+        }
 
         if ($query !== '') {
             $keywords = array_filter(explode(' ', $query));
@@ -36,7 +41,7 @@ class InstitutionController extends Controller
 
         $institutions = $builder->orderBy('name', 'asc')
             ->limit(10)
-            ->get(['id', 'name', 'type', 'city', 'state']);
+            ->get(['id', 'name', 'type', 'city', 'state', 'country']);
 
         return response()->json([
             'success' => true,
@@ -100,7 +105,11 @@ class InstitutionController extends Controller
         $institution->refresh();
         $institution->load(['search', 'rfpPlatforms']);
 
-        $initialRfpPlatforms = RFPsPlatform::query()->orderBy('name', 'asc')->limit(10)->get();
+        $initialRfpPlatforms = RFPsPlatform::query()
+            ->byCountry($institution->country)
+            ->orderBy('name', 'asc')
+            ->limit(10)
+            ->get();
 
         return view('institutions.show', [
             'institution' => $institution,

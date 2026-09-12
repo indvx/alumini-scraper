@@ -504,7 +504,8 @@
                     btn.type = 'button';
                     btn.className =
                         'rfp-platform-opt-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-rose-50 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-between';
-                    const sub = item.domain || item.platform_type || '';
+                    const parts = [item.domain || item.platform_type || '', item.country || ''].filter(Boolean);
+                    const sub = parts.join(' • ');
                     btn.innerHTML = `
                         <span class="font-medium text-slate-900 dark:text-white">${escapeHtml(item.name)}</span>
                         ${sub ? `<span class="text-[10px] text-slate-400 dark:text-slate-500">${escapeHtml(sub)}</span>` : ''}
@@ -537,6 +538,8 @@
                 dropdown.classList.remove('hidden');
             });
 
+            const currentCountry = @json($institution->country ?? '');
+
             searchInput.addEventListener('input', function() {
                 const query = searchInput.value.trim();
                 hiddenInput.value = '';
@@ -551,7 +554,7 @@
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     fetch(
-                            `{{ route('rfps-platform.search-api') }}?query=${encodeURIComponent(query)}`
+                            `{{ route('rfps-platform.search-api') }}?query=${encodeURIComponent(query)}&country=${encodeURIComponent(currentCountry)}`
                         )
                         .then(res => res.json())
                         .then(data => {

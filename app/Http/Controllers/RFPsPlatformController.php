@@ -19,7 +19,12 @@ class RFPsPlatformController extends Controller
     public function searchApi(Request $request): JsonResponse
     {
         $query = trim((string) $request->input('query', ''));
+        $country = trim((string) $request->input('country', ''));
         $builder = RFPsPlatform::query();
+
+        if ($country !== '') {
+            $builder->byCountry($country);
+        }
 
         if ($query !== '') {
             $keywords = array_filter(explode(' ', $query));
@@ -35,7 +40,7 @@ class RFPsPlatformController extends Controller
 
         $platforms = $builder->orderBy('name', 'asc')
             ->limit(10)
-            ->get(['id', 'name', 'domain', 'platform_type']);
+            ->get(['id', 'name', 'domain', 'platform_type', 'country']);
 
         return response()->json([
             'success' => true,
@@ -112,7 +117,11 @@ class RFPsPlatformController extends Controller
     public function show(RFPsPlatform $rfpsPlatform)
     {
         $rfpsPlatform->load('institutions');
-        $initialInstitutions = Institution::query()->orderBy('name', 'asc')->limit(10)->get();
+        $initialInstitutions = Institution::query()
+            ->byCountry($rfpsPlatform->country)
+            ->orderBy('name', 'asc')
+            ->limit(10)
+            ->get();
 
         return view('rfps-platform.show', [
             'platform' => $rfpsPlatform,

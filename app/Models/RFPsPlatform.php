@@ -91,4 +91,23 @@ class RFPsPlatform extends Model
                 $q->where('status', $filters['status']);
             });
     }
+
+    public function scopeByCountry(Builder $query, ?string $country, bool $allowGlobal = true): Builder
+    {
+        $country = trim((string) $country);
+        if ($country === '') {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($country, $allowGlobal) {
+            if ($allowGlobal) {
+                $q->whereNull('country')
+                    ->orWhere('country', '');
+            }
+            $q->orWhere('country', 'like', "%{$country}%");
+            if (in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america'])) {
+                $q->orWhereIn(\Illuminate\Support\Facades\DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+            }
+        });
+    }
 }
