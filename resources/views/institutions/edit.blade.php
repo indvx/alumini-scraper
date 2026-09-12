@@ -166,24 +166,20 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
-                    <button type="button" onclick="if(confirm('Are you sure you want to delete this institution?')) document.getElementById('delete-institution-form').submit();"
-                        class="px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 text-sm font-semibold transition-colors">
-                        Delete Institution
+                <div
+                    class="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                    <a href="{{ route('institutions.show', $institution) }}"
+                        class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold shadow-md shadow-rose-600/20 transition-all">
+                        Update Institution
                     </button>
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('institutions.show', $institution) }}"
-                            class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold transition-colors">
-                            Cancel
-                        </a>
-                        <button type="submit"
-                            class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold shadow-md shadow-rose-600/20 transition-all">
-                            Update Institution
-                        </button>
-                    </div>
                 </div>
             </form>
-            <form id="delete-institution-form" action="{{ route('institutions.destroy', $institution) }}" method="POST" class="hidden">
+            <form id="delete-institution-form" action="{{ route('institutions.destroy', $institution) }}"
+                method="POST" class="hidden">
                 @csrf
                 @method('DELETE')
             </form>

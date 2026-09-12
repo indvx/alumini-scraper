@@ -24,9 +24,5 @@ interface InstitutionRepositoryInterface
 
     public function updateInstitutionName(Institution $institution, array $data): Institution;
 
-    public function create(array $data): Institution;
-
     public function update(Institution $institution, array $data): Institution;
-
-    public function delete(Institution $institution): bool;
 }

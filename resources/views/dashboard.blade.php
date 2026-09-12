@@ -87,23 +87,11 @@
                                         class="text-xs text-slate-500 dark:text-slate-400 block capitalize">{{ $inst->type }}
                                         &bull; {{ $inst->city ?: $inst->state }}</span>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <a href="{{ route('institutions.show', $inst->id) }}"
-                                        class="text-xs font-semibold text-rose-600 hover:underline">
-                                        View
-                                    </a>
-                                    <form action="{{ route('institutions.destroy', $inst->id) }}" method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this institution?');"
-                                        class="inline-flex items-center">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="text-xs font-semibold text-slate-400 hover:text-rose-600 transition-colors"
-                                            title="Delete Institution">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
+                                <a href="{{ route('institutions.show', $inst->id) }}"
+                                    class="text-xs font-semibold text-rose-600 hover:underline">
+                                    View
+                                </a>
+
                             </div>
                         @endforeach
                     </div>
