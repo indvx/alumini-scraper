@@ -76,9 +76,9 @@
                             class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
                             <span
                                 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">City
-                                / State</span>
+                                / State / Country</span>
                             <span class="text-slate-900 dark:text-white font-medium mt-0.5 block">
-                                {{ implode(', ', array_filter([$institution->city, $institution->state, $institution->postcode])) ?: 'N/A' }}
+                                {{ implode(', ', array_filter([$institution->city, $institution->state, $institution->country, $institution->postcode])) ?: 'N/A' }}
                             </span>
                         </div>
 

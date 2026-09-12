@@ -98,7 +98,7 @@ class LocationSearchController extends Controller
         }
 
         // 3. Query Overpass API
-        $parsedRecords = $this->overpassService->fetchSchoolsByArea($geo['area_id'], $geo['state'], $geo['country']);
+        $parsedRecords = $this->overpassService->fetchInstitutionsByArea($geo['area_id'], $geo['state'], $geo['country']);
 
         return DB::transaction(function () use ($existingSearch, $cleanQuery, $geo, $parsedRecords) {
             $searchData = [

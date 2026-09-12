@@ -27,6 +27,7 @@ class InstitutionRepository implements InstitutionRepositoryInterface
                     ->orWhereRaw('LOWER(search_id) LIKE ?', ["%{$search}%"])
                     ->orWhereRaw('LOWER(city) LIKE ?', ["%{$search}%"])
                     ->orWhereRaw('LOWER(state) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(country) LIKE ?', ["%{$search}%"])
                     ->orWhereHas('search', function ($subQuery) use ($search) {
                         $subQuery->where(function ($sq) use ($search) {
                             $sq->whereRaw('LOWER(country) LIKE ?', ["%{$search}%"])
@@ -101,6 +102,7 @@ class InstitutionRepository implements InstitutionRepositoryInterface
                 'address' => $rec['address'] ?? null,
                 'city' => $rec['city'] ?? null,
                 'state' => $rec['state'] ?? null,
+                'country' => $rec['country'] ?? null,
                 'postcode' => $rec['postcode'] ?? null,
                 'phone' => $rec['phone'] ?? null,
                 'website' => $rec['website'] ?? null,

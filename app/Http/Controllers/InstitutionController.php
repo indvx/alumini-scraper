@@ -52,6 +52,7 @@ class InstitutionController extends Controller
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
             'postcode' => 'nullable|string|max:50',
             'phone' => 'nullable|string|max:50',
             'website' => 'nullable|url|max:255',
@@ -118,6 +119,7 @@ class InstitutionController extends Controller
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
             'postcode' => 'nullable|string|max:50',
             'phone' => 'nullable|string|max:50',
             'website' => 'nullable|url|max:255',
@@ -160,7 +162,7 @@ class InstitutionController extends Controller
 
         $callback = function () use ($institutions) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['ID', 'Name', 'Type', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Postcode', 'Phone', 'Website', 'OSM ID']);
+            fputcsv($file, ['ID', 'Name', 'Type', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Postcode', 'Phone', 'Website', 'OSM ID']);
 
             foreach ($institutions as $s) {
                 fputcsv($file, [
@@ -172,6 +174,7 @@ class InstitutionController extends Controller
                     $s->address,
                     $s->city,
                     $s->state,
+                    $s->country,
                     $s->postcode,
                     $s->phone,
                     $s->website,

@@ -22,11 +22,12 @@ class Institution extends Model
         'address',
         'city',
         'state',
+        'country',
         'postcode',
         'phone',
         'website',
         'is_checked',
-        'last_view'
+        'last_view',
     ];
 
     protected $casts = [
@@ -43,19 +44,20 @@ class Institution extends Model
     public function scopeFilter(Builder $query, array $filters): Builder
     {
         return $query
-            ->when($filters['search_id'] ?? null, fn($q, $id) => $q->where('search_id', $id))
+            ->when($filters['search_id'] ?? null, fn ($q, $id) => $q->where('search_id', $id))
             ->when($filters['search'] ?? null, function ($q, $term) {
                 $term = "%{$term}%";
                 $q->where(
-                    fn($sub) => $sub->where('name', 'like', $term)
+                    fn ($sub) => $sub->where('name', 'like', $term)
                         ->orWhere('address', 'like', $term)
                         ->orWhere('city', 'like', $term)
                         ->orWhere('state', 'like', $term)
+                        ->orWhere('country', 'like', $term)
                 );
             })
             ->when(($filters['type'] ?? null) && strtolower((string) $filters['type']) !== 'all', function ($q, $type) {
                 $q->where('type', strtolower((string) $type));
             })
-            ->when($filters['postcode'] ?? null, fn($q, $zip) => $q->where('postcode', 'like', "%{$zip}%"));
+            ->when($filters['postcode'] ?? null, fn ($q, $zip) => $q->where('postcode', 'like', "%{$zip}%"));
     }
 }

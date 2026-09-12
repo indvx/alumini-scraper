@@ -181,6 +181,7 @@ test('institution can be created with valid data', function () {
         'type' => 'university',
         'city' => 'Cambridge',
         'state' => 'Massachusetts',
+        'country' => 'United States',
         'website' => 'https://www.harvard.edu',
     ]);
 
@@ -195,6 +196,7 @@ test('institution can be created with valid data', function () {
         'type' => 'university',
         'city' => 'Cambridge',
         'state' => 'Massachusetts',
+        'country' => 'United States',
     ]);
 });
 

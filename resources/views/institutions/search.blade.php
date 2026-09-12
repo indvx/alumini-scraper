@@ -118,9 +118,9 @@
                                     </a>
                                 </h3>
 
-                                @if ($inst->address || $inst->city || $inst->state)
+                                @if ($inst->address || $inst->city || $inst->state || $inst->country)
                                     <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
-                                        {{ $inst->address ?: implode(', ', array_filter([$inst->city, $inst->state, $inst->postcode])) }}
+                                        {{ $inst->address ?: implode(', ', array_filter([$inst->city, $inst->state, $inst->country, $inst->postcode])) }}
                                     </p>
                                 @endif
                             </div>
