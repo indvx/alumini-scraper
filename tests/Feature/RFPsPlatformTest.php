@@ -122,16 +122,15 @@ test('rfps platform csv export streams content', function () {
     $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
 });
 
-test('can search rfps platforms using ai search', function () {
-    RFPsPlatform::create([
-        'name' => 'California Higher Ed Procurement',
-        'state' => 'California',
-        'status' => 'active',
-    ]);
-
-    $response = $this->get('/rfps-platform/ai-search?ai_prompt=Active+California+university+portals');
+test('can search rfps platforms using ai search with country state and city', function () {
+    $response = $this->get('/rfps-platform/ai-search?country=United+States&state=Texas&city=Austin&ai_prompt=University+Portals');
 
     $response->assertStatus(200);
     $response->assertSee('AI Search Applied');
-    $response->assertSee('California Higher Ed Procurement');
+
+    $this->assertDatabaseHas('rfps_platforms', [
+        'country' => 'United States',
+        'state' => 'Texas',
+        'city' => 'Austin',
+    ]);
 });

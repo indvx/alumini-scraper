@@ -55,17 +55,26 @@ class RFPsPlatformController extends Controller
     public function aiSearch(Request $request, AiPlatformGeneratorService $aiGenerator)
     {
         $prompt = trim((string) $request->input('ai_prompt', ''));
+        $country = trim((string) $request->input('country', ''));
+        $state = trim((string) $request->input('state', ''));
+        $city = trim((string) $request->input('city', ''));
+
+        if ($prompt === '' && ($country !== '' || $state !== '')) {
+            $locationParts = array_filter([$city, $state, $country]);
+            $prompt = 'Platforms in ' . implode(', ', $locationParts);
+        }
+
         $createdCount = 0;
 
-        if ($prompt !== '') {
-            $aiResult = $aiGenerator->generateFromPrompt($prompt);
+        if ($prompt !== '' || $country !== '' || $state !== '') {
+            $aiResult = $aiGenerator->generateFromPrompt($prompt, $country ?: null, $state ?: null, $city ?: null);
             $createdCount = $aiResult['createdCount'];
         }
 
         $filters = [
             'search' => '',
             'platform_type' => 'all',
-            'country' => 'all',
+            'country' => $country ?: 'all',
             'status' => 'all',
         ];
 

@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Actions;
+namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use App\Repositories\Contracts\LocationSearchRepositoryInterface;
 use App\Services\NominatimService;
 use App\Services\OverpassService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class SearchInstitutionsAction
+class LocationSearchController extends Controller
 {
     public function __construct(
         protected LocationSearchRepositoryInterface $searchRepository,
@@ -17,7 +19,55 @@ class SearchInstitutionsAction
         protected OverpassService $overpassService
     ) {}
 
-    public function execute(string $query, bool $forceRefresh = false): array
+    /**
+     * Handle the location search & OpenStreetMap ingestion.
+     */
+    public function search(Request $request): RedirectResponse
+    {
+        $country = trim((string) $request->input('country', ''));
+        $state = trim((string) $request->input('state', ''));
+        $city = trim((string) $request->input('city', ''));
+
+        $locationQuery = trim((string) $request->input('location_query', ''));
+
+        if (empty($locationQuery)) {
+            $parts = array_filter([$city, $state, $country]);
+            $locationQuery = implode(', ', $parts);
+        }
+
+        $forceRefresh = $request->boolean('force_refresh');
+
+        if (empty($locationQuery)) {
+            return redirect()->back()->with([
+                'searchError' => 'Please select a valid location (Country and State required).',
+            ]);
+        }
+
+        try {
+            $result = $this->performSearch($locationQuery, $forceRefresh);
+
+            return redirect()->route('institutions.index')->with([
+                'locationQuery' => $locationQuery,
+                'country' => $country,
+                'state' => $state,
+                'city' => $city,
+                'searchResult' => $result,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with([
+                'locationQuery' => $locationQuery,
+                'country' => $country,
+                'state' => $state,
+                'city' => $city,
+                'searchError' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Execute search query against cache or OpenStreetMap / Overpass API.
+     */
+    protected function performSearch(string $query, bool $forceRefresh = false): array
     {
         $cleanQuery = trim($query);
 

@@ -12,7 +12,7 @@ class AiPlatformGeneratorService
      *
      * @return array{createdCount: int, createdPlatforms: array<RFPsPlatform>}
      */
-    public function generateFromPrompt(string $prompt): array
+    public function generateFromPrompt(string $prompt, ?string $country = null, ?string $state = null, ?string $city = null): array
     {
         $lowercasePrompt = strtolower($prompt);
 
@@ -35,6 +35,16 @@ class AiPlatformGeneratorService
                 $detectedLocation = $loc;
                 break;
             }
+        }
+
+        if (! empty($country)) {
+            $detectedLocation['country'] = $country;
+        }
+        if (! empty($state)) {
+            $detectedLocation['state'] = $state;
+        }
+        if (! empty($city)) {
+            $detectedLocation['city'] = $city;
         }
 
         // Detect Institution Type

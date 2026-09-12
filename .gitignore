@@ -1,4 +1,6 @@
 # Environment & Sensitive Files
+AGENTS.md
+command
 .env
 .env.backup
 .env.production

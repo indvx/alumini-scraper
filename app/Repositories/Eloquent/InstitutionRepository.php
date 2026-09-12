@@ -9,22 +9,61 @@ use Illuminate\Database\Eloquent\Collection;
 
 class InstitutionRepository implements InstitutionRepositoryInterface
 {
-    public function getPaginated(array $filters, int $perPage = 20): LengthAwarePaginator
+    private function getList(array $filters, int $perPage = 20, bool $is_collection = false): LengthAwarePaginator | Collection
     {
-        return Institution::query()
-            ->with('search')
-            ->filter($filters)
+        $query = Institution::query()->with('search');
+
+        if (!empty($filters['search_id'])) {
+            $query->where('search_id', $filters['search_id']);
+        }
+
+        if (!empty($filters['search']) && trim($filters['search']) !== '') {
+            $search = strtolower(trim($filters['search']));
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(address) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(type) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(postcode) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(search_id) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(city) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(state) LIKE ?', ["%{$search}%"])
+                    ->orWhereHas('search', function ($subQuery) use ($search) {
+                        $subQuery->where(function ($sq) use ($search) {
+                            $sq->whereRaw('LOWER(country) LIKE ?', ["%{$search}%"])
+                                ->orWhereRaw('LOWER(state) LIKE ?', ["%{$search}%"])
+                                ->orWhereRaw('LOWER(query) LIKE ?', ["%{$search}%"]);
+                        });
+                    });
+            });
+        }
+
+        if (!empty($filters['type']) && strtolower($filters['type']) !== 'all') {
+            $query->where('type', strtolower($filters['type']));
+        }
+
+        if (!empty($filters['postcode']) && trim($filters['postcode']) !== '') {
+            $query->where('postcode', 'like', '%' . trim($filters['postcode']) . '%');
+        }
+
+        if ($is_collection) {
+            return $query
+                ->orderBy('name', 'asc')
+                ->get();
+        }
+
+        return $query
             ->orderBy('name', 'asc')
             ->paginate($perPage);
     }
 
+    public function getPaginated(array $filters, int $perPage = 20): LengthAwarePaginator
+    {
+        return $this->getList($filters, $perPage, false);
+    }
+
     public function getFilteredList(array $filters): Collection
     {
-        return Institution::query()
-            ->with('search')
-            ->filter($filters)
-            ->orderBy('name', 'asc')
-            ->get();
+        return $this->getList($filters, 0, true);
     }
 
     public function findById(int $id): ?Institution
@@ -93,6 +132,13 @@ class InstitutionRepository implements InstitutionRepositoryInterface
     }
 
     public function updateInstitutionName(Institution $institution, array $data): Institution
+    {
+        $institution->update($data);
+
+        return $institution->fresh();
+    }
+
+    public function update(Institution $institution, array $data): Institution
     {
         $institution->update($data);
 

@@ -23,4 +23,6 @@ interface InstitutionRepositoryInterface
     public function getUnnamedInstitutions(int $limit = 20): Collection;
 
     public function updateInstitutionName(Institution $institution, array $data): Institution;
+
+    public function update(Institution $institution, array $data): Institution;
 }
