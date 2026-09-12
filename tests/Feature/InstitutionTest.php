@@ -70,7 +70,6 @@ test('institutions detail page renders successfully', function () {
     $response->assertSee('Map Location');
 });
 
-
 test('csv export streams valid CSV content', function () {
     $response = $this->get('/institutions/export/csv');
 
@@ -167,4 +166,50 @@ test('institution repository search filters accurately', function () {
 
     $noResults = $repo->getFilteredList(['search' => 'NonExistentTerm12345']);
     expect($noResults->count())->toBe(0);
+});
+
+test('institution create page renders successfully', function () {
+    $response = $this->get('/institutions/create');
+
+    $response->assertStatus(200);
+    $response->assertSee('Add New Institution');
+});
+
+test('institution can be created with valid data', function () {
+    $response = $this->post('/institutions', [
+        'name' => 'Harvard University',
+        'type' => 'university',
+        'city' => 'Cambridge',
+        'state' => 'Massachusetts',
+        'website' => 'https://www.harvard.edu',
+    ]);
+
+    $institution = Institution::where('name', 'Harvard University')->first();
+    expect($institution)->not->toBeNull();
+
+    $response->assertRedirect(route('institutions.show', $institution));
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseHas('institutions', [
+        'name' => 'Harvard University',
+        'type' => 'university',
+        'city' => 'Cambridge',
+        'state' => 'Massachusetts',
+    ]);
+});
+
+test('institution can be deleted', function () {
+    $institution = Institution::create([
+        'name' => 'School to Delete',
+        'type' => 'school',
+    ]);
+
+    $response = $this->delete("/institutions/{$institution->id}");
+
+    $response->assertRedirect(route('institutions.index'));
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseMissing('institutions', [
+        'id' => $institution->id,
+    ]);
 });
