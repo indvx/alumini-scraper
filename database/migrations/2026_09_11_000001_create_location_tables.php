@@ -24,17 +24,17 @@ return new class extends Migration
         if (! Schema::hasTable('states')) {
             Schema::create('states', function (Blueprint $table) {
                 $table->id();
-                $table->string('name');
+                $table->string('name')->index();
                 $table->string('state_code')->nullable();
-                $table->unsignedBigInteger('country_id');
+                $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             });
         }
 
         if (! Schema::hasTable('cities')) {
             Schema::create('cities', function (Blueprint $table) {
                 $table->id();
-                $table->string('name');
-                $table->unsignedBigInteger('state_id');
+                $table->string('name')->index();
+                $table->foreignId('state_id')->constrained('states')->cascadeOnDelete();
             });
         }
     }

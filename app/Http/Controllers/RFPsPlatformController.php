@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\RFPsPlatformRepositoryInterface;
-use App\Services\AiRFPsPlatformGeneratorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -48,87 +47,6 @@ class RFPsPlatformController extends Controller
             'publicCount' => $publicCount,
             'platformTypes' => $platformTypes,
             'countries' => $countries,
-            'aiPrompt' => $request->input('ai_prompt'),
-        ]);
-    }
-
-    public function aiSearch(Request $request, AiRFPsPlatformGeneratorService $aiGenerator)
-    {
-        $prompt = trim((string) $request->input('ai_prompt', ''));
-        $country = trim((string) $request->input('country', ''));
-        $state = trim((string) $request->input('state', ''));
-        $city = trim((string) $request->input('city', ''));
-
-        $createdCount = 0;
-
-        if ($country !== '' || $state !== '') {
-            $aiResult = $aiGenerator->generateFromPrompt($country, $state, $city ?: null);
-            $createdCount = $aiResult['createdCount'];
-        }
-
-        $filters = [
-            'search' => trim("{$city} {$state}"),
-            'platform_type' => 'all',
-            'country' => $country ?: 'all',
-            'status' => 'all',
-        ];
-
-        if ($prompt !== '') {
-            $lowercasePrompt = strtolower($prompt);
-
-            if (str_contains($lowercasePrompt, 'active')) {
-                $filters['status'] = 'active';
-            } elseif (str_contains($lowercasePrompt, 'inactive')) {
-                $filters['status'] = 'inactive';
-            }
-
-            $cleanWords = array_filter(
-                explode(' ', preg_replace('/[^\w\s]/', '', $prompt)),
-                fn($word) => ! in_array(strtolower($word), ['find', 'search', 'show', 'me', 'active', 'inactive', 'public', 'private', 'platform', 'platforms', 'portals', 'for', 'the', 'a', 'an', 'in', 'of', 'and', 'or', 'with'])
-            );
-
-            $filters['search'] = implode(' ', $cleanWords) ?: $prompt;
-        }
-
-        $platforms = $this->platformRepository->getPaginated($filters, 15);
-
-        if ($platforms->isEmpty()) {
-            $fallbackFilters = [
-                'search' => '',
-                'platform_type' => 'all',
-                'country' => 'all',
-                'status' => 'all',
-            ];
-            $platforms = $this->platformRepository->getPaginated($fallbackFilters, 15);
-        }
-        $totalCount = RFPsPlatform::count();
-        $activeCount = RFPsPlatform::where('status', 'active')->count();
-        $publicCount = RFPsPlatform::where('is_public', true)->count();
-
-        $platformTypes = RFPsPlatform::whereNotNull('platform_type')
-            ->where('platform_type', '!=', '')
-            ->distinct()
-            ->pluck('platform_type');
-
-        $countries = RFPsPlatform::whereNotNull('country')
-            ->where('country', '!=', '')
-            ->distinct()
-            ->pluck('country');
-
-        if ($createdCount > 0) {
-            session()->flash('success', "✨ AI successfully generated and added {$createdCount} new RFP platform(s) to the table!");
-        }
-
-        return view('rfps-platform.index', [
-            'platforms' => $platforms,
-            'filters' => $filters,
-            'totalCount' => $totalCount,
-            'activeCount' => $activeCount,
-            'publicCount' => $publicCount,
-            'platformTypes' => $platformTypes,
-            'countries' => $countries,
-            'aiPrompt' => $prompt,
-            'aiCreatedCount' => $createdCount,
         ]);
     }
 

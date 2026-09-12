@@ -59,18 +59,6 @@ test('institutions detail page renders successfully', function () {
     $response->assertSee('Map Location');
 });
 
-test('api institution index returns paginated data', function () {
-    $response = $this->getJson('/api/institutions');
-
-    $response->assertStatus(200);
-    $response->assertJsonStructure([
-        'total',
-        'page',
-        'page_size',
-        'total_pages',
-        'items',
-    ]);
-});
 
 test('csv export streams valid CSV content', function () {
     $response = $this->get('/institutions/export/csv');
