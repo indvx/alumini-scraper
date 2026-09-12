@@ -13,7 +13,9 @@
             </div>
             <div class="flex flex-wrap items-center gap-1 w-full sm:w-auto">
                 <button type="button" onclick="openAiSearchModal()"
-                    class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-purple-600/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50
+                    dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold flex items-center
+                    justify-center gap-2 shadow-sm transition-all">
                     <svg class="w-4 h-4 text-amber-300 animate-pulse" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
