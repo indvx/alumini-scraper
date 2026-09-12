@@ -26,7 +26,6 @@ Route::prefix('institutions')->group(function () {
 
 Route::prefix('rfps-platform')->group(function () {
     Route::get('/', [RFPsPlatformController::class, 'index'])->name('rfps-platform.index');
-    Route::get('/ai-search', [RFPsPlatformController::class, 'aiSearch'])->name('rfps-platform.ai-search');
     Route::get('/create', [RFPsPlatformController::class, 'create'])->name('rfps-platform.create');
     Route::post('/', [RFPsPlatformController::class, 'store'])->name('rfps-platform.store');
     Route::get('/export/csv', [RFPsPlatformController::class, 'exportCsv'])->name('rfps-platform.export');

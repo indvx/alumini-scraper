@@ -47,15 +47,19 @@ class InstitutionController extends Controller
                 ->where('id', '!=', $institution->id)
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->select('*', DB::raw("(
+                ->select('*', DB::raw('(
                     6371 * acos(
-                        cos(radians({$institution->latitude}))
+                        cos(radians(?))
                         * cos(radians(latitude))
-                        * cos(radians(longitude) - radians({$institution->longitude}))
-                        + sin(radians({$institution->latitude}))
+                        * cos(radians(longitude) - radians(?))
+                        + sin(radians(?))
                         * sin(radians(latitude))
                     )
-                ) AS distance"))
+                ) AS distance', [
+                    $institution->latitude,
+                    $institution->longitude,
+                    $institution->latitude,
+                ]))
                 ->orderBy('distance', 'asc')
                 ->limit(5)
                 ->get();
