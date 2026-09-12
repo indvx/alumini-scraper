@@ -9,15 +9,15 @@ use Illuminate\Database\Eloquent\Collection;
 
 class InstitutionRepository implements InstitutionRepositoryInterface
 {
-    private function getList(array $filters, int $perPage = 20, bool $is_collection = false): LengthAwarePaginator | Collection
+    private function getList(array $filters, int $perPage = 20, bool $is_collection = false): LengthAwarePaginator|Collection
     {
         $query = Institution::query()->with('search');
 
-        if (!empty($filters['search_id'])) {
+        if (! empty($filters['search_id'])) {
             $query->where('search_id', $filters['search_id']);
         }
 
-        if (!empty($filters['search']) && trim($filters['search']) !== '') {
+        if (! empty($filters['search']) && trim($filters['search']) !== '') {
             $search = strtolower(trim($filters['search']));
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
@@ -37,12 +37,12 @@ class InstitutionRepository implements InstitutionRepositoryInterface
             });
         }
 
-        if (!empty($filters['type']) && strtolower($filters['type']) !== 'all') {
+        if (! empty($filters['type']) && strtolower($filters['type']) !== 'all') {
             $query->where('type', strtolower($filters['type']));
         }
 
-        if (!empty($filters['postcode']) && trim($filters['postcode']) !== '') {
-            $query->where('postcode', 'like', '%' . trim($filters['postcode']) . '%');
+        if (! empty($filters['postcode']) && trim($filters['postcode']) !== '') {
+            $query->where('postcode', 'like', '%'.trim($filters['postcode']).'%');
         }
 
         if ($is_collection) {
@@ -80,7 +80,7 @@ class InstitutionRepository implements InstitutionRepositoryInterface
     {
         return Institution::query()
             ->where('osm_id', $osmId)
-            ->when($osmType, fn($q) => $q->where('osm_type', $osmType))
+            ->when($osmType, fn ($q) => $q->where('osm_type', $osmType))
             ->first();
     }
 

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\RFPsPlatformRepositoryInterface;
-use App\Services\AiPlatformGeneratorService;
+use App\Services\AiRFPsPlatformGeneratorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -52,22 +52,17 @@ class RFPsPlatformController extends Controller
         ]);
     }
 
-    public function aiSearch(Request $request, AiPlatformGeneratorService $aiGenerator)
+    public function aiSearch(Request $request, AiRFPsPlatformGeneratorService $aiGenerator)
     {
         $prompt = trim((string) $request->input('ai_prompt', ''));
         $country = trim((string) $request->input('country', ''));
         $state = trim((string) $request->input('state', ''));
         $city = trim((string) $request->input('city', ''));
 
-        if ($prompt === '' && ($country !== '' || $state !== '')) {
-            $locationParts = array_filter([$city, $state, $country]);
-            $prompt = 'Platforms in ' . implode(', ', $locationParts);
-        }
-
         $createdCount = 0;
 
-        if ($prompt !== '' || $country !== '' || $state !== '') {
-            $aiResult = $aiGenerator->generateFromPrompt($prompt, $country ?: null, $state ?: null, $city ?: null);
+        if ($country !== '' || $state !== '') {
+            $aiResult = $aiGenerator->generateFromPrompt($country, $state, $city ?: null);
             $createdCount = $aiResult['createdCount'];
         }
 
@@ -87,7 +82,6 @@ class RFPsPlatformController extends Controller
                 $filters['status'] = 'inactive';
             }
 
-            // Extract main descriptive keywords
             $cleanWords = array_filter(
                 explode(' ', preg_replace('/[^\w\s]/', '', $prompt)),
                 fn($word) => ! in_array(strtolower($word), ['find', 'search', 'show', 'me', 'active', 'inactive', 'public', 'private', 'platform', 'platforms', 'portals', 'for', 'the', 'a', 'an', 'in', 'of', 'and', 'or', 'with'])
