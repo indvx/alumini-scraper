@@ -52,10 +52,21 @@ test('institutions detail page renders successfully', function () {
         'postcode' => '75201',
     ]);
 
+    $institution2 = Institution::create([
+        'search_id' => $search->id,
+        'name' => 'Nearby Secondary School',
+        'type' => 'school',
+        'latitude' => 32.7800,
+        'longitude' => -96.7900,
+        'city' => 'Dallas',
+        'state' => 'Texas',
+    ]);
+
     $response = $this->get("/institutions/{$institution->id}");
 
     $response->assertStatus(200);
     $response->assertSee('Test High School');
+    $response->assertSee('Nearby Secondary School');
     $response->assertSee('Map Location');
 });
 

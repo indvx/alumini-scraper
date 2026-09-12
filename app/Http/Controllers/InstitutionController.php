@@ -44,10 +44,7 @@ class InstitutionController extends Controller
         $nearbyInstitutions = [];
         if ($institution->latitude && $institution->longitude) {
             $nearbyInstitutions = Institution::query()
-                ->where('id', '!=', $institution->id)
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->select('*', DB::raw('(
+                ->selectRaw('*, (
                     6371 * acos(
                         cos(radians(?))
                         * cos(radians(latitude))
@@ -56,10 +53,13 @@ class InstitutionController extends Controller
                         * sin(radians(latitude))
                     )
                 ) AS distance', [
-                    $institution->latitude,
-                    $institution->longitude,
-                    $institution->latitude,
-                ]))
+                    (float) $institution->latitude,
+                    (float) $institution->longitude,
+                    (float) $institution->latitude,
+                ])
+                ->where('id', '!=', $institution->id)
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
                 ->orderBy('distance', 'asc')
                 ->limit(5)
                 ->get();
