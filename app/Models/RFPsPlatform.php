@@ -67,7 +67,7 @@ class RFPsPlatform extends Model
                 $q->where('platform_type', $filters['platform_type']);
             })
             ->when(($filters['country'] ?? 'all') !== 'all' && ! empty($filters['country']), function ($q) use ($filters) {
-                $q->where('country', $filters['country']);
+                $q->where('country', 'like', "%{$filters['country']}%");
             })
             ->when(($filters['status'] ?? 'all') !== 'all' && ! empty($filters['status']), function ($q) use ($filters) {
                 $q->where('status', $filters['status']);

@@ -16,8 +16,7 @@ use App\Services\OpenAIService;
 //     expect($response)->not->toBeNull();
 // });
 
-
-test("get rfps plateforms test", function () {
+test('get rfps plateforms test', function () {
     $service = new OpenAIService();
 
     $response = $service->client()->responses()->create([
@@ -88,5 +87,5 @@ test("get rfps plateforms test", function () {
         ],
     ]);
 
-    dd($response);
-});
+    expect($response->outputText)->not->toBeNull();
+})->skip('Requires live OpenAI API connection');

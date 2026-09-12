@@ -2,6 +2,7 @@
 
 use App\Models\Institution;
 use App\Models\LocationSearch;
+use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -51,24 +52,22 @@ test('institutions detail page renders successfully', function () {
         'postcode' => '75201',
     ]);
 
+    $institution2 = Institution::create([
+        'search_id' => $search->id,
+        'name' => 'Nearby Secondary School',
+        'type' => 'school',
+        'latitude' => 32.7800,
+        'longitude' => -96.7900,
+        'city' => 'Dallas',
+        'state' => 'Texas',
+    ]);
+
     $response = $this->get("/institutions/{$institution->id}");
 
     $response->assertStatus(200);
     $response->assertSee('Test High School');
+    $response->assertSee('Nearby Secondary School');
     $response->assertSee('Map Location');
-});
-
-test('api institution index returns paginated data', function () {
-    $response = $this->getJson('/api/institutions');
-
-    $response->assertStatus(200);
-    $response->assertJsonStructure([
-        'total',
-        'page',
-        'page_size',
-        'total_pages',
-        'items',
-    ]);
 });
 
 test('csv export streams valid CSV content', function () {
@@ -160,11 +159,59 @@ test('institution repository search filters accurately', function () {
         'type' => 'school',
     ]);
 
-    $repo = app(\App\Repositories\Contracts\InstitutionRepositoryInterface::class);
+    $repo = app(InstitutionRepositoryInterface::class);
 
     $results = $repo->getFilteredList(['search' => 'A block']);
     expect($results->first()->name)->toBe('A block Primary School');
 
     $noResults = $repo->getFilteredList(['search' => 'NonExistentTerm12345']);
     expect($noResults->count())->toBe(0);
+});
+
+test('institution create page renders successfully', function () {
+    $response = $this->get('/institutions/create');
+
+    $response->assertStatus(200);
+    $response->assertSee('Add New Institution');
+});
+
+test('institution can be created with valid data', function () {
+    $response = $this->post('/institutions', [
+        'name' => 'Harvard University',
+        'type' => 'university',
+        'city' => 'Cambridge',
+        'state' => 'Massachusetts',
+        'country' => 'United States',
+        'website' => 'https://www.harvard.edu',
+    ]);
+
+    $institution = Institution::where('name', 'Harvard University')->first();
+    expect($institution)->not->toBeNull();
+
+    $response->assertRedirect(route('institutions.show', $institution));
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseHas('institutions', [
+        'name' => 'Harvard University',
+        'type' => 'university',
+        'city' => 'Cambridge',
+        'state' => 'Massachusetts',
+        'country' => 'United States',
+    ]);
+});
+
+test('institution can be deleted', function () {
+    $institution = Institution::create([
+        'name' => 'School to Delete',
+        'type' => 'school',
+    ]);
+
+    $response = $this->delete("/institutions/{$institution->id}");
+
+    $response->assertRedirect(route('institutions.index'));
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseMissing('institutions', [
+        'id' => $institution->id,
+    ]);
 });

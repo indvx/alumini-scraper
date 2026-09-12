@@ -12,15 +12,6 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-1 w-full sm:w-auto">
-                <button type="button" onclick="openAiSearchModal()"
-                    class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-purple-600/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
-                    <svg class="w-4 h-4 text-amber-300 animate-pulse" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                    <span>Add by AI</span>
-                </button>
                 <a href="{{ route('rfps-platform.export', request()->all()) }}"
                     class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition-all">
                     <svg class="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor"
@@ -125,6 +116,7 @@
                                 <th width="10%" class="py-3.5 px-4">Type</th>
                                 <th width="10%" class="py-3.5 px-4">Location</th>
                                 <th width="10%" class="py-3.5 px-4">Access</th>
+                                <th width="20%" class="py-3.5 px-4">Login Required</th>
                                 <th width="10%" class="py-3.5 px-4">Status</th>
                                 <th width="10%" class="py-3.5 px-4 text-right">Actions</th>
                             </tr>
@@ -137,9 +129,10 @@
                                         </div>
                                     </td>
                                     <td class="py-4 px-4">
-                                        <div class="font-bold text-slate-900 dark:text-white">
+                                        <div class="font-bold max-w-[200px] truncate text-slate-900 dark:text-white">
                                             <a href="{{ route('rfps-platform.show', $p) }}"
-                                                class="hover:text-rose-600 transition-colors">
+                                                class="hover:text-rose-600 transition-colors"
+                                                title="{{ $p->name }}">
                                                 {{ $p->name }}
                                             </a>
                                         </div>
@@ -163,14 +156,37 @@
                                         @endif
                                     </td>
                                     <td class="py-4 px-4">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                            {{ $p->platform_type ?: 'General' }}
-                                        </span>
-                                        @if ($p->institution_type)
-                                            <div class="text-xs text-slate-500 mt-1">{{ $p->institution_type }}
+                                        <div class="flex flex-col gap-1">
+                                            <div>
+                                                <span
+                                                    class="inline-block max-w-[200px] truncate px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 align-middle"
+                                                    title="{{ $p->platform_type ?: 'General' }}">
+                                                    {{ $p->platform_type ?: 'General' }}
+                                                </span>
                                             </div>
-                                        @endif
+                                            @if ($p->institution_type)
+                                                @php
+                                                    $types = array_filter(
+                                                        array_map('trim', explode(',', $p->institution_type)),
+                                                    );
+                                                @endphp
+                                                <div class="flex flex-wrap gap-1 max-w-[240px]">
+                                                    @foreach (array_slice($types, 0, 2) as $t)
+                                                        <span
+                                                            class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                                            {{ $t }}
+                                                        </span>
+                                                    @endforeach
+                                                    @if (count($types) > 2)
+                                                        <span
+                                                            class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-help"
+                                                            title="{{ implode(', ', array_slice($types, 2)) }}">
+                                                            +{{ count($types) - 2 }} more
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="py-4 px-4 text-slate-600 dark:text-slate-300 text-xs">
                                         {{ implode(', ', array_filter([$p->city, $p->state, $p->country])) ?: 'N/A' }}
@@ -188,13 +204,10 @@
                                                     Private
                                                 </span>
                                             @endif
-                                            @if ($p->requires_login)
-                                                <span
-                                                    class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                                                    Login Required
-                                                </span>
-                                            @endif
                                         </div>
+                                    </td>
+                                    <td class="py-4 px-4 font-bold">
+                                        {{ $p->requires_login ? 'Yes' : 'No' }}
                                     </td>
                                     <td class="py-4 px-4">
                                         @if ($p->status === 'active')
@@ -288,156 +301,4 @@
         @endif
     </div>
     </div>
-
-    <!-- AI Search Modal -->
-    <div id="aiSearchModal"
-        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-        <div
-            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full shadow-2xl relative space-y-6">
-
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="p-2 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white">Find Platforms by Location (AI)
-                        </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Select Country &amp; State to discover or
-                            generate local procurement platforms.</p>
-                    </div>
-                </div>
-                <button type="button" onclick="closeAiSearchModal()"
-                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form action="{{ route('rfps-platform.ai-search') }}" method="GET" class="space-y-4"
-                id="aiSearchForm">
-                <!-- Location Fields in One Line -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
-                    <!-- Country Field (Mandatory) -->
-                    <div class="relative">
-                        <label for="aiCountryInput"
-                            class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                            Country <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="aiCountryInput" name="country" required autocomplete="off"
-                            placeholder="Select Country..."
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" />
-                        <input type="hidden" id="aiCountryId" name="country_id" />
-
-                        <!-- Suggestions Dropdown -->
-                        <div id="countrySuggestions"
-                            class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
-                        </div>
-                    </div>
-
-                    <!-- State Field (Mandatory) -->
-                    <div id="stateContainer" class="relative">
-                        <label for="aiStateInput"
-                            class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                            State / Province <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="aiStateInput" name="state" required autocomplete="off"
-                            placeholder="Select State..."
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" />
-                        <input type="hidden" id="aiStateId" name="state_id" />
-
-                        <!-- Suggestions Dropdown -->
-                        <div id="stateSuggestions"
-                            class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
-                        </div>
-                    </div>
-
-                    <!-- City Field (Optional) -->
-                    <div id="cityContainer" class="relative">
-                        <label for="aiCityInput"
-                            class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                            City <span class="text-slate-400 font-normal lowercase">(optional)</span>
-                        </label>
-                        <input type="text" id="aiCityInput" name="city" autocomplete="off"
-                            placeholder="Select City..."
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" />
-                        <input type="hidden" id="aiCityId" name="city_id" />
-
-                        <!-- Suggestions Dropdown -->
-                        <div id="citySuggestions"
-                            class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
-                    <button type="button" onclick="closeAiSearchModal()"
-                        class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold shadow-md shadow-purple-600/20 transition-all flex items-center gap-2">
-                        <span>Find Platforms</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        let aiLocationCascade = null;
-
-        function openAiSearchModal() {
-            document.getElementById('aiSearchModal').classList.remove('hidden');
-            if (aiLocationCascade) {
-                aiLocationCascade.fetchCountries('');
-            }
-        }
-
-        function closeAiSearchModal() {
-            document.getElementById('aiSearchModal').classList.add('hidden');
-            if (aiLocationCascade) {
-                aiLocationCascade.closeAllSuggestions();
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof window.initLocationCascade === 'function') {
-                aiLocationCascade = window.initLocationCascade({
-                    countryInputId: 'aiCountryInput',
-                    countryIdInputId: 'aiCountryId',
-                    countrySuggestionsId: 'countrySuggestions',
-
-                    stateContainerId: 'stateContainer',
-                    stateInputId: 'aiStateInput',
-                    stateIdInputId: 'aiStateId',
-                    stateSuggestionsId: 'stateSuggestions',
-                    stateRequired: true,
-
-                    cityContainerId: 'cityContainer',
-                    cityInputId: 'aiCityInput',
-                    cityIdInputId: 'aiCityId',
-                    citySuggestionsId: 'citySuggestions',
-
-                    hoverClass: 'hover:bg-purple-50 dark:hover:bg-slate-700/80',
-                    containerId: 'aiSearchModal',
-                });
-            }
-        });
-
-        // Close modal on escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeAiSearchModal();
-            }
-        });
-    </script>
 </x-layouts.app>

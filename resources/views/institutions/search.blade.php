@@ -10,14 +10,23 @@
                         Institutions List
                     </h2>
                 </div>
-                <a href="{{ route('institutions.export', request()->all()) }}"
-                    class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2 shadow-sm">
-                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Export CSV
-                </a>
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="{{ route('institutions.export', request()->all()) }}"
+                        class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export CSV
+                    </a>
+                    <a href="{{ route('institutions.create') }}"
+                        class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold flex items-center gap-2 shadow-md shadow-rose-600/20 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Add Institution</span>
+                    </a>
+                </div>
             </div>
             <!-- Filter Form -->
             <div
@@ -93,6 +102,14 @@
                                             #{{ $inst->osm_id }}</span>
                                     @endif
                                 </div>
+                                <div class="flex items-center justify-between">
+                                    @if ($inst->latitude && $inst->longitude)
+                                        <span class="text-[10px] text-slate-400 font-mono">Coordinates:
+                                            {{ $inst->latitude }},
+                                            {{ $inst->longitude }}
+                                        </span>
+                                    @endif
+                                </div>
 
                                 <h3
                                     class="text-base font-bold text-slate-900 dark:text-white hover:text-rose-600 transition-colors line-clamp-2">
@@ -101,9 +118,9 @@
                                     </a>
                                 </h3>
 
-                                @if ($inst->address || $inst->city || $inst->state)
+                                @if ($inst->address || $inst->city || $inst->state || $inst->country)
                                     <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
-                                        {{ $inst->address ?: implode(', ', array_filter([$inst->city, $inst->state, $inst->postcode])) }}
+                                        {{ $inst->address ?: implode(', ', array_filter([$inst->city, $inst->state, $inst->country, $inst->postcode])) }}
                                     </p>
                                 @endif
                             </div>
@@ -133,13 +150,31 @@
                                     @endif
                                 </div>
 
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-2">
                                     <a href="{{ route('institutions.edit', $inst->id) }}"
-                                        class="text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium">
-                                        Edit
+                                        class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                        title="Edit Institution">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
                                     </a>
+                                    <form action="{{ route('institutions.destroy', $inst->id) }}" method="POST"
+                                        onsubmit="return confirm('Are you sure you want to delete this institution?');"
+                                        class="inline-flex items-center">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                                            title="Delete Institution">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
                                     <a href="{{ route('institutions.show', $inst->id) }}"
-                                        class="text-rose-600 font-bold hover:underline">
+                                        class="text-xs font-bold text-rose-600 hover:underline">
                                         View Details
                                     </a>
                                 </div>

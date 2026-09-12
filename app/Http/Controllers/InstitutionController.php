@@ -35,6 +35,39 @@ class InstitutionController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        $searches = LocationSearch::query()->latest('searched_at')->limit(50)->get();
+
+        return view('institutions.create', [
+            'searches' => $searches,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|in:school,college,university,kindergarten,other',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
+            'postcode' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:50',
+            'website' => 'nullable|url|max:255',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'search_id' => 'nullable|exists:location_searches,id',
+        ]);
+
+        $institution = $this->institutionRepository->create($validated);
+
+        return redirect()
+            ->route('institutions.show', $institution)
+            ->with('success', "Institution '{$institution->name}' created successfully.");
+    }
+
     public function show(Institution $institution)
     {
         $institution->update(['last_view' => now()]);
@@ -44,18 +77,22 @@ class InstitutionController extends Controller
         $nearbyInstitutions = [];
         if ($institution->latitude && $institution->longitude) {
             $nearbyInstitutions = Institution::query()
+                ->selectRaw('*, (
+                    6371 * acos(
+                        cos(radians(?))
+                        * cos(radians(latitude))
+                        * cos(radians(longitude) - radians(?))
+                        + sin(radians(?))
+                        * sin(radians(latitude))
+                    )
+                ) AS distance', [
+                    (float) $institution->latitude,
+                    (float) $institution->longitude,
+                    (float) $institution->latitude,
+                ])
                 ->where('id', '!=', $institution->id)
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->select('*', DB::raw("(
-                    6371 * acos(
-                        cos(radians({$institution->latitude}))
-                        * cos(radians(latitude))
-                        * cos(radians(longitude) - radians({$institution->longitude}))
-                        + sin(radians({$institution->latitude}))
-                        * sin(radians(latitude))
-                    )
-                ) AS distance"))
                 ->orderBy('distance', 'asc')
                 ->limit(5)
                 ->get();
@@ -82,6 +119,7 @@ class InstitutionController extends Controller
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
             'postcode' => 'nullable|string|max:50',
             'phone' => 'nullable|string|max:50',
             'website' => 'nullable|url|max:255',
@@ -94,6 +132,16 @@ class InstitutionController extends Controller
         return redirect()
             ->route('institutions.show', $institution)
             ->with('success', "Institution '{$institution->name}' updated successfully.");
+    }
+
+    public function destroy(Institution $institution): RedirectResponse
+    {
+        $name = $institution->name;
+        $this->institutionRepository->delete($institution);
+
+        return redirect()
+            ->route('institutions.index')
+            ->with('success', "Institution '{$name}' deleted successfully.");
     }
 
     public function exportCsv(Request $request): StreamedResponse
@@ -114,7 +162,7 @@ class InstitutionController extends Controller
 
         $callback = function () use ($institutions) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['ID', 'Name', 'Type', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Postcode', 'Phone', 'Website', 'OSM ID']);
+            fputcsv($file, ['ID', 'Name', 'Type', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Postcode', 'Phone', 'Website', 'OSM ID']);
 
             foreach ($institutions as $s) {
                 fputcsv($file, [
@@ -126,6 +174,7 @@ class InstitutionController extends Controller
                     $s->address,
                     $s->city,
                     $s->state,
+                    $s->country,
                     $s->postcode,
                     $s->phone,
                     $s->website,

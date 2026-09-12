@@ -1,11 +1,10 @@
 <?php
 
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\LocationLookupController;
 use App\Http\Controllers\LocationSearchController;
 use App\Http\Controllers\RFPsPlatformController;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\LocationLookupController;
 
 Route::view('/', 'welcome')->name('home');
 Route::get('/dashboard', [InstitutionController::class, 'dashboard'])->name('dashboard');
@@ -18,16 +17,18 @@ Route::prefix('locations')->group(function () {
 
 Route::prefix('institutions')->group(function () {
     Route::get('/', [InstitutionController::class, 'index'])->name('institutions.index');
+    Route::get('/create', [InstitutionController::class, 'create'])->name('institutions.create');
+    Route::post('/', [InstitutionController::class, 'store'])->name('institutions.store');
     Route::post('/search', [LocationSearchController::class, 'search'])->name('institutions.search');
     Route::get('/export/csv', [InstitutionController::class, 'exportCsv'])->name('institutions.export');
     Route::get('/{institution}', [InstitutionController::class, 'show'])->name('institutions.show');
     Route::get('/{institution}/edit', [InstitutionController::class, 'edit'])->name('institutions.edit');
     Route::put('/{institution}', [InstitutionController::class, 'update'])->name('institutions.update');
+    Route::delete('/{institution}', [InstitutionController::class, 'destroy'])->name('institutions.destroy');
 });
 
 Route::prefix('rfps-platform')->group(function () {
     Route::get('/', [RFPsPlatformController::class, 'index'])->name('rfps-platform.index');
-    Route::get('/ai-search', [RFPsPlatformController::class, 'aiSearch'])->name('rfps-platform.ai-search');
     Route::get('/create', [RFPsPlatformController::class, 'create'])->name('rfps-platform.create');
     Route::post('/', [RFPsPlatformController::class, 'store'])->name('rfps-platform.store');
     Route::get('/export/csv', [RFPsPlatformController::class, 'exportCsv'])->name('rfps-platform.export');

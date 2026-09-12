@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use OpenAI;
-use OpenAI\Client;
+use OpenAI\Contracts\ClientContract;
 
 class OpenAIService
 {
-    protected Client $client;
+    protected ClientContract $client;
 
     public function __construct()
     {
@@ -16,7 +16,7 @@ class OpenAIService
         );
     }
 
-    public function client(): Client
+    public function client(): ClientContract
     {
         return $this->client;
     }

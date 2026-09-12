@@ -12,12 +12,7 @@ class OverpassService
         'https://overpass-api.de/api/interpreter',
     ];
 
-    public function fetchSchoolsByArea(int $areaId, ?string $searchState = null, ?string $searchCountry = null): array
-    {
-        return $this->fetchInstitutionsByArea($areaId, $searchState, $searchCountry);
-    }
-
-    public function fetchInstitutionsByArea(int $areaId, ?string $searchState = null, ?string $searchCountry = null): array
+    public function fetchInstitutionsByArea(int $areaId, ?string $state = null, ?string $country = null): array
     {
         $overpassQuery = <<<OVERPASS
             [out:json][timeout:180];
@@ -40,7 +35,7 @@ class OverpassService
                 ]);
 
                 if ($response->successful()) {
-                    return $this->parseElements($response->json('elements') ?? [], $searchState, $searchCountry);
+                    return $this->parseElements($response->json('elements') ?? [], $state, $country);
                 }
             } catch (Exception $e) {
                 $lastError = $e->getMessage();
@@ -50,7 +45,7 @@ class OverpassService
         throw new Exception("All Overpass endpoints failed. Last error: {$lastError}");
     }
 
-    public function parseElements(array $elements, ?string $searchState = null, ?string $searchCountry = null): array
+    public function parseElements(array $elements, ?string $state = null, ?string $country = null): array
     {
         $records = [];
         foreach ($elements as $el) {
@@ -61,8 +56,8 @@ class OverpassService
             $lat = $el['lat'] ?? $el['center']['lat'] ?? null;
             $lon = $el['lon'] ?? $el['center']['lon'] ?? null;
 
-            $elementState = $tags['addr:state'] ?? $tags['is_in:state'] ?? $searchState;
-            $elementCountry = $tags['addr:country'] ?? $tags['is_in:country'] ?? $tags['country'] ?? $searchCountry;
+            $elementState = $tags['addr:state'] ?? $tags['is_in:state'] ?? $state;
+            $elementCountry = $tags['addr:country'] ?? $tags['is_in:country'] ?? $tags['country'] ?? $country;
 
             $addressParts = array_filter([
                 $tags['addr:housenumber'] ?? null,
@@ -87,6 +82,7 @@ class OverpassService
                 'address' => $address,
                 'city' => $tags['addr:city'] ?? null,
                 'state' => $elementState,
+                'country' => $elementCountry,
                 'postcode' => $tags['addr:postcode'] ?? null,
                 'phone' => $tags['phone'] ?? $tags['contact:phone'] ?? null,
                 'website' => $tags['website'] ?? $tags['contact:website'] ?? null,
