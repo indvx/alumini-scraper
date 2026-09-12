@@ -137,9 +137,10 @@
                                         </div>
                                     </td>
                                     <td class="py-4 px-4">
-                                        <div class="font-bold text-slate-900 dark:text-white">
+                                        <div class="font-bold max-w-[200px] truncate text-slate-900 dark:text-white">
                                             <a href="{{ route('rfps-platform.show', $p) }}"
-                                                class="hover:text-rose-600 transition-colors">
+                                                class="hover:text-rose-600 transition-colors"
+                                                title="{{ $p->name }}">
                                                 {{ $p->name }}
                                             </a>
                                         </div>
@@ -163,14 +164,37 @@
                                         @endif
                                     </td>
                                     <td class="py-4 px-4">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                            {{ $p->platform_type ?: 'General' }}
-                                        </span>
-                                        @if ($p->institution_type)
-                                            <div class="text-xs text-slate-500 mt-1">{{ $p->institution_type }}
+                                        <div class="flex flex-col gap-1">
+                                            <div>
+                                                <span
+                                                    class="inline-block max-w-[200px] truncate px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 align-middle"
+                                                    title="{{ $p->platform_type ?: 'General' }}">
+                                                    {{ $p->platform_type ?: 'General' }}
+                                                </span>
                                             </div>
-                                        @endif
+                                            @if ($p->institution_type)
+                                                @php
+                                                    $types = array_filter(
+                                                        array_map('trim', explode(',', $p->institution_type)),
+                                                    );
+                                                @endphp
+                                                <div class="flex flex-wrap gap-1 max-w-[240px]">
+                                                    @foreach (array_slice($types, 0, 3) as $t)
+                                                        <span
+                                                            class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                                            {{ $t }}
+                                                        </span>
+                                                    @endforeach
+                                                    @if (count($types) > 3)
+                                                        <span
+                                                            class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-help"
+                                                            title="{{ implode(', ', array_slice($types, 3)) }}">
+                                                            +{{ count($types) - 3 }} more
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="py-4 px-4 text-slate-600 dark:text-slate-300 text-xs">
                                         {{ implode(', ', array_filter([$p->city, $p->state, $p->country])) ?: 'N/A' }}
@@ -379,13 +403,14 @@
                 </div>
 
                 <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
-                    <button type="button" onclick="closeAiSearchModal()"
+                    <button type="button" onclick="closeAiSearchModal()" id="aiSearchCancelBtn"
                         class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold transition-colors">
                         Cancel
                     </button>
-                    <button type="submit"
+                    <button type="submit" id="aiSearchSubmitBtn"
                         class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold shadow-md shadow-purple-600/20 transition-all flex items-center gap-2">
-                        <span>Find Platforms</span>
+                        <x-loader id="aiSearchSpinner" class="hidden text-white" />
+                        <span id="aiSearchSubmitText">Find Platforms</span>
                     </button>
                 </div>
             </form>
@@ -429,6 +454,31 @@
 
                     hoverClass: 'hover:bg-purple-50 dark:hover:bg-slate-700/80',
                     containerId: 'aiSearchModal',
+                });
+            }
+
+            const aiSearchForm = document.getElementById('aiSearchForm');
+            if (aiSearchForm) {
+                aiSearchForm.addEventListener('submit', function() {
+                    const submitBtn = document.getElementById('aiSearchSubmitBtn');
+                    const cancelBtn = document.getElementById('aiSearchCancelBtn');
+                    const spinner = document.getElementById('aiSearchSpinner');
+                    const submitText = document.getElementById('aiSearchSubmitText');
+
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-75', 'cursor-not-allowed', 'pointer-events-none');
+                    }
+                    if (cancelBtn) {
+                        cancelBtn.disabled = true;
+                        cancelBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                    }
+                    if (spinner) {
+                        spinner.classList.remove('hidden');
+                    }
+                    if (submitText) {
+                        submitText.textContent = 'Searching with AI...';
+                    }
                 });
             }
         });

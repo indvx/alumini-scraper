@@ -31,6 +31,26 @@ class RFPsPlatform extends Model
         'last_checked' => 'datetime',
     ];
 
+    public function setInstitutionTypeAttribute(mixed $value): void
+    {
+        if (is_array($value)) {
+            $filtered = array_filter($value, fn($v) => is_scalar($v) && trim((string) $v) !== '');
+            $this->attributes['institution_type'] = ! empty($filtered) ? implode(', ', $filtered) : null;
+        } else {
+            $this->attributes['institution_type'] = $value;
+        }
+    }
+
+    public function setCoverageAttribute(mixed $value): void
+    {
+        if (is_array($value)) {
+            $filtered = array_filter($value, fn($v) => is_scalar($v) && trim((string) $v) !== '');
+            $this->attributes['coverage'] = ! empty($filtered) ? implode(', ', $filtered) : null;
+        } else {
+            $this->attributes['coverage'] = $value;
+        }
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
@@ -67,7 +87,7 @@ class RFPsPlatform extends Model
                 $q->where('platform_type', $filters['platform_type']);
             })
             ->when(($filters['country'] ?? 'all') !== 'all' && ! empty($filters['country']), function ($q) use ($filters) {
-                $q->where('country', $filters['country']);
+                $q->where('country', 'like', "%{$filters['country']}%");
             })
             ->when(($filters['status'] ?? 'all') !== 'all' && ! empty($filters['status']), function ($q) use ($filters) {
                 $q->where('status', $filters['status']);

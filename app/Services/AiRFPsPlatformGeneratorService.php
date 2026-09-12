@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\RFPsPlatform;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AiRFPsPlatformGeneratorService
@@ -96,13 +97,27 @@ class AiRFPsPlatformGeneratorService
 
         $createdPlatforms = [];
 
+        $formatString = function (mixed $value): ?string {
+            if (is_array($value)) {
+                $filtered = array_filter($value, fn ($v) => is_scalar($v) && trim((string) $v) !== '');
+                return ! empty($filtered) ? implode(', ', $filtered) : null;
+            }
+
+            if (is_scalar($value)) {
+                $str = trim((string) $value);
+                return $str !== '' ? $str : null;
+            }
+
+            return null;
+        };
+
         foreach ($candidates as $candidate) {
             if (! is_array($candidate)) {
                 continue;
             }
 
-            $name = $candidate['name'] ?? null;
-            $domain = $candidate['domain'] ?? null;
+            $name = $formatString($candidate['name'] ?? null);
+            $domain = $formatString($candidate['domain'] ?? null);
 
             if (! $name && ! $domain) {
                 continue;
@@ -117,8 +132,27 @@ class AiRFPsPlatformGeneratorService
                 }
             })->first();
 
+            Log::info('Existing platform', [
+                'existing' => $existing,
+                'candidate' => $candidate,
+            ]);
+
             if (! $existing) {
-                $createdPlatforms[] = RFPsPlatform::create($candidate);
+                $platformData = [
+                    'name' => $name,
+                    'domain' => $domain,
+                    'url' => $formatString($candidate['url'] ?? null),
+                    'platform_type' => $formatString($candidate['platform_type'] ?? null),
+                    'country' => $formatString($candidate['country'] ?? null),
+                    'state' => $formatString($candidate['state'] ?? null),
+                    'city' => $formatString($candidate['city'] ?? null),
+                    'institution_type' => $formatString($candidate['institution_type'] ?? null),
+                    'coverage' => $formatString($candidate['coverage'] ?? null),
+                    'is_public' => isset($candidate['is_public']) ? filter_var($candidate['is_public'], FILTER_VALIDATE_BOOLEAN) : false,
+                    'requires_login' => isset($candidate['requires_login']) ? filter_var($candidate['requires_login'], FILTER_VALIDATE_BOOLEAN) : false,
+                ];
+
+                $createdPlatforms[] = RFPsPlatform::create($platformData);
             }
         }
 

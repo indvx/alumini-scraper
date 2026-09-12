@@ -3,6 +3,7 @@
 use App\Services\AiRFPsPlatformGeneratorService;
 use App\Services\OpenAIService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use OpenAI\Client;
 use OpenAI\Contracts\ClientContract;
 use OpenAI\Contracts\Resources\ResponsesContract;
 use OpenAI\Responses\Responses\CreateResponse;
@@ -128,5 +129,70 @@ test('generateFromPrompt handles markdown code fences in outputText', function (
     $this->assertDatabaseHas('rfps_platforms', [
         'name' => 'AggieBid Portal',
         'domain' => 'tamus.edu',
+    ]);
+});
+
+test('generateFromPrompt handles array values in candidate fields without throwing array to string conversion error', function () {
+    $mockJson = json_encode([
+        [
+            'name' => 'Government e-Marketplace (GeM)',
+            'domain' => 'gem.gov.in',
+            'url' => 'https://gem.gov.in/',
+            'platform_type' => 'India government procurement marketplace',
+            'country' => 'India',
+            'state' => 'Madhya Pradesh',
+            'city' => 'Bhopal',
+            'institution_type' => ['universities', 'colleges', 'schools'],
+            'coverage' => ['Statewide', 'National'],
+            'is_public' => true,
+            'requires_login' => true,
+            'evidence_url' => ['https://mms.iiti.ac.in/', 'https://iiitm.ac.in/tenders'],
+            'institutions_using_it' => ['IIT Indore', 'IIITM Gwalior'],
+            'confidence' => 'high',
+        ],
+    ]);
+
+    $createResponse = CreateResponse::fake([
+        'output' => [
+            [
+                'type' => 'message',
+                'id' => 'msg_789',
+                'status' => 'completed',
+                'role' => 'assistant',
+                'content' => [
+                    [
+                        'type' => 'output_text',
+                        'text' => $mockJson,
+                        'annotations' => [],
+                    ],
+                ],
+            ],
+        ],
+    ], strategy: OverrideStrategy::Replace);
+
+    $responsesMock = Mockery::mock(ResponsesContract::class);
+    $responsesMock->shouldReceive('create')
+        ->once()
+        ->andReturn($createResponse);
+
+    $clientMock = Mockery::mock(ClientContract::class);
+    $clientMock->shouldReceive('responses')
+        ->once()
+        ->andReturn($responsesMock);
+
+    $openAiServiceMock = Mockery::mock(OpenAIService::class);
+    $openAiServiceMock->shouldReceive('client')
+        ->once()
+        ->andReturn($clientMock);
+
+    $service = new AiRFPsPlatformGeneratorService($openAiServiceMock);
+    $result = $service->generateFromPrompt('India', 'Madhya Pradesh');
+
+    expect($result['createdCount'])->toBe(1);
+    $this->assertDatabaseHas('rfps_platforms', [
+        'name' => 'Government e-Marketplace (GeM)',
+        'domain' => 'gem.gov.in',
+        'institution_type' => 'universities, colleges, schools',
+        'coverage' => 'Statewide, National',
     ]);
 });

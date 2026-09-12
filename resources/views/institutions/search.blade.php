@@ -93,6 +93,14 @@
                                             #{{ $inst->osm_id }}</span>
                                     @endif
                                 </div>
+                                <div class="flex items-center justify-between">
+                                    @if ($inst->latitude && $inst->longitude)
+                                        <span class="text-[10px] text-slate-400 font-mono">Coordinates:
+                                            {{ $inst->latitude }},
+                                            {{ $inst->longitude }}
+                                        </span>
+                                    @endif
+                                </div>
 
                                 <h3
                                     class="text-base font-bold text-slate-900 dark:text-white hover:text-rose-600 transition-colors line-clamp-2">
