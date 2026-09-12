@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use App\Models\LocationSearch;
+use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use App\Repositories\Contracts\LocationSearchRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
@@ -72,35 +73,13 @@ class InstitutionController extends Controller
     {
         $institution->update(['last_view' => now()]);
         $institution->refresh();
-        $institution->load('search');
+        $institution->load(['search', 'rfpPlatforms']);
 
-        $nearbyInstitutions = [];
-        if ($institution->latitude && $institution->longitude) {
-            $nearbyInstitutions = Institution::query()
-                ->selectRaw('*, (
-                    6371 * acos(
-                        cos(radians(?))
-                        * cos(radians(latitude))
-                        * cos(radians(longitude) - radians(?))
-                        + sin(radians(?))
-                        * sin(radians(latitude))
-                    )
-                ) AS distance', [
-                    (float) $institution->latitude,
-                    (float) $institution->longitude,
-                    (float) $institution->latitude,
-                ])
-                ->where('id', '!=', $institution->id)
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->orderBy('distance', 'asc')
-                ->limit(5)
-                ->get();
-        }
+        $allRfpPlatforms = RFPsPlatform::query()->orderBy('name', 'asc')->get();
 
         return view('institutions.show', [
             'institution' => $institution,
-            'nearbyInstitutions' => $nearbyInstitutions,
+            'allRfpPlatforms' => $allRfpPlatforms,
         ]);
     }
 

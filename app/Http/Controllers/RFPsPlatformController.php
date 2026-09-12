@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Institution;
 use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\RFPsPlatformRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
@@ -82,8 +83,12 @@ class RFPsPlatformController extends Controller
 
     public function show(RFPsPlatform $rfpsPlatform)
     {
+        $rfpsPlatform->load('institutions');
+        $allInstitutions = Institution::query()->orderBy('name', 'asc')->get();
+
         return view('rfps-platform.show', [
             'platform' => $rfpsPlatform,
+            'allInstitutions' => $allInstitutions,
         ]);
     }
 

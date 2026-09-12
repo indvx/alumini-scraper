@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Institution extends Model
 {
@@ -39,6 +40,23 @@ class Institution extends Model
     public function search(): BelongsTo
     {
         return $this->belongsTo(LocationSearch::class, 'search_id');
+    }
+
+    public function rfpPlatforms(): BelongsToMany
+    {
+        return $this->belongsToMany(RFPsPlatform::class, 'institution_rfp_platform', 'institution_id', 'rfps_platform_id')
+            ->withPivot([
+                'id',
+                'confidence',
+                'status',
+                'discovery_method',
+                'source_title',
+                'source_url',
+                'first_verified_at',
+                'last_verified_at',
+                'notes',
+            ])
+            ->withTimestamps();
     }
 
     public function scopeFilter(Builder $query, array $filters): Builder

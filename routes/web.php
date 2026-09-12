@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\InstitutionRFPPlatformController;
 use App\Http\Controllers\LocationLookupController;
 use App\Http\Controllers\LocationSearchController;
 use App\Http\Controllers\RFPsPlatformController;
@@ -25,6 +26,8 @@ Route::prefix('institutions')->group(function () {
     Route::get('/{institution}/edit', [InstitutionController::class, 'edit'])->name('institutions.edit');
     Route::put('/{institution}', [InstitutionController::class, 'update'])->name('institutions.update');
     Route::delete('/{institution}', [InstitutionController::class, 'destroy'])->name('institutions.destroy');
+    Route::post('/{institution}/rfp-platforms', [InstitutionRFPPlatformController::class, 'storeInstitutionPlatform'])->name('institutions.rfp-platforms.store');
+    Route::delete('/{institution}/rfp-platforms/{rfpsPlatform}', [InstitutionRFPPlatformController::class, 'destroyInstitutionPlatform'])->name('institutions.rfp-platforms.destroy');
 });
 
 Route::prefix('rfps-platform')->group(function () {
@@ -36,4 +39,6 @@ Route::prefix('rfps-platform')->group(function () {
     Route::get('/{rfpsPlatform}/edit', [RFPsPlatformController::class, 'edit'])->name('rfps-platform.edit');
     Route::put('/{rfpsPlatform}', [RFPsPlatformController::class, 'update'])->name('rfps-platform.update');
     Route::delete('/{rfpsPlatform}', [RFPsPlatformController::class, 'destroy'])->name('rfps-platform.destroy');
+    Route::post('/{rfpsPlatform}/institutions', [InstitutionRFPPlatformController::class, 'storePlatformInstitution'])->name('rfps-platform.institutions.store');
+    Route::delete('/{rfpsPlatform}/institutions/{institution}', [InstitutionRFPPlatformController::class, 'destroyPlatformInstitution'])->name('rfps-platform.institutions.destroy');
 });

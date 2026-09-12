@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class RFPsPlatform extends Model
 {
@@ -30,6 +31,23 @@ class RFPsPlatform extends Model
         'requires_login' => 'boolean',
         'last_checked' => 'datetime',
     ];
+
+    public function institutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_rfp_platform', 'rfps_platform_id', 'institution_id')
+            ->withPivot([
+                'id',
+                'confidence',
+                'status',
+                'discovery_method',
+                'source_title',
+                'source_url',
+                'first_verified_at',
+                'last_verified_at',
+                'notes',
+            ])
+            ->withTimestamps();
+    }
 
     public function scopeActive(Builder $query): Builder
     {

@@ -17,6 +17,10 @@ test('rfps platform create page renders successfully', function () {
 
     $response->assertStatus(200);
     $response->assertSee('Add New RFP Platform');
+    $response->assertSee('createCountryInput');
+    $response->assertSee('createStateInput');
+    $response->assertSee('createCityInput');
+    $response->assertSee('initLocationCascade');
 });
 
 test('can create new rfp platform', function () {
@@ -75,6 +79,10 @@ test('rfps platform edit page renders successfully', function () {
     $response->assertStatus(200);
     $response->assertSee('Edit RFP Platform');
     $response->assertSee('NY State eProcurement');
+    $response->assertSee('editCountryInput');
+    $response->assertSee('editStateInput');
+    $response->assertSee('editCityInput');
+    $response->assertSee('initLocationCascade');
 });
 
 test('can update rfp platform', function () {

@@ -66,8 +66,7 @@ test('institutions detail page renders successfully', function () {
 
     $response->assertStatus(200);
     $response->assertSee('Test High School');
-    $response->assertSee('Nearby Secondary School');
-    $response->assertSee('Map Location');
+    $response->assertSee('Associated RFP Platforms');
 });
 
 test('csv export streams valid CSV content', function () {
