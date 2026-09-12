@@ -7,6 +7,7 @@ use App\Models\LocationSearch;
 use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use App\Repositories\Contracts\LocationSearchRepositoryInterface;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,30 @@ class InstitutionController extends Controller
         protected InstitutionRepositoryInterface $institutionRepository,
         protected LocationSearchRepositoryInterface $searchRepository
     ) {}
+
+    public function searchApi(Request $request): JsonResponse
+    {
+        $query = trim((string) $request->input('query', ''));
+        $builder = Institution::query();
+
+        if ($query !== '') {
+            $keywords = array_filter(explode(' ', $query));
+            $builder->where(function ($sub) use ($keywords) {
+                foreach ($keywords as $word) {
+                    $sub->where('name', 'like', "%{$word}%");
+                }
+            });
+        }
+
+        $institutions = $builder->orderBy('name', 'asc')
+            ->limit(10)
+            ->get(['id', 'name', 'type', 'city', 'state']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $institutions,
+        ]);
+    }
 
     public function index(Request $request)
     {
@@ -75,11 +100,11 @@ class InstitutionController extends Controller
         $institution->refresh();
         $institution->load(['search', 'rfpPlatforms']);
 
-        $allRfpPlatforms = RFPsPlatform::query()->orderBy('name', 'asc')->get();
+        $initialRfpPlatforms = RFPsPlatform::query()->orderBy('name', 'asc')->limit(10)->get();
 
         return view('institutions.show', [
             'institution' => $institution,
-            'allRfpPlatforms' => $allRfpPlatforms,
+            'allRfpPlatforms' => $initialRfpPlatforms,
         ]);
     }
 

@@ -191,3 +191,75 @@ test('can detach institution from rfp platform', function () {
         'rfps_platform_id' => $platform->id,
     ]);
 });
+
+test('institution show page limits initial rfp platform suggestions to 10 items', function () {
+    $institution = Institution::create([
+        'name' => 'Test Institution',
+        'type' => 'university',
+    ]);
+
+    for ($i = 1; $i <= 15; $i++) {
+        RFPsPlatform::create([
+            'name' => "Platform {$i}",
+            'status' => 'active',
+        ]);
+    }
+
+    $response = $this->get("/institutions/{$institution->id}");
+    $response->assertStatus(200);
+
+    $platforms = $response->viewData('allRfpPlatforms');
+    expect($platforms)->toHaveCount(10);
+});
+
+test('rfp platform show page limits initial institution suggestions to 10 items', function () {
+    $platform = RFPsPlatform::create([
+        'name' => 'Test RFP Platform',
+        'status' => 'active',
+    ]);
+
+    for ($i = 1; $i <= 15; $i++) {
+        Institution::create([
+            'name' => "Institution {$i}",
+            'type' => 'school',
+        ]);
+    }
+
+    $response = $this->get("/rfps-platform/{$platform->id}");
+    $response->assertStatus(200);
+
+    $institutions = $response->viewData('allInstitutions');
+    expect($institutions)->toHaveCount(10);
+});
+
+test('rfp platform search api returns at most 10 matching platforms', function () {
+    for ($i = 1; $i <= 15; $i++) {
+        RFPsPlatform::create([
+            'name' => "Procurement Portal {$i}",
+            'status' => 'active',
+        ]);
+    }
+
+    $response = $this->getJson('/rfps-platform/search-api/lookup?query=Portal');
+    $response->assertStatus(200)
+        ->assertJsonPath('success', true);
+
+    $data = $response->json('data');
+    expect($data)->toHaveCount(10);
+});
+
+test('institution search api returns at most 10 matching institutions', function () {
+    for ($i = 1; $i <= 15; $i++) {
+        Institution::create([
+            'name' => "State Academy {$i}",
+            'type' => 'school',
+        ]);
+    }
+
+    $response = $this->getJson('/institutions/search-api/lookup?query=Academy');
+    $response->assertStatus(200)
+        ->assertJsonPath('success', true);
+
+    $data = $response->json('data');
+    expect($data)->toHaveCount(10);
+});

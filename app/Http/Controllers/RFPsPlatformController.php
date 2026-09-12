@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Institution;
 use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\RFPsPlatformRepositoryInterface;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -14,6 +15,33 @@ class RFPsPlatformController extends Controller
     public function __construct(
         protected RFPsPlatformRepositoryInterface $platformRepository
     ) {}
+
+    public function searchApi(Request $request): JsonResponse
+    {
+        $query = trim((string) $request->input('query', ''));
+        $builder = RFPsPlatform::query();
+
+        if ($query !== '') {
+            $keywords = array_filter(explode(' ', $query));
+            $builder->where(function ($sub) use ($keywords) {
+                foreach ($keywords as $word) {
+                    $sub->where(function ($w) use ($word) {
+                        $w->where('name', 'like', "%{$word}%")
+                            ->orWhere('domain', 'like', "%{$word}%");
+                    });
+                }
+            });
+        }
+
+        $platforms = $builder->orderBy('name', 'asc')
+            ->limit(10)
+            ->get(['id', 'name', 'domain', 'platform_type']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $platforms,
+        ]);
+    }
 
     public function index(Request $request)
     {
@@ -84,11 +112,11 @@ class RFPsPlatformController extends Controller
     public function show(RFPsPlatform $rfpsPlatform)
     {
         $rfpsPlatform->load('institutions');
-        $allInstitutions = Institution::query()->orderBy('name', 'asc')->get();
+        $initialInstitutions = Institution::query()->orderBy('name', 'asc')->limit(10)->get();
 
         return view('rfps-platform.show', [
             'platform' => $rfpsPlatform,
-            'allInstitutions' => $allInstitutions,
+            'allInstitutions' => $initialInstitutions,
         ]);
     }
 

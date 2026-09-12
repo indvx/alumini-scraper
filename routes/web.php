@@ -22,6 +22,7 @@ Route::prefix('institutions')->group(function () {
     Route::post('/', [InstitutionController::class, 'store'])->name('institutions.store');
     Route::post('/search', [LocationSearchController::class, 'search'])->name('institutions.search');
     Route::get('/export/csv', [InstitutionController::class, 'exportCsv'])->name('institutions.export');
+    Route::get('/search-api/lookup', [InstitutionController::class, 'searchApi'])->name('institutions.search-api');
     Route::get('/{institution}', [InstitutionController::class, 'show'])->name('institutions.show');
     Route::get('/{institution}/edit', [InstitutionController::class, 'edit'])->name('institutions.edit');
     Route::put('/{institution}', [InstitutionController::class, 'update'])->name('institutions.update');
@@ -35,6 +36,7 @@ Route::prefix('rfps-platform')->group(function () {
     Route::get('/create', [RFPsPlatformController::class, 'create'])->name('rfps-platform.create');
     Route::post('/', [RFPsPlatformController::class, 'store'])->name('rfps-platform.store');
     Route::get('/export/csv', [RFPsPlatformController::class, 'exportCsv'])->name('rfps-platform.export');
+    Route::get('/search-api/lookup', [RFPsPlatformController::class, 'searchApi'])->name('rfps-platform.search-api');
     Route::get('/{rfpsPlatform}', [RFPsPlatformController::class, 'show'])->name('rfps-platform.show');
     Route::get('/{rfpsPlatform}/edit', [RFPsPlatformController::class, 'edit'])->name('rfps-platform.edit');
     Route::put('/{rfpsPlatform}', [RFPsPlatformController::class, 'update'])->name('rfps-platform.update');
