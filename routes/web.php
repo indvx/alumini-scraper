@@ -1,11 +1,10 @@
 <?php
 
 use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\LocationLookupController;
 use App\Http\Controllers\LocationSearchController;
 use App\Http\Controllers\RFPsPlatformController;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\LocationLookupController;
 
 Route::view('/', 'welcome')->name('home');
 Route::get('/dashboard', [InstitutionController::class, 'dashboard'])->name('dashboard');

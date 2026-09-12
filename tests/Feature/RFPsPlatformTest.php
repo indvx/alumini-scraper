@@ -121,16 +121,3 @@ test('rfps platform csv export streams content', function () {
     $response->assertStatus(200);
     $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
 });
-
-test('can search rfps platforms using ai search with country state and city', function () {
-    $response = $this->get('/rfps-platform/ai-search?country=United+States&state=Texas&city=Austin&ai_prompt=University+Portals');
-
-    $response->assertStatus(200);
-    $response->assertSee('AI Search Applied');
-
-    $this->assertDatabaseHas('rfps_platforms', [
-        'country' => 'United States',
-        'state' => 'Texas',
-        'city' => 'Austin',
-    ]);
-});

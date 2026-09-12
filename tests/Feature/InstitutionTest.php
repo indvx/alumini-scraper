@@ -2,6 +2,7 @@
 
 use App\Models\Institution;
 use App\Models\LocationSearch;
+use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -160,7 +161,7 @@ test('institution repository search filters accurately', function () {
         'type' => 'school',
     ]);
 
-    $repo = app(\App\Repositories\Contracts\InstitutionRepositoryInterface::class);
+    $repo = app(InstitutionRepositoryInterface::class);
 
     $results = $repo->getFilteredList(['search' => 'A block']);
     expect($results->first()->name)->toBe('A block Primary School');
