@@ -127,6 +127,7 @@
                                 <th width="10%" class="py-3.5 px-4">Type</th>
                                 <th width="10%" class="py-3.5 px-4">Location</th>
                                 <th width="10%" class="py-3.5 px-4">Access</th>
+                                <th width="20%" class="py-3.5 px-4">Login Required</th>
                                 <th width="10%" class="py-3.5 px-4">Status</th>
                                 <th width="10%" class="py-3.5 px-4 text-right">Actions</th>
                             </tr>
@@ -181,17 +182,17 @@
                                                     );
                                                 @endphp
                                                 <div class="flex flex-wrap gap-1 max-w-[240px]">
-                                                    @foreach (array_slice($types, 0, 3) as $t)
+                                                    @foreach (array_slice($types, 0, 2) as $t)
                                                         <span
                                                             class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                                                             {{ $t }}
                                                         </span>
                                                     @endforeach
-                                                    @if (count($types) > 3)
+                                                    @if (count($types) > 2)
                                                         <span
                                                             class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-help"
-                                                            title="{{ implode(', ', array_slice($types, 3)) }}">
-                                                            +{{ count($types) - 3 }} more
+                                                            title="{{ implode(', ', array_slice($types, 2)) }}">
+                                                            +{{ count($types) - 2 }} more
                                                         </span>
                                                     @endif
                                                 </div>
@@ -214,13 +215,10 @@
                                                     Private
                                                 </span>
                                             @endif
-                                            @if ($p->requires_login)
-                                                <span
-                                                    class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                                                    Login Required
-                                                </span>
-                                            @endif
                                         </div>
+                                    </td>
+                                    <td class="py-4 px-4 font-bold">
+                                        {{ $p->requires_login ? 'Yes' : 'No' }}
                                     </td>
                                     <td class="py-4 px-4">
                                         @if ($p->status === 'active')
