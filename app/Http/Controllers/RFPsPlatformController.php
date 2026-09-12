@@ -67,7 +67,7 @@ class RFPsPlatformController extends Controller
         }
 
         $filters = [
-            'search' => '',
+            'search' => trim("{$city} {$state}"),
             'platform_type' => 'all',
             'country' => $country ?: 'all',
             'status' => 'all',
@@ -91,6 +91,16 @@ class RFPsPlatformController extends Controller
         }
 
         $platforms = $this->platformRepository->getPaginated($filters, 15);
+
+        if ($platforms->isEmpty()) {
+            $fallbackFilters = [
+                'search' => '',
+                'platform_type' => 'all',
+                'country' => 'all',
+                'status' => 'all',
+            ];
+            $platforms = $this->platformRepository->getPaginated($fallbackFilters, 15);
+        }
         $totalCount = RFPsPlatform::count();
         $activeCount = RFPsPlatform::where('status', 'active')->count();
         $publicCount = RFPsPlatform::where('is_public', true)->count();

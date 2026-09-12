@@ -94,10 +94,22 @@
                         Specs</h3>
 
                     <dl class="space-y-3 text-sm">
-                        <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex justify-between items-start py-2 border-b border-slate-100 dark:border-slate-800">
                             <dt class="text-slate-500 dark:text-slate-400 font-medium">Institution Type</dt>
                             <dd class="font-semibold text-slate-900 dark:text-white">
-                                {{ $platform->institution_type ?: 'Not Specified' }}</dd>
+                                @if ($platform->institution_type)
+                                    <div class="flex flex-wrap gap-1 justify-end max-w-xs">
+                                        @foreach (array_filter(array_map('trim', explode(',', $platform->institution_type))) as $t)
+                                            <span
+                                                class="px-2 py-0.5 text-xs rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-normal">
+                                                {{ $t }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    Not Specified
+                                @endif
+                            </dd>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                             <dt class="text-slate-500 dark:text-slate-400 font-medium">Coverage Area</dt>

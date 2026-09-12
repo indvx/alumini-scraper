@@ -100,13 +100,14 @@
                     <span>Force fresh query from OpenStreetMap (bypass cached results)</span>
                 </label>
             </div>
-            <button type="submit"
+            <button type="submit" id="cardLocationSubmitBtn"
                 class="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="cardLocationSearchIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span>Search Location</span>
+                <x-loader id="cardLocationSpinner" class="hidden text-white" />
+                <span id="cardLocationSubmitText">Search Location</span>
             </button>
         </div>
     </form>
@@ -157,6 +158,24 @@
 
                 hoverClass: 'hover:bg-rose-50 dark:hover:bg-slate-700/80',
                 containerId: 'locationSearchCardContainer',
+            });
+        }
+
+        const cardForm = document.getElementById('cardLocationSearchForm');
+        if (cardForm) {
+            cardForm.addEventListener('submit', function() {
+                const btn = document.getElementById('cardLocationSubmitBtn');
+                const icon = document.getElementById('cardLocationSearchIcon');
+                const spinner = document.getElementById('cardLocationSpinner');
+                const text = document.getElementById('cardLocationSubmitText');
+
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-75', 'cursor-not-allowed', 'pointer-events-none');
+                }
+                if (icon) icon.classList.add('hidden');
+                if (spinner) spinner.classList.remove('hidden');
+                if (text) text.textContent = 'Searching...';
             });
         }
     });
