@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Institution extends Model
 {
@@ -40,6 +43,11 @@ class Institution extends Model
     public function search(): BelongsTo
     {
         return $this->belongsTo(LocationSearch::class, 'search_id');
+    }
+
+    public function rfps(): HasMany
+    {
+        return $this->hasMany(RFP::class, 'institution_id');
     }
 
     public function rfpPlatforms(): BelongsToMany
@@ -79,9 +87,9 @@ class Institution extends Model
             ->when($filters['postcode'] ?? null, fn ($q, $zip) => $q->where('postcode', 'like', "%{$zip}%"));
     }
 
-    protected function country(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function country(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+        return Attribute::make(
             get: function ($value) {
                 if (! empty($value)) {
                     return $value;
@@ -92,6 +100,7 @@ class Institution extends Model
                 if ($this->search_id) {
                     return $this->search?->country;
                 }
+
                 return null;
             }
         );
@@ -109,7 +118,7 @@ class Institution extends Model
         return $query->where(function ($q) use ($country, $isUs) {
             $q->where('country', 'like', "%{$country}%");
             if ($isUs) {
-                $q->orWhereIn(\Illuminate\Support\Facades\DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+                $q->orWhereIn(DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
             }
 
             $q->orWhere(function ($sub) use ($country, $isUs) {
@@ -118,7 +127,7 @@ class Institution extends Model
                 })->whereHas('search', function ($sQuery) use ($country, $isUs) {
                     $sQuery->where('country', 'like', "%{$country}%");
                     if ($isUs) {
-                        $sQuery->orWhereIn(\Illuminate\Support\Facades\DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+                        $sQuery->orWhereIn(DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
                     }
                 });
             });

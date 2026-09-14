@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class RFPsPlatform extends Model
 {
@@ -31,6 +33,11 @@ class RFPsPlatform extends Model
         'requires_login' => 'boolean',
         'last_checked' => 'datetime',
     ];
+
+    public function rfps(): HasMany
+    {
+        return $this->hasMany(RFP::class, 'rfps_platform_id');
+    }
 
     public function institutions(): BelongsToMany
     {
@@ -106,7 +113,7 @@ class RFPsPlatform extends Model
             }
             $q->orWhere('country', 'like', "%{$country}%");
             if (in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america'])) {
-                $q->orWhereIn(\Illuminate\Support\Facades\DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+                $q->orWhereIn(DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
             }
         });
     }
