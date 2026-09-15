@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use App\Models\LocationSearch;
+use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use App\Repositories\Contracts\LocationSearchRepositoryInterface;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +19,35 @@ class InstitutionController extends Controller
         protected InstitutionRepositoryInterface $institutionRepository,
         protected LocationSearchRepositoryInterface $searchRepository
     ) {}
+
+    public function searchApi(Request $request): JsonResponse
+    {
+        $query = trim((string) $request->input('query', ''));
+        $country = trim((string) $request->input('country', ''));
+        $builder = Institution::query();
+
+        if ($country !== '') {
+            $builder->byCountry($country);
+        }
+
+        if ($query !== '') {
+            $keywords = array_filter(explode(' ', $query));
+            $builder->where(function ($sub) use ($keywords) {
+                foreach ($keywords as $word) {
+                    $sub->where('name', 'like', "%{$word}%");
+                }
+            });
+        }
+
+        $institutions = $builder->orderBy('name', 'asc')
+            ->limit(10)
+            ->get(['id', 'name', 'type', 'city', 'state', 'country']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $institutions,
+        ]);
+    }
 
     public function index(Request $request)
     {
@@ -72,35 +103,17 @@ class InstitutionController extends Controller
     {
         $institution->update(['last_view' => now()]);
         $institution->refresh();
-        $institution->load('search');
+        $institution->load(['search', 'rfpPlatforms']);
 
-        $nearbyInstitutions = [];
-        if ($institution->latitude && $institution->longitude) {
-            $nearbyInstitutions = Institution::query()
-                ->selectRaw('*, (
-                    6371 * acos(
-                        cos(radians(?))
-                        * cos(radians(latitude))
-                        * cos(radians(longitude) - radians(?))
-                        + sin(radians(?))
-                        * sin(radians(latitude))
-                    )
-                ) AS distance', [
-                    (float) $institution->latitude,
-                    (float) $institution->longitude,
-                    (float) $institution->latitude,
-                ])
-                ->where('id', '!=', $institution->id)
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->orderBy('distance', 'asc')
-                ->limit(5)
-                ->get();
-        }
+        $initialRfpPlatforms = RFPsPlatform::query()
+            ->byCountry($institution->country)
+            ->orderBy('name', 'asc')
+            ->limit(10)
+            ->get();
 
         return view('institutions.show', [
             'institution' => $institution,
-            'nearbyInstitutions' => $nearbyInstitutions,
+            'allRfpPlatforms' => $initialRfpPlatforms,
         ]);
     }
 

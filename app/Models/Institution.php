@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Institution extends Model
 {
@@ -41,6 +45,28 @@ class Institution extends Model
         return $this->belongsTo(LocationSearch::class, 'search_id');
     }
 
+    public function rfps(): HasMany
+    {
+        return $this->hasMany(RFP::class, 'institution_id');
+    }
+
+    public function rfpPlatforms(): BelongsToMany
+    {
+        return $this->belongsToMany(RFPsPlatform::class, 'institution_rfp_platform', 'institution_id', 'rfps_platform_id')
+            ->withPivot([
+                'id',
+                'confidence',
+                'status',
+                'discovery_method',
+                'source_title',
+                'source_url',
+                'first_verified_at',
+                'last_verified_at',
+                'notes',
+            ])
+            ->withTimestamps();
+    }
+
     public function scopeFilter(Builder $query, array $filters): Builder
     {
         return $query
@@ -59,5 +85,52 @@ class Institution extends Model
                 $q->where('type', strtolower((string) $type));
             })
             ->when($filters['postcode'] ?? null, fn ($q, $zip) => $q->where('postcode', 'like', "%{$zip}%"));
+    }
+
+    protected function country(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if (! empty($value)) {
+                    return $value;
+                }
+                if ($this->relationLoaded('search') && $this->search) {
+                    return $this->search->country;
+                }
+                if ($this->search_id) {
+                    return $this->search?->country;
+                }
+
+                return null;
+            }
+        );
+    }
+
+    public function scopeByCountry(Builder $query, ?string $country): Builder
+    {
+        $country = trim((string) $country);
+        if ($country === '') {
+            return $query;
+        }
+
+        $isUs = in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america']);
+
+        return $query->where(function ($q) use ($country, $isUs) {
+            $q->where('country', 'like', "%{$country}%");
+            if ($isUs) {
+                $q->orWhereIn(DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+            }
+
+            $q->orWhere(function ($sub) use ($country, $isUs) {
+                $sub->where(function ($cEmpty) {
+                    $cEmpty->whereNull('country')->orWhere('country', '');
+                })->whereHas('search', function ($sQuery) use ($country, $isUs) {
+                    $sQuery->where('country', 'like', "%{$country}%");
+                    if ($isUs) {
+                        $sQuery->orWhereIn(DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+                    }
+                });
+            });
+        });
     }
 }

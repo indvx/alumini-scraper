@@ -104,34 +104,48 @@
                 </div>
 
                 <!-- Location Details Section -->
-                <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800" id="editRfpPlatformLocationContainer">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Location
                         Details</h2>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <label for="city"
-                                class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">City</label>
-                            <input type="text" id="city" name="city"
-                                value="{{ old('city', $platform->city) }}"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+                        <!-- Country Lookup -->
+                        <div class="relative">
+                            <label for="editCountryInput"
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">Country</label>
+                            <input type="text" id="editCountryInput" name="country"
+                                value="{{ old('country', $platform->country) }}" autocomplete="off" placeholder="Search Country..."
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                            <input type="hidden" id="editCountryId" name="country_id" />
+                            <div id="editCountrySuggestions"
+                                class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                            </div>
                         </div>
 
-                        <div>
-                            <label for="state"
-                                class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">State
-                                / Province</label>
-                            <input type="text" id="state" name="state"
-                                value="{{ old('state', $platform->state) }}"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <!-- State Lookup -->
+                        <div id="editStateContainer" class="relative">
+                            <label for="editStateInput"
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">State / Province</label>
+                            <input type="text" id="editStateInput" name="state"
+                                value="{{ old('state', $platform->state) }}" autocomplete="off" placeholder="Search State..."
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                            <input type="hidden" id="editStateId" name="state_id" />
+                            <div id="editStateSuggestions"
+                                class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                            </div>
                         </div>
 
-                        <div>
-                            <label for="country"
-                                class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Country</label>
-                            <input type="text" id="country" name="country"
-                                value="{{ old('country', $platform->country) }}"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <!-- City Lookup -->
+                        <div id="editCityContainer" class="relative">
+                            <label for="editCityInput"
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">City</label>
+                            <input type="text" id="editCityInput" name="city"
+                                value="{{ old('city', $platform->city) }}" autocomplete="off" placeholder="Search City..."
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                            <input type="hidden" id="editCityId" name="city_id" />
+                            <div id="editCitySuggestions"
+                                class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -190,4 +204,30 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.initLocationCascade === 'function') {
+                window.initLocationCascade({
+                    countryInputId: 'editCountryInput',
+                    countryIdInputId: 'editCountryId',
+                    countrySuggestionsId: 'editCountrySuggestions',
+
+                    stateContainerId: 'editStateContainer',
+                    stateInputId: 'editStateInput',
+                    stateIdInputId: 'editStateId',
+                    stateSuggestionsId: 'editStateSuggestions',
+                    stateRequired: false,
+
+                    cityContainerId: 'editCityContainer',
+                    cityInputId: 'editCityInput',
+                    cityIdInputId: 'editCityId',
+                    citySuggestionsId: 'editCitySuggestions',
+
+                    hoverClass: 'hover:bg-rose-50 dark:hover:bg-slate-700/80',
+                    containerId: 'editRfpPlatformLocationContainer',
+                });
+            }
+        });
+    </script>
 </x-layouts.app>

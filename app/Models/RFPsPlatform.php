@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class RFPsPlatform extends Model
 {
@@ -30,6 +33,28 @@ class RFPsPlatform extends Model
         'requires_login' => 'boolean',
         'last_checked' => 'datetime',
     ];
+
+    public function rfps(): HasMany
+    {
+        return $this->hasMany(RFP::class, 'rfps_platform_id');
+    }
+
+    public function institutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_rfp_platform', 'rfps_platform_id', 'institution_id')
+            ->withPivot([
+                'id',
+                'confidence',
+                'status',
+                'discovery_method',
+                'source_title',
+                'source_url',
+                'first_verified_at',
+                'last_verified_at',
+                'notes',
+            ])
+            ->withTimestamps();
+    }
 
     public function scopeActive(Builder $query): Builder
     {
@@ -72,5 +97,24 @@ class RFPsPlatform extends Model
             ->when(($filters['status'] ?? 'all') !== 'all' && ! empty($filters['status']), function ($q) use ($filters) {
                 $q->where('status', $filters['status']);
             });
+    }
+
+    public function scopeByCountry(Builder $query, ?string $country, bool $allowGlobal = true): Builder
+    {
+        $country = trim((string) $country);
+        if ($country === '') {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($country, $allowGlobal) {
+            if ($allowGlobal) {
+                $q->whereNull('country')
+                    ->orWhere('country', '');
+            }
+            $q->orWhere('country', 'like', "%{$country}%");
+            if (in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america'])) {
+                $q->orWhereIn(DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+            }
+        });
     }
 }
