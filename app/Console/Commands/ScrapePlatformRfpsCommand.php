@@ -24,7 +24,7 @@ class ScrapePlatformRfpsCommand extends Command
 
         $platforms = RFPsPlatform::where('platform_type', 'like', "%{$platformInput}%")
             ->orWhere('name', 'like', "%{$platformInput}%")
-            ->with('institutions')
+            ->with('rfpInstitutions')
             ->get();
 
         if ($platforms->isEmpty()) {
@@ -36,13 +36,13 @@ class ScrapePlatformRfpsCommand extends Command
         $totalScraped = 0;
 
         foreach ($platforms as $platformRecord) {
-            if ($platformRecord->institutions->isEmpty()) {
+            if ($platformRecord->rfpInstitutions->isEmpty()) {
                 $this->warn("No institutions associated with platform '{$platformRecord->name}'.");
 
                 continue;
             }
 
-            foreach ($platformRecord->institutions as $institution) {
+            foreach ($platformRecord->rfpInstitutions as $institution) {
                 $this->info("Scraping {$institution->name} on {$platformRecord->name}...");
                 $result = $manager->scrapeUniversity(
                     universityName: $institution->name,

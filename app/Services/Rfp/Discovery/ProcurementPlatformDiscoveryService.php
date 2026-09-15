@@ -59,21 +59,29 @@ class ProcurementPlatformDiscoveryService
                     "platform": "{$platformName}",
                     "confidence": 0
                 }
-            
+
             Rules:
-            - portal_url must be the actual procurement/RFP portal URL.
-            - Prefer the official {$platformName} portal used by the institution.
-            - Do not return the institution homepage.
-            - Do not return an explanation.
-            - Do not return markdown.
-            - Do not return any text outside the JSON.
-            - If you cannot find the portal, return:
-                {
-                    "portal_url": null,
-                    "institution_name": "{$universityName}",
-                    "platform": "{$platformName}",
-                    "confidence": 0
-                }
+                - portal_url must be the canonical, currently active {$platformName} procurement/RFP portal URL used by the institution.
+                - The URL must point directly to the institution's procurement/RFP portal on the {$platformName} platform.
+                - DO NOT construct, guess, infer, or generate the URL from the institution name.
+                - DO NOT assume the subdomain follows the institution's full name.
+                - Verify the exact portal URL from an official institution procurement page, official solicitation document, or the {$platformName} platform itself.
+                - Prefer the exact canonical portal URL explicitly referenced by the institution.
+                - If an official institution page redirects to a {$platformName} portal, return the final canonical {$platformName} portal URL, not the institution page.
+                - Preserve the exact verified subdomain. For example, if the verified URL is "https://tsc.bonfirehub.com/", do not replace it with "https://texassouthmostcollege.bonfirehub.com/".
+                - Do not return the institution homepage.
+                - Do not return an official procurement information page if it is not the actual {$platformName} portal.
+                - portal_url must normally use HTTPS.
+                - Do not return an explanation.
+                - Do not return markdown.
+                - Do not return any text outside the JSON.
+                - If you cannot verify the exact portal URL, return:
+                    {
+                        "portal_url": null,
+                        "institution_name": "{$universityName}",
+                        "platform": "{$platformName}",
+                        "confidence": 0
+                    }
         PROMPT;
 
         $aiResult = $this->openAIService->prompt($prompt);
@@ -100,7 +108,7 @@ class ProcurementPlatformDiscoveryService
         $universityName = trim($universityName);
         $platformName = trim($platformName);
         $institution = Institution::where('name', 'like', "%{$universityName}%")
-            ->orWhere('name', 'like', '%'.Str::slug($universityName, ' ').'%')
+            ->orWhere('name', 'like', '%' . Str::slug($universityName, ' ') . '%')
             ->first();
         $platformRecord = null;
         $portalUrl = null;
@@ -135,7 +143,7 @@ class ProcurementPlatformDiscoveryService
             if ($platformRecord) {
                 $portalUrl = $platformRecord->url;
                 if (! $institution) {
-                    $institution = $platformRecord->institutions()->first();
+                    $institution = $platformRecord->rfpInstitutions()->first();
                 }
             }
         }
@@ -181,17 +189,7 @@ class ProcurementPlatformDiscoveryService
             if (! $institution) {
                 $institution = Institution::create(['name' => $universityName, 'type' => 'university']);
             }
-            $platformRecord = RFPsPlatform::where('domain', $host)->orWhere('url', 'like', "%{$host}%")->first();
-            if (! $platformRecord) {
-                $platformRecord = RFPsPlatform::create([
-                    'name' => "{$platformName} ({$universityName})",
-                    'domain' => $host,
-                    'url' => $portalUrl,
-                    'platform_type' => $platformName,
-                    'is_public' => true,
-                    'status' => 'active',
-                ]);
-            }
+            $platformRecord = RFPsPlatform::where('name', $platformName)->first();
             $relationExists = $institution->rfpPlatforms()->where('rfps_platform_id', $platformRecord->id)->exists();
             if (! $relationExists) {
                 $institution->rfpPlatforms()->attach(

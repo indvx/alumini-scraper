@@ -116,7 +116,7 @@ class RFPsPlatformController extends Controller
 
     public function show(RFPsPlatform $rfpsPlatform)
     {
-        $rfpsPlatform->load('institutions');
+        $rfpsPlatform->load('rfpInstitutions');
         $initialInstitutions = Institution::query()
             ->byCountry($rfpsPlatform->country)
             ->orderBy('name', 'asc')
