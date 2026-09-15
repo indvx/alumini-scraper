@@ -39,7 +39,7 @@ class RFPsPlatform extends Model
         return $this->hasMany(RFP::class, 'rfps_platform_id');
     }
 
-    public function institutions(): BelongsToMany
+    public function rfpInstitutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class, 'institution_rfp_platform', 'rfps_platform_id', 'institution_id')
             ->withPivot([
@@ -99,21 +99,25 @@ class RFPsPlatform extends Model
             });
     }
 
-    public function scopeByCountry(Builder $query, ?string $country, bool $allowGlobal = true): Builder
+    public function scopeByCountry(Builder $query, ?string $country, bool $allowGlobal = false): Builder
     {
         $country = trim((string) $country);
         if ($country === '') {
             return $query;
         }
 
-        return $query->where(function ($q) use ($country, $allowGlobal) {
-            if ($allowGlobal) {
-                $q->whereNull('country')
-                    ->orWhere('country', '');
-            }
-            $q->orWhere('country', 'like', "%{$country}%");
-            if (in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america'])) {
+        $isUs = in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america']);
+
+        return $query->where(function ($q) use ($country, $isUs, $allowGlobal) {
+            $q->where('country', 'like', "%{$country}%");
+
+            if ($isUs) {
                 $q->orWhereIn(DB::raw('LOWER(country)'), ['usa', 'us', 'united states', 'united states of america']);
+            }
+
+            if ($allowGlobal) {
+                $q->orWhereNull('country')
+                    ->orWhere('country', '');
             }
         });
     }

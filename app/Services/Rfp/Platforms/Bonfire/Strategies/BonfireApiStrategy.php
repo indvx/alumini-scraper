@@ -25,7 +25,7 @@ class BonfireApiStrategy implements RfpExtractionStrategy
     {
         $baseUrl = rtrim((string) $scrapeData->portalUrl, '/');
         $endpoint = BonfireConfig::getApiEndpoint($scrapeData->type->value);
-        $apiUrl = $baseUrl.$endpoint;
+        $apiUrl = $baseUrl . $endpoint;
 
         try {
             $response = Http::withHeaders([
@@ -38,7 +38,7 @@ class BonfireApiStrategy implements RfpExtractionStrategy
             }
 
             $rawPayload = $response->json();
-            $rfps = $this->normalizer->normalize($rawPayload ?? [], $scrapeData, 'api');
+            $rfps = $this->normalizer->normalize($rawPayload ?? [], $scrapeData, ScrapeMethod::API);
 
             return ScraperResult::success($rfps, ScrapeMethod::API);
         } catch (\Throwable $e) {
