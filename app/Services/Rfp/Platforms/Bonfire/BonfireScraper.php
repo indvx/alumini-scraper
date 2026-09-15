@@ -6,44 +6,49 @@ use App\Data\Rfp\RfpScrapeData;
 use App\Data\Scraper\ScraperResult;
 use App\Enums\Scraper\ScrapeMethod;
 use App\Services\Rfp\Contracts\RfpPlatformScraper;
+use App\Services\Rfp\Platforms\Bonfire\Strategies\BonfireAiStrategy;
 use App\Services\Rfp\Platforms\Bonfire\Strategies\BonfireApiStrategy;
+use App\Services\Rfp\Platforms\Bonfire\Strategies\BonfireUiStrategy;
 
 class BonfireScraper implements RfpPlatformScraper
 {
     public function __construct(
         protected BonfireApiStrategy $apiStrategy,
+        protected BonfireUiStrategy $uiStrategy,
+        protected BonfireAiStrategy $aiStrategy
     ) {}
 
     public function scrape(RfpScrapeData $scrapeData): ScraperResult
     {
-        $strategy = $this->apiStrategy;
+        $strategies = [
+            $this->apiStrategy,
+            $this->uiStrategy,
+            $this->aiStrategy,
+        ];
+
         $errors = [];
-        if (! $strategy->supports($scrapeData)) {
-            return ScraperResult::failure(
-                'Bonfire API strategy does not support the given platform.',
-                ScrapeMethod::API,
-                [
-                    'errors' => [],
-                ]
-            );
-        }
-
-        try {
-            $result = $strategy->extract($scrapeData);
-            if ($result->isSuccess() && $result->count() > 0) {
-                return $result;
+        foreach ($strategies as $strategy) {
+            if (! $strategy->supports($scrapeData)) {
+                continue;
             }
 
-            if ($result->isFailure() && $result->errorMessage) {
-                $errors = [$result->errorMessage];
+            try {
+                $result = $strategy->extract($scrapeData);
+                if ($result->isSuccess() && $result->count() > 0) {
+                    return $result;
+                }
+
+                if ($result->isFailure() && $result->errorMessage) {
+                    $errors[] = $result->errorMessage;
+                }
+            } catch (\Throwable $e) {
+                $errors[] = $e->getMessage();
             }
-        } catch (\Throwable $e) {
-            $errors = [$e->getMessage()];
         }
 
         return ScraperResult::failure(
-            'Bonfire API strategy failed or returned no RFPs.',
-            ScrapeMethod::API,
+            'All Bonfire scraping strategies failed or returned no RFPs.',
+            ScrapeMethod::AI,
             [
                 'errors' => $errors,
             ]
