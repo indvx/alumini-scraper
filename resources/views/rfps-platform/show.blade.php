@@ -189,7 +189,7 @@
                                 <span>Institutions</span>
                                 <span
                                     class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
-                                    {{ $platform->institutions->count() }}
+                                    {{ $platform->rfpInstitutions->count() }}
                                 </span>
                             </h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -368,9 +368,9 @@
                     </div>
 
                     <!-- List of Attached Institutions -->
-                    @if ($platform->institutions->count() > 0)
+                    @if ($platform->rfpInstitutions->count() > 0)
                         <div class="space-y-3">
-                            @foreach ($platform->institutions as $inst)
+                            @foreach ($platform->rfpInstitutions as $inst)
                                 <div
                                     class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2.5">
                                     <div

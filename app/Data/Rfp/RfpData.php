@@ -3,6 +3,7 @@
 namespace App\Data\Rfp;
 
 use App\Enums\Rfp\RfpStatus;
+use App\Enums\Scraper\ScrapeMethod;
 
 class RfpData
 {
@@ -17,7 +18,7 @@ class RfpData
         public ?string $dateClose = null,
         public bool $isPublicAward = false,
         public RfpStatus $status = RfpStatus::OPEN,
-        public ?string $source = null,
+        public ScrapeMethod $source = ScrapeMethod::API,
         public ?string $portalUrl = null,
         public ?string $opportunityUrl = null,
         public ?int $institutionId = null,
@@ -38,7 +39,7 @@ class RfpData
             'date_close' => $this->dateClose,
             'is_public_award' => $this->isPublicAward,
             'status' => $this->status->value,
-            'source' => $this->source,
+            'source' => $this->source->value,
             'portal_url' => $this->portalUrl,
             'opportunity_url' => $this->opportunityUrl,
             'institution_id' => $this->institutionId,

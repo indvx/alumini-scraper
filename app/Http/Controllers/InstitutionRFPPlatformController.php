@@ -84,7 +84,7 @@ class InstitutionRFPPlatformController extends Controller
             $validated['confidence'] = 100;
         }
 
-        $rfpsPlatform->institutions()->syncWithoutDetaching([
+        $rfpsPlatform->rfpInstitutions()->syncWithoutDetaching([
             $institutionId => $validated,
         ]);
 
@@ -98,7 +98,7 @@ class InstitutionRFPPlatformController extends Controller
      */
     public function destroyPlatformInstitution(RFPsPlatform $rfpsPlatform, Institution $institution): RedirectResponse
     {
-        $rfpsPlatform->institutions()->detach($institution->id);
+        $rfpsPlatform->rfpInstitutions()->detach($institution->id);
 
         return back()->with('success', "Institution '{$institution->name}' removed from platform.");
     }
