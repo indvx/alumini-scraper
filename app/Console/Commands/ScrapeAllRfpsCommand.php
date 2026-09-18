@@ -73,24 +73,24 @@ class ScrapeAllRfpsCommand extends Command
             $instCountry = $institution->country;
 
             // Get platforms associated with this institution
-            $platforms = $institution->rfpPlatforms;
+            // $platforms = $institution->rfpPlatforms;
 
             // If no platforms are explicitly attached, query fallback platforms matching the institution's country
-            if ($platforms->isEmpty()) {
-                $platformQuery = RFPsPlatform::query();
+            // if ($platforms->isEmpty()) {
+            $platformQuery = RFPsPlatform::query();
 
-                if (! empty($platformFilter)) {
-                    $platformQuery->where(function ($q) use ($platformFilter) {
-                        $q->where('platform_type', 'like', "%{$platformFilter}%")->orWhere('name', 'like', "%{$platformFilter}%");
-                    });
-                }
-
-                if (! empty($instCountry)) {
-                    $platformQuery->byCountry($instCountry);
-                }
-
-                $platforms = $platformQuery->get();
+            if (! empty($platformFilter)) {
+                $platformQuery->where(function ($q) use ($platformFilter) {
+                    $q->where('platform_type', 'like', "%{$platformFilter}%")->orWhere('name', 'like', "%{$platformFilter}%");
+                });
             }
+
+            if (! empty($instCountry)) {
+                $platformQuery->byCountry($instCountry);
+            }
+
+            $platforms = $platformQuery->get();
+            // }
 
             if ($platforms->isEmpty()) {
                 $this->warn("No platforms available to scrape for institution '{$institution->name}'. Skipping.");

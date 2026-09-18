@@ -4,6 +4,7 @@ namespace App\Services\Rfp\Support;
 
 use App\Services\Rfp\Contracts\RfpPlatformScraper;
 use App\Services\Rfp\Platforms\Bonfire\BonfireScraper;
+use App\Services\Rfp\Platforms\OpenGov\OpenGovScraper;
 use Illuminate\Support\ItemNotFoundException;
 
 class ScraperRegistry
@@ -14,10 +15,12 @@ class ScraperRegistry
     protected array $scrapers;
 
     public function __construct(
-        BonfireScraper $bonfireScraper
+        BonfireScraper $bonfireScraper,
+        OpenGovScraper $openGovScraper
     ) {
         $this->scrapers = [
             $bonfireScraper,
+            $openGovScraper,
         ];
     }
 
