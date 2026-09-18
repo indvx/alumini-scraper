@@ -6,6 +6,7 @@ use App\Data\Rfp\DiscoveryResult;
 use App\Models\Institution;
 use App\Models\RFPsPlatform;
 use App\Services\OpenAIService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ItemNotFoundException;
 use Illuminate\Support\Str;
 
@@ -47,45 +48,73 @@ class ProcurementPlatformDiscoveryService
             throw new ItemNotFoundException("Procurement portal URL for '{$universityName}' on platform '{$platformName}' was not found.");
         }
 
-        $prompt = <<<PROMPT
+        $promptText = <<<PROMPT
             Find the official {$platformName} procurement/RFP portal for:
-            
-                Institution: {$universityName}
-            
+
+            Institution: {$universityName}
+
             Return ONLY valid JSON in this exact format:
-                {
-                    "portal_url": "https://...",
-                    "institution_name": "...",
-                    "platform": "{$platformName}",
-                    "confidence": 0
-                }
+
+            {
+                "portal_url": "https://...",
+                "institution_name": "{$universityName}",
+                "platform": "{$platformName}",
+                "confidence": 0
+            }
 
             Rules:
-                - portal_url must be the canonical, currently active {$platformName} procurement/RFP portal URL used by the institution.
-                - The URL must point directly to the institution's procurement/RFP portal on the {$platformName} platform.
-                - DO NOT construct, guess, infer, or generate the URL from the institution name.
-                - DO NOT assume the subdomain follows the institution's full name.
-                - Verify the exact portal URL from an official institution procurement page, official solicitation document, or the {$platformName} platform itself.
-                - Prefer the exact canonical portal URL explicitly referenced by the institution.
-                - If an official institution page redirects to a {$platformName} portal, return the final canonical {$platformName} portal URL, not the institution page.
-                - Preserve the exact verified subdomain. For example, if the verified URL is "https://tsc.bonfirehub.com/", do not replace it with "https://texassouthmostcollege.bonfirehub.com/".
-                - Do not return the institution homepage.
-                - Do not return an official procurement information page if it is not the actual {$platformName} portal.
-                - portal_url must normally use HTTPS.
-                - Do not return an explanation.
-                - Do not return markdown.
-                - Do not return any text outside the JSON.
-                - If you cannot verify the exact portal URL, return:
-                    {
-                        "portal_url": null,
-                        "institution_name": "{$universityName}",
-                        "platform": "{$platformName}",
-                        "confidence": 0
-                    }
+            - First verify that {$universityName} actually uses {$platformName}.
+            - portal_url must be the canonical, currently active {$platformName} procurement/RFP portal used by the institution.
+            - The URL must point directly to the institution's procurement/RFP portal on {$platformName}.
+            - DO NOT construct, guess, infer, or generate the URL from the institution name.
+            - DO NOT assume the URL follows the institution's name.
+            - Verify the exact URL from:
+            1. an official institution procurement page,
+            2. an official solicitation/RFP document, or
+            3. the {$platformName} platform itself.
+            - Prefer the exact canonical portal URL explicitly referenced by the institution.
+            - If an official institution page redirects to {$platformName}, return the final {$platformName} portal URL.
+            - Do not return the institution homepage.
+            - Do not return an institution procurement information page unless it is itself the actual {$platformName} portal.
+            - If the institution does NOT use {$platformName}, return:
+            {
+                "portal_url": null,
+                "institution_name": "{$universityName}",
+                "platform": "{$platformName}",
+                "confidence": 0
+            }
+            - If the exact portal URL cannot be verified, return portal_url as null.
+            - confidence must be between 0 and 1.
+            - Do not return an explanation.
+            - Do not return markdown.
+            - Do not return any text outside the JSON.
+        
         PROMPT;
 
-        $aiResult = $this->openAIService->prompt($prompt);
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => 'You verify procurement portal URLs. Never invent or construct URLs.'
+            ],
+            [
+                'role' => 'user',
+                'content' => $promptText,
+            ],
+        ];
+
+        $tools = [
+            [
+                'type' => 'web_search',
+            ],
+        ];
+
+        $aiResult = $this->openAIService->content($messages, $promptText, $tools);
+
         $portalUrl = $this->extractPortalUrlFromAiResult($aiResult);
+        Log::info('Discovery Result:', [
+            'aiResult' => $aiResult,
+            'platform' => $platformName,
+        ]);
         if (empty($portalUrl)) {
             throw new ItemNotFoundException("Procurement portal URL for '{$universityName}' on platform '{$platformName}' was not found.");
         }

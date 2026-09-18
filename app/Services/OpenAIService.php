@@ -24,31 +24,54 @@ class OpenAIService
         return $this->client;
     }
 
-    public function prompt(string $promptText): string
+    public function tools(): array
     {
-        Log::info('OpenAI prompt initialized');
-        Log::info($promptText);
-        $apiKey = config('services.openai.api_key');
-        if (empty($apiKey)) {
-            return '';
-        }
+        return [
+            [
+                'type' => 'web_search',
+            ],
+        ];
+    }
 
-        try {
-            $response = $this->client->chat()->create([
-                'model' => 'gpt-4o-mini',
-                'messages' => [
-                    ['role' => 'user', 'content' => $promptText],
-                ],
-                'temperature' => 0.2,
-            ]);
+    public function content(array $messages, ?string $input = null, ?array $tools = [],): string
+    {
+        Log::info('OpenAI content initialized');
+        Log::info($messages);
+        if (!empty($tools)) {
+            try {
+                $response = $this->client->responses()->create([
+                    'model' => 'gpt-5.6-luna',
 
-            Log::info('OpenAI prompt response', ['response' => $response]);
+                    'tools' => [
+                        [
+                            'type' => 'web_search',
+                        ],
+                    ],
 
-            return trim($response->choices[0]->message->content ?? '');
-        } catch (\Throwable $e) {
-            Log::info('OpenAI prompt error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+                    'input' => $input,
+                ]);
+                Log::info('OpenAI tools response', ['response' => $response]);
+                return trim($response->outputText);
+            } catch (\Throwable $e) {
+                Log::info('OpenAI tools error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+                return '';
+            }
+        } else {
+            try {
+                $response = $this->client->chat()->create([
+                    'model' => 'gpt-4o-mini',
+                    'messages' => $messages,
+                    'temperature' => 0
+                ]);
 
-            return '';
+                Log::info('OpenAI prompt response', ['response' => $response]);
+
+                return trim($response->choices[0]->message->content ?? '');
+            } catch (\Throwable $e) {
+                Log::info('OpenAI prompt error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+                return '';
+            }
         }
     }
 }

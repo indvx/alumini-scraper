@@ -64,6 +64,7 @@ class RfpScraperManager
 
         $scraper = $this->scraperRegistry->getScraperForPlatform($platform);
         $result = $scraper->scrape($scrapeData);
+        dd($result);
         if ($persist && ! empty($result->rfps)) {
             $this->persistenceService->saveMany($result->rfps);
         }
