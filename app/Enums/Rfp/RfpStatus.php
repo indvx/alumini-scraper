@@ -10,4 +10,5 @@ enum RfpStatus: string
     case AWARDED = 'awarded';
     case CANCELLED = 'cancelled';
     case UNKNOWN = 'unknown';
+    case ALL = 'all';
 }

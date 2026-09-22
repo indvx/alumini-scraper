@@ -33,7 +33,6 @@ class OpenGovScraper implements RfpPlatformScraper
 
         try {
             $result = $strategy->extract($scrapeData);
-            dd($result);
             if ($result->isSuccess() && $result->count() > 0) {
                 return $result;
             }
@@ -45,7 +44,6 @@ class OpenGovScraper implements RfpPlatformScraper
             $errors[] = $e->getMessage();
         }
 
-        dd($errors);
         return ScraperResult::failure(
             'OpenGov API strategy failed or returned no RFPs.',
             ScrapeMethod::API,

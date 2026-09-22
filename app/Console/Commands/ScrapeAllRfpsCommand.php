@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class ScrapeAllRfpsCommand extends Command
 {
     protected $signature = 'rfp:scrape-all
-                            {--type=open : Opportunity type (open or past)}
+                            {--type=open : Opportunity type (open or past or all)}
                             {--institution= : Optional institution filter to match specific university/institution name}
                             {--platform= : Optional platform filter to match specific platform(s)}
                             {--limit=20 : Maximum number of institutions to scrape}
@@ -32,9 +32,11 @@ class ScrapeAllRfpsCommand extends Command
         $toDate = $this->option('to');
         $delay = (int) ($this->option('delay') ?? 0);
 
-        $statusEnum = strtolower((string) $type) === 'past' || strtolower((string) $type) === 'closed'
-            ? RfpStatus::PAST
-            : RfpStatus::OPEN;
+        $statusEnum = match (strtolower((string) $type)) {
+            'past' => RfpStatus::PAST,
+            'all' => RfpStatus::ALL,
+            default => RfpStatus::OPEN,
+        };
 
         // Query Institutions with eager loaded attached rfpPlatforms
         $institutionQuery = Institution::with(['rfpPlatforms' => function ($query) use ($platformFilter) {
@@ -72,11 +74,6 @@ class ScrapeAllRfpsCommand extends Command
         foreach ($institutions as $institution) {
             $instCountry = $institution->country;
 
-            // Get platforms associated with this institution
-            // $platforms = $institution->rfpPlatforms;
-
-            // If no platforms are explicitly attached, query fallback platforms matching the institution's country
-            // if ($platforms->isEmpty()) {
             $platformQuery = RFPsPlatform::query();
 
             if (! empty($platformFilter)) {

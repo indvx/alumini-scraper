@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OverpassService
 {
@@ -28,6 +29,7 @@ class OverpassService
         $lastError = null;
         foreach ($this->endpoints as $endpoint) {
             try {
+                Log::info('Overpass query: ' . $overpassQuery);
                 $response = Http::withHeaders([
                     'User-Agent' => 'my-school-finder-laravel/1.0',
                 ])->timeout(180)->asForm()->post($endpoint, [
@@ -37,11 +39,14 @@ class OverpassService
                 if ($response->successful()) {
                     return $this->parseElements($response->json('elements') ?? [], $state, $country);
                 }
+                Log::info('Overpass response: ' . $response->body());
             } catch (Exception $e) {
+                Log::info('Overpass error: ' . $e->getMessage());
                 $lastError = $e->getMessage();
             }
         }
 
+        Log::info('All Overpass endpoints failed. Last error: ' . $lastError);
         throw new Exception("All Overpass endpoints failed. Last error: {$lastError}");
     }
 
@@ -71,11 +76,15 @@ class OverpassService
 
             $address = ! empty($addressParts) ? implode(', ', $addressParts) : null;
             $institutionType = $tags['amenity'] ?? $tags['building'] ?? $tags['landuse'] ?? 'school';
+            $name = $tags['name'] ?? 'Unnamed';
 
+            if ($name == 'Unnamed') {
+                continue;
+            }
             $records[] = [
                 'osm_id' => $osmId,
                 'osm_type' => $type,
-                'name' => $tags['name'] ?? 'Unnamed',
+                'name' => $name,
                 'type' => strtolower((string) $institutionType),
                 'latitude' => $lat !== null ? (float) $lat : null,
                 'longitude' => $lon !== null ? (float) $lon : null,

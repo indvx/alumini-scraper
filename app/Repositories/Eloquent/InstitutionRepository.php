@@ -43,7 +43,7 @@ class InstitutionRepository implements InstitutionRepositoryInterface
         }
 
         if (! empty($filters['postcode']) && trim($filters['postcode']) !== '') {
-            $query->where('postcode', 'like', '%'.trim($filters['postcode']).'%');
+            $query->where('postcode', 'like', '%' . trim($filters['postcode']) . '%');
         }
 
         if ($is_collection) {
@@ -81,7 +81,7 @@ class InstitutionRepository implements InstitutionRepositoryInterface
     {
         return Institution::query()
             ->where('osm_id', $osmId)
-            ->when($osmType, fn ($q) => $q->where('osm_type', $osmType))
+            ->when($osmType, fn($q) => $q->where('osm_type', $osmType))
             ->first();
     }
 
