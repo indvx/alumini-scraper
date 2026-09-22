@@ -128,40 +128,11 @@
                             @endif
                         </div>
                     </div>
-
-                    <!-- Embedded Search Origin Data -->
-                    @if ($institution->search)
-                        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                            <span
-                                class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 block">
-                                Search Origin Information
-                            </span>
-                            <div
-                                class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
-                                <div>
-                                    <strong
-                                        class="text-slate-900 dark:text-white block text-base">{{ $institution->search->query }}</strong>
-                                    <span
-                                        class="text-xs text-slate-500 dark:text-slate-400 block mt-0.5">{{ $institution->search->display_name }}</span>
-                                </div>
-                                <div class="text-xs text-slate-400 shrink-0 text-left sm:text-right">
-                                    <span class="block font-medium text-slate-600 dark:text-slate-300">Found:
-                                        {{ $institution->search->total_found }}</span>
-                                    <span>{{ $institution->search->searched_at ? $institution->search->searched_at->diffForHumans() : '' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
                 </div>
-
-            </div>
-
-            <!-- Right 1 Column: Associated RFP Platforms Relation -->
-            <div class="lg:col-span-1 space-y-6">
 
                 <!-- Associated RFP Platforms Card -->
                 <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                         <div>
                             <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -461,6 +432,140 @@
 
             </div>
 
+            <!-- Right 1 Column: RFPs Information -->
+            <div class="lg:col-span-1 space-y-6">
+
+                <!-- RFPs Information Card -->
+                <div
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                    <div
+                        class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-base font-extrabold text-slate-900 dark:text-white">
+                                RFPs Information
+                            </h3>
+                            <span
+                                class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
+                                {{ $institution->rfps->count() }}
+                            </span>
+                        </div>
+                    </div>
+
+                    @if ($institution->rfps->isNotEmpty())
+                        <div class="space-y-1 max-h-[580px] overflow-y-auto pr-1">
+                            @foreach ($institution->rfps as $rfp)
+                                <div
+                                    class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 space-y-2 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            @php
+                                                $statusLower = strtolower((string) $rfp->status);
+                                            @endphp
+                                            <span
+                                                class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider
+                                                {{ $statusLower === 'open' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : '' }}
+                                                {{ $statusLower === 'awarded' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : '' }}
+                                                {{ in_array($statusLower, ['past', 'closed', 'evaluation']) ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : '' }}
+                                                {{ in_array($statusLower, ['cancelled', 'canceled']) ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300' : '' }}
+                                            ">
+                                                {{ ucfirst($rfp->status) }}
+                                            </span>
+
+                                            @if ($rfp->reference_id)
+                                                <span
+                                                    class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                                    Ref: {{ $rfp->reference_id }}
+                                                </span>
+                                            @elseif($rfp->project_id)
+                                                <span
+                                                    class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                                    ID: {{ $rfp->project_id }}
+                                                </span>
+                                            @endif
+
+                                            @if ($rfp->department)
+                                                <span
+                                                    class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    </svg>
+                                                    <span>{{ $rfp->platform?->name }}</span>
+                                                </span>
+                                            @endif
+
+                                        </div>
+
+                                        <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                                            @if ($rfp->opportunity_url || $rfp->portal_url)
+                                                <a href="{{ $rfp->opportunity_url ?: $rfp->portal_url }}"
+                                                    target="_blank" rel="noopener"
+                                                    class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
+                                                    {{ $rfp->title }}
+                                                </a>
+                                            @else
+                                                {{ $rfp->title }}
+                                            @endif
+                                        </h4>
+                                    </div>
+
+                                    @if ($rfp->description)
+                                        <p
+                                            class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                                            {{ \Illuminate\Support\Str::limit(strip_tags($rfp->description), 180) }}
+                                        </p>
+                                    @endif
+
+                                    <div
+                                        class="flex items-center justify-between gap-2 text-[10px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                                        <div>
+                                            @if ($rfp->date_open)
+                                                <span>Open:
+                                                    {{ \Carbon\Carbon::parse($rfp->date_open)->format('M d, Y') }}</span>
+                                            @endif
+
+                                            @if ($rfp->date_close)
+                                                <span>Deadline:
+                                                    {{ \Carbon\Carbon::parse($rfp->date_close)->format('M d, Y') }}</span>
+                                            @endif
+                                        </div>
+
+                                        @if ($rfp->opportunity_url || $rfp->portal_url)
+                                            <a href="{{ $rfp->opportunity_url ?: $rfp->portal_url }}" target="_blank"
+                                                rel="noopener"
+                                                class="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-xs transition-all">
+                                                <span>View</span>
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div
+                            class="p-6 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                            <svg class="w-8 h-8 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">No RFPs Found</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">There are no RFPs recorded for
+                                this institution yet.</p>
+                        </div>
+                    @endif
+                </div>
+
+            </div>
+
         </div>
 
     </div>
@@ -504,7 +609,8 @@
                     btn.type = 'button';
                     btn.className =
                         'rfp-platform-opt-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-rose-50 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-between';
-                    const parts = [item.domain || item.platform_type || '', item.country || ''].filter(Boolean);
+                    const parts = [item.domain || item.platform_type || '', item.country || ''].filter(
+                        Boolean);
                     const sub = parts.join(' • ');
                     btn.innerHTML = `
                         <span class="font-medium text-slate-900 dark:text-white">${escapeHtml(item.name)}</span>

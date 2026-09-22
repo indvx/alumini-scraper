@@ -103,7 +103,9 @@ class InstitutionController extends Controller
     {
         $institution->update(['last_view' => now()]);
         $institution->refresh();
-        $institution->load(['search', 'rfpPlatforms']);
+        $institution->load(['search', 'rfpPlatforms', 'rfps']);
+
+        // dd($institution->rfps->wi('platform'));
 
         $initialRfpPlatforms = RFPsPlatform::query()
             ->byCountry($institution->country)
