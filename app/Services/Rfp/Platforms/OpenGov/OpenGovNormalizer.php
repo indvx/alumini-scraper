@@ -16,10 +16,11 @@ class OpenGovNormalizer implements RfpNormalizer
      */
     public function normalize(array $rawPayload, RfpScrapeData $scrapeData, ScrapeMethod $source): array
     {
-        // dd($rawPayload);
         $projects = [];
         if (isset($rawPayload['id']) || isset($rawPayload['title'])) {
             $projects = [$rawPayload];
+        } elseif (isset($rawPayload['rows']) && is_array($rawPayload['rows'])) {
+            $projects = $rawPayload['rows'];
         } elseif (isset($rawPayload['projects']) && is_array($rawPayload['projects'])) {
             $projects = $rawPayload['projects'];
         } elseif (isset($rawPayload['data']) && is_array($rawPayload['data'])) {
@@ -34,12 +35,10 @@ class OpenGovNormalizer implements RfpNormalizer
         $govCode = OpenGovConfig::extractGovCode($portalUrl) ?? $scrapeData->options['gov_code'] ?? 'surs';
 
         $rfps = [];
-        dd("normalize", $projects);
         foreach ($projects as $key => $item) {
             if (! is_array($item)) {
                 continue;
             }
-            dd("item", $item);
 
             $closeDateStr = $item['proposalDeadline'] ?? $item['date_close'] ?? null;
             if (! $this->isWithinDateRange($closeDateStr, $scrapeData->fromDate, $scrapeData->toDate)) {
@@ -56,8 +55,8 @@ class OpenGovNormalizer implements RfpNormalizer
             $statusEnum = match (true) {
                 $statusStr === 'open' => RfpStatus::OPEN,
                 $closedSubstatus === 'awarded' || $statusStr === 'awarded' => RfpStatus::AWARDED,
-                $statusStr === 'closed' || $statusStr === 'past' => RfpStatus::PAST,
-                $statusStr === 'cancelled' => RfpStatus::CANCELLED,
+                $closedSubstatus === 'canceled' || $closedSubstatus === 'cancelled' || $statusStr === 'cancelled' || $statusStr === 'canceled' => RfpStatus::CANCELLED,
+                $statusStr === 'closed' || $statusStr === 'past' || $statusStr === 'evaluation' => RfpStatus::PAST,
                 default => $scrapeData->type,
             };
 

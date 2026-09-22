@@ -40,16 +40,22 @@ class OpenGovApiStrategy implements RfpExtractionStrategy
         }
 
         $apiUrl = OpenGovConfig::getPublicProjectsEndpoint($govCode);
+        $status = 'all';
+        if ($scrapeData->type === RfpStatus::PAST) {
+            $status = 'closed';
+        } else if ($scrapeData->type === RfpStatus::OPEN) {
+            $status = 'open';
+        }
 
         $payload = [
             'filters' => [
                 [
                     'type' => 'status',
-                    'value' => 'all',
+                    'value' => $status,
                 ],
             ],
             'quickSearchQuery' => $scrapeData->options['query'] ?? null,
-            'limit' => $scrapeData->options['limit'] ?? 50,
+            'limit' => $scrapeData->options['limit'] ?? 150,
             'page' => $scrapeData->options['page'] ?? 1,
             'sortField' => 'proposalDeadline',
             'sortDirection' => 'DESC',
@@ -69,10 +75,8 @@ class OpenGovApiStrategy implements RfpExtractionStrategy
             }
 
             $rawPayload = $response->json();
-            // dd($rawPayload);
             $rfps = $this->normalizer->normalize($rawPayload ?? [], $scrapeData, ScrapeMethod::API);
 
-            dd($rfps);
             return ScraperResult::success($rfps, ScrapeMethod::API);
         } catch (\Throwable $e) {
             return ScraperResult::failure($e->getMessage(), ScrapeMethod::API);
