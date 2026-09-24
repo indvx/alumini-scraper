@@ -94,7 +94,7 @@ class ProcurementPlatformDiscoveryService
         $messages = [
             [
                 'role' => 'system',
-                'content' => 'You verify procurement portal URLs. Never invent or construct URLs.'
+                'content' => 'You verify procurement portal URLs. Never invent or construct URLs.',
             ],
             [
                 'role' => 'user',
@@ -124,7 +124,7 @@ class ProcurementPlatformDiscoveryService
 
     public function discoverPortalUrl(string $universityName, string $platformName = 'Bonfire'): string
     {
-        $result = $this->discoverPortal($universityName, $platformName);
+        $result = $this->discoverPortal($universityName, $platformName, allowExternalLookup: false);
         if (! $result->isSuccess()) {
             throw new ItemNotFoundException("Procurement portal URL for '{$universityName}' on platform '{$platformName}' was not found.");
         }
@@ -137,7 +137,7 @@ class ProcurementPlatformDiscoveryService
         $universityName = trim($universityName);
         $platformName = trim($platformName);
         $institution = Institution::where('name', 'like', "%{$universityName}%")
-            ->orWhere('name', 'like', '%' . Str::slug($universityName, ' ') . '%')
+            ->orWhere('name', 'like', '%'.Str::slug($universityName, ' ').'%')
             ->first();
         $platformRecord = null;
         $portalUrl = null;

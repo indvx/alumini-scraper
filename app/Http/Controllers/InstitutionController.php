@@ -58,7 +58,7 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        $institutions = $this->institutionRepository->getPaginated($filters, 15);
+        $institutions = $this->institutionRepository->getPaginated($filters, 21);
 
         return view('institutions.search', [
             'institutions' => $institutions,
@@ -168,15 +168,24 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        $institutions = $this->institutionRepository->getFilteredList($filters);
+
+
+        $perPage = (int) $request->input('per_page', 20);
+        $paginated = $this->institutionRepository->getPaginated($filters, $perPage);
+        $institutions = $paginated->items();
+        $currentPage = $paginated->currentPage();
+        $filename = "institutions_page_{$currentPage}_export_" . date('Y-m-d_His') . '.csv';
+
 
         $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="institutions_export.csv"',
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
         $callback = function () use ($institutions) {
             $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
             fputcsv($file, ['ID', 'Name', 'Type', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Postcode', 'Phone', 'Website', 'OSM ID']);
 
             foreach ($institutions as $s) {
