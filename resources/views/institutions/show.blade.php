@@ -39,8 +39,8 @@
         <!-- Main Grid Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-            <!-- Left 2 Columns: Institution Profile Header & Data -->
-            <div class="lg:col-span-2 space-y-6">
+            <!-- Left 1 Column: Institution Profile & Attributes -->
+            <div class="lg:col-span-1 space-y-6">
 
                 <!-- Profile Card -->
                 <div
@@ -74,8 +74,7 @@
                     </div>
 
                     <!-- Attributes Grid -->
-                    <div
-                        class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-sm">
+                    <div class="grid grid-cols-1 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-sm">
                         <div
                             class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
                             <span
@@ -100,22 +99,6 @@
                                     @endif
                                 </span>
                             </div>
-                            {{-- @if ($institution->latitude && $institution->longitude)
-                                <div class="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
-                                    <a href="https://www.google.com/maps/place/{{ $institution->latitude }},+{{ $institution->longitude }}"
-                                        target="_blank" rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 transition-colors w-fit">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        Open Maps
-                                    </a>
-                                </div>
-                            @endif --}}
                         </div>
 
                         <div
@@ -148,41 +131,47 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Right 2 Columns: RFP Platforms & Details -->
+            <div class="lg:col-span-2 space-y-6">
+
                 <!-- Associated RFP Platforms Card -->
                 <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                         <div>
-                            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>RFP Platforms</span>
+                            <h3 class="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>RFP Platforms Details</span>
                                 <span
-                                    class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
+                                    class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
                                     {{ $institution->rfpPlatforms->count() }}
                                 </span>
                             </h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                RFP portals used by this institution.
+                                RFP procurement platforms, portal links, and evidence verification associated with
+                                {{ $institution->name }}.
                             </p>
                         </div>
                         <button type="button"
                             onclick="document.getElementById('add-platform-relation-form').classList.toggle('hidden');"
-                            class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1 shadow-sm transition-all">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
-                            <span>Add</span>
+                            <span>Add Platform</span>
                         </button>
                     </div>
 
                     <!-- Add Relation Form (Collapsible) -->
                     <div id="add-platform-relation-form"
-                        class="hidden p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 transition-all">
+                        class="hidden p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
                             Add RFP Platform Relation
                         </h4>
                         <form action="{{ route('institutions.rfp-platforms.store', $institution) }}" method="POST"
-                            class="space-y-3">
+                            class="space-y-4">
                             @csrf
                             <div>
                                 <label for="rfp_platform_search_input"
@@ -193,12 +182,11 @@
                                     <input type="hidden" id="rfps_platform_id" name="rfps_platform_id" required>
                                     <div class="relative flex items-center">
                                         <input type="text" id="rfp_platform_search_input"
-                                            placeholder="Type or select platform (10 suggested)..." autocomplete="off"
-                                            required
-                                            class="w-full px-3 py-2 pr-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                            placeholder="Type or select platform..." autocomplete="off" required
+                                            class="w-full px-3.5 py-2.5 pr-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                                         <button type="button" id="rfp_platform_clear_btn"
-                                            class="hidden absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                            class="hidden absolute right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M6 18L18 6M6 6l12 12" />
@@ -234,7 +222,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label for="confidence"
                                         class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
@@ -242,7 +230,7 @@
                                     </label>
                                     <input type="number" min="0" max="100" id="confidence"
                                         name="confidence" value="98"
-                                        class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                                 </div>
 
                                 <div>
@@ -251,7 +239,7 @@
                                         Status
                                     </label>
                                     <select id="rel_status" name="status"
-                                        class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                                         <option value="active" selected>Active</option>
                                         <option value="inactive">Inactive</option>
                                         <option value="pending">Pending</option>
@@ -259,24 +247,27 @@
                                 </div>
                             </div>
 
-                            <div>
-                                <label for="discovery_method"
-                                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                    Discovery Method
-                                </label>
-                                <input type="text" id="discovery_method" name="discovery_method"
-                                    value="AI + Web Search" placeholder="e.g. AI + Web Search"
-                                    class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label for="discovery_method"
+                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                        Discovery Method
+                                    </label>
+                                    <input type="text" id="discovery_method" name="discovery_method"
+                                        value="AI + Web Search" placeholder="e.g. AI + Web Search"
+                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                </div>
 
-                            <div>
-                                <label for="source_title"
-                                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                    Source Title
-                                </label>
-                                <input type="text" id="source_title" name="source_title"
-                                    value="University procurement page" placeholder="e.g. University procurement page"
-                                    class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                <div>
+                                    <label for="source_title"
+                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                        Source Title
+                                    </label>
+                                    <input type="text" id="source_title" name="source_title"
+                                        value="University procurement page"
+                                        placeholder="e.g. University procurement page"
+                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                </div>
                             </div>
 
                             <div>
@@ -286,10 +277,10 @@
                                 </label>
                                 <input type="url" id="source_url" name="source_url"
                                     placeholder="https://procurement.example.edu/bids"
-                                    class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label for="first_verified_at"
                                         class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
@@ -297,7 +288,7 @@
                                     </label>
                                     <input type="date" id="first_verified_at" name="first_verified_at"
                                         value="{{ date('Y-m-d') }}"
-                                        class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                                 </div>
 
                                 <div>
@@ -307,7 +298,7 @@
                                     </label>
                                     <input type="date" id="last_verified_at" name="last_verified_at"
                                         value="{{ date('Y-m-d') }}"
-                                        class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                                 </div>
                             </div>
 
@@ -318,18 +309,18 @@
                                 </label>
                                 <textarea id="notes" name="notes" rows="2"
                                     placeholder="e.g. Formal bid opportunities are posted through Bonfire."
-                                    class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+                                    class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
                             </div>
 
                             <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                                 <button type="button"
                                     onclick="document.getElementById('add-platform-relation-form').classList.add('hidden');"
-                                    class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                    class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
                                     Cancel
                                 </button>
                                 <button type="submit"
-                                    class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition-all">
-                                    Save
+                                    class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition-all">
+                                    Save Relation
                                 </button>
                             </div>
                         </form>
@@ -337,21 +328,21 @@
 
                     <!-- List of Attached Platforms -->
                     @if ($institution->rfpPlatforms->count() > 0)
-                        <div class="space-y-3">
+                        <div class="space-y-4 max-h-[520px] overflow-y-auto pr-1.5">
                             @foreach ($institution->rfpPlatforms as $plat)
                                 <div
-                                    class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2.5">
+                                    class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
                                     <div
-                                        class="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                                        class="flex items-start justify-between gap-3 border-b border-slate-200/60 dark:border-slate-800 pb-3">
                                         <div>
                                             <a href="{{ route('rfps-platform.show', $plat) }}"
-                                                class="text-sm font-bold text-slate-900 dark:text-white hover:text-rose-600 transition-colors">
+                                                class="text-base font-bold text-slate-900 dark:text-white hover:text-rose-600 transition-colors">
                                                 {{ $plat->name }}
                                             </a>
-                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                                 <span
                                                     class="font-semibold text-slate-700 dark:text-slate-300">{{ $institution->name }}</span>
-                                                uses <span
+                                                uses platform <span
                                                     class="font-semibold text-slate-700 dark:text-slate-300">{{ $plat->name }}</span>
                                             </p>
                                         </div>
@@ -364,7 +355,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                class="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                                                class="p-1.5 text-slate-400 hover:text-rose-600 transition-colors rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50"
                                                 title="Remove relation">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
@@ -376,29 +367,31 @@
                                         </form>
                                     </div>
 
-                                    <div class="flex items-center gap-1.5 flex-wrap text-[10px]">
+                                    <div class="flex items-center gap-2 flex-wrap text-xs">
                                         @if ($plat->pivot->status === 'active')
                                             <span
-                                                class="px-2 py-0.5 font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                                class="px-2.5 py-0.5 font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[11px]">
                                                 Active
                                             </span>
                                         @else
                                             <span
-                                                class="px-2 py-0.5 font-bold rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                                class="px-2.5 py-0.5 font-bold rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-[11px]">
                                                 {{ ucfirst($plat->pivot->status) }}
                                             </span>
                                         @endif
+
                                         @if ($plat->pivot->confidence)
                                             <span
-                                                class="px-2 py-0.5 font-bold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
+                                                class="px-2.5 py-0.5 font-bold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 text-[11px]">
                                                 Confidence: {{ $plat->pivot->confidence }}%
                                             </span>
                                         @endif
                                     </div>
 
-                                    <div class="space-y-1 text-xs">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
                                         @if ($plat->pivot->discovery_method)
-                                            <div class="flex justify-between">
+                                            <div
+                                                class="flex justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                                                 <span class="text-slate-400">Discovery Method:</span>
                                                 <span
                                                     class="font-medium text-slate-700 dark:text-slate-300">{{ $plat->pivot->discovery_method }}</span>
@@ -406,8 +399,9 @@
                                         @endif
 
                                         @if ($plat->pivot->source_title)
-                                            <div class="flex justify-between">
-                                                <span class="text-slate-400">Source:</span>
+                                            <div
+                                                class="flex justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                                                <span class="text-slate-400">Source Title:</span>
                                                 <span
                                                     class="font-medium text-slate-700 dark:text-slate-300">{{ $plat->pivot->source_title }}</span>
                                             </div>
@@ -416,9 +410,9 @@
 
                                     @if ($plat->pivot->notes)
                                         <div
-                                            class="text-[11px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+                                            class="text-xs bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
                                             <span
-                                                class="font-bold block text-[10px] text-slate-400 uppercase tracking-wider">Notes</span>
+                                                class="font-bold block text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Notes</span>
                                             {{ $plat->pivot->notes }}
                                         </div>
                                     @endif
@@ -426,9 +420,9 @@
                                     @if ($plat->pivot->source_url)
                                         <div class="pt-1 text-right">
                                             <a href="{{ $plat->pivot->source_url }}" target="_blank" rel="noopener"
-                                                class="px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 font-semibold text-[11px] hover:underline inline-flex items-center gap-1">
-                                                <span>Visit Evidence</span>
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                class="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 font-semibold text-xs hover:underline inline-flex items-center gap-1.5 transition-colors">
+                                                <span>Visit Verification Evidence URL</span>
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
@@ -442,142 +436,9 @@
                         </div>
                     @else
                         <div
-                            class="p-4 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                            No RFP platform linked yet. Click <strong>Add</strong> to attach one.
-                        </div>
-                    @endif
-                </div>
-
-            </div>
-
-            <!-- Right 1 Column: RFPs Information -->
-            <div class="lg:col-span-1 space-y-6">
-
-                <!-- RFPs Information Card -->
-                <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-                    <div
-                        class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-                        <div class="flex items-center gap-2">
-                            <h3 class="text-base font-extrabold text-slate-900 dark:text-white">
-                                RFPs Information
-                            </h3>
-                            <span
-                                class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
-                                {{ $institution->rfps->count() }}
-                            </span>
-                        </div>
-                    </div>
-
-                    @if ($institution->rfps->isNotEmpty())
-                        <div class="space-y-1 max-h-[580px] overflow-y-auto pr-1">
-                            @foreach ($institution->rfps as $rfp)
-                                <div
-                                    class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 space-y-2 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
-                                    <div class="space-y-1.5">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
-                                            @php
-                                                $statusLower = strtolower((string) $rfp->status);
-                                            @endphp
-                                            <span
-                                                class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider
-                                                {{ $statusLower === 'open' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : '' }}
-                                                {{ $statusLower === 'awarded' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : '' }}
-                                                {{ in_array($statusLower, ['past', 'closed', 'evaluation']) ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : '' }}
-                                                {{ in_array($statusLower, ['cancelled', 'canceled']) ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300' : '' }}
-                                            ">
-                                                {{ ucfirst($rfp->status) }}
-                                            </span>
-
-                                            @if ($rfp->reference_id)
-                                                <span
-                                                    class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                                                    Ref: {{ $rfp->reference_id }}
-                                                </span>
-                                            @elseif($rfp->project_id)
-                                                <span
-                                                    class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                                                    ID: {{ $rfp->project_id }}
-                                                </span>
-                                            @endif
-
-                                            @if ($rfp->department)
-                                                <span
-                                                    class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                                    </svg>
-                                                    <span>{{ $rfp->platform?->name }}</span>
-                                                </span>
-                                            @endif
-
-                                        </div>
-
-                                        <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-                                            @if ($rfp->opportunity_url || $rfp->portal_url)
-                                                <a href="{{ $rfp->opportunity_url ?: $rfp->portal_url }}"
-                                                    target="_blank" rel="noopener"
-                                                    class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
-                                                    {{ $rfp->title }}
-                                                </a>
-                                            @else
-                                                {{ $rfp->title }}
-                                            @endif
-                                        </h4>
-                                    </div>
-
-                                    @if ($rfp->description)
-                                        <p
-                                            class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                                            {{ \Illuminate\Support\Str::limit(strip_tags($rfp->description), 180) }}
-                                        </p>
-                                    @endif
-
-                                    <div
-                                        class="flex items-center justify-between gap-2 text-[10px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
-                                        <div>
-                                            @if ($rfp->date_open)
-                                                <span>Open:
-                                                    {{ \Carbon\Carbon::parse($rfp->date_open)->format('M d, Y') }}</span>
-                                            @endif
-
-                                            @if ($rfp->date_close)
-                                                <span>Deadline:
-                                                    {{ \Carbon\Carbon::parse($rfp->date_close)->format('M d, Y') }}</span>
-                                            @endif
-                                        </div>
-
-                                        @if ($rfp->opportunity_url || $rfp->portal_url)
-                                            <a href="{{ $rfp->opportunity_url ?: $rfp->portal_url }}" target="_blank"
-                                                rel="noopener"
-                                                class="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-xs transition-all">
-                                                <span>View</span>
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                </svg>
-                                            </a>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div
-                            class="p-6 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                            <svg class="w-8 h-8 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">No RFPs Found</p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">There are no RFPs recorded for
-                                this institution yet.</p>
+                            class="p-6 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                            No RFP platforms linked to this institution yet. Click <strong>Add Platform</strong> above
+                            to attach one.
                         </div>
                     @endif
                 </div>

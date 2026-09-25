@@ -43,7 +43,7 @@ class OpenGovApiStrategy implements RfpExtractionStrategy
         $status = 'all';
         if ($scrapeData->type === RfpStatus::PAST) {
             $status = 'closed';
-        } else if ($scrapeData->type === RfpStatus::OPEN) {
+        } elseif ($scrapeData->type === RfpStatus::OPEN) {
             $status = 'open';
         }
 

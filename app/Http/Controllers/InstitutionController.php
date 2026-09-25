@@ -7,10 +7,10 @@ use App\Models\LocationSearch;
 use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\InstitutionRepositoryInterface;
 use App\Repositories\Contracts\LocationSearchRepositoryInterface;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InstitutionController extends Controller
@@ -49,7 +49,7 @@ class InstitutionController extends Controller
         ]);
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $filters = [
             'search' => $request->input('search'),
@@ -66,7 +66,7 @@ class InstitutionController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         $searches = LocationSearch::query()->latest('searched_at')->limit(50)->get();
 
@@ -99,13 +99,11 @@ class InstitutionController extends Controller
             ->with('success', "Institution '{$institution->name}' created successfully.");
     }
 
-    public function show(Institution $institution)
+    public function show(Institution $institution): View
     {
         $institution->update(['last_view' => now()]);
         $institution->refresh();
         $institution->load(['search', 'rfpPlatforms', 'rfps']);
-
-        // dd($institution->rfps->wi('platform'));
 
         $initialRfpPlatforms = RFPsPlatform::query()
             ->byCountry($institution->country)
@@ -119,7 +117,7 @@ class InstitutionController extends Controller
         ]);
     }
 
-    public function edit(Institution $institution)
+    public function edit(Institution $institution): View
     {
         return view('institutions.edit', [
             'institution' => $institution,
@@ -168,23 +166,20 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-
-
         $perPage = (int) $request->input('per_page', 20);
         $paginated = $this->institutionRepository->getPaginated($filters, $perPage);
         $institutions = $paginated->items();
         $currentPage = $paginated->currentPage();
-        $filename = "institutions_page_{$currentPage}_export_" . date('Y-m-d_His') . '.csv';
-
+        $filename = "institutions_page_{$currentPage}_export_".date('Y-m-d_His').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
         $callback = function () use ($institutions) {
             $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($file, ['ID', 'Name', 'Type', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Postcode', 'Phone', 'Website', 'OSM ID']);
 
@@ -210,27 +205,5 @@ class InstitutionController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
-    }
-
-    public function dashboard()
-    {
-        $totalInstitutions = Institution::count();
-        $totalSearches = LocationSearch::count();
-        $recentSearches = LocationSearch::latest('searched_at')->limit(5)->get();
-        $recentInstitutions = Institution::latest('last_view')->limit(6)->get();
-
-        $typeCounts = Institution::query()
-            ->select('type', DB::raw('count(*) as count'))
-            ->groupBy('type')
-            ->pluck('count', 'type')
-            ->toArray();
-
-        return view('dashboard', [
-            'totalInstitutions' => $totalInstitutions,
-            'totalSearches' => $totalSearches,
-            'recentSearches' => $recentSearches,
-            'recentInstitutions' => $recentInstitutions,
-            'typeBreakdown' => $typeCounts,
-        ]);
     }
 }
