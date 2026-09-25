@@ -11,8 +11,9 @@
                     </h2>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <a href="{{ route('institutions.export', request()->all()) }}"
-                        class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2 shadow-sm">
+                    <a href="{{ route('institutions.export', request()->query()) }}"
+                        class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2 shadow-sm"
+                        title="Export {{ $institutions->count() }} items showing on page {{ $institutions->currentPage() }} to CSV">
                         <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -57,7 +58,8 @@
                             <option value="college" {{ ($filters['type'] ?? '') == 'college' ? 'selected' : '' }}>
                                 College</option>
                             <option value="kindergarten"
-                                {{ ($filters['type'] ?? '') == 'kindergarten' ? 'selected' : '' }}>Kindergarten</option>
+                                {{ ($filters['type'] ?? '') == 'kindergarten' ? 'selected' : '' }}>Kindergarten
+                            </option>
                         </select>
                     </div>
                     <div>
@@ -167,7 +169,8 @@
                                         <button type="submit"
                                             class="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                                             title="Delete Institution">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>

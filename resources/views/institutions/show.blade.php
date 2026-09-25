@@ -87,17 +87,35 @@
                         </div>
 
                         <div
-                            class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
-                            <span
-                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Coordinates</span>
-                            <span class="text-slate-900 dark:text-white font-mono text-xs mt-0.5 block">
-                                @if ($institution->latitude && $institution->longitude)
-                                    {{ number_format($institution->latitude, 6) }},
-                                    {{ number_format($institution->longitude, 6) }}
-                                @else
-                                    N/A
-                                @endif
-                            </span>
+                            class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
+                            <div>
+                                <span
+                                    class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Coordinates</span>
+                                <span class="text-slate-900 dark:text-white font-mono text-xs mt-0.5 block">
+                                    @if ($institution->latitude && $institution->longitude)
+                                        {{ number_format($institution->latitude, 6) }},
+                                        {{ number_format($institution->longitude, 6) }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </span>
+                            </div>
+                            {{-- @if ($institution->latitude && $institution->longitude)
+                                <div class="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                                    <a href="https://www.google.com/maps/place/{{ $institution->latitude }},+{{ $institution->longitude }}"
+                                        target="_blank" rel="noopener noreferrer"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 transition-colors w-fit">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Open Maps
+                                    </a>
+                                </div>
+                            @endif --}}
                         </div>
 
                         <div
