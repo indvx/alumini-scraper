@@ -4,11 +4,11 @@ use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\InstitutionRFPPlatformController;
 use App\Http\Controllers\LocationLookupController;
 use App\Http\Controllers\LocationSearchController;
+use App\Http\Controllers\RFPsController;
 use App\Http\Controllers\RFPsPlatformController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
-Route::get('/dashboard', [InstitutionController::class, 'dashboard'])->name('dashboard');
 
 Route::prefix('locations')->group(function () {
     Route::get('/countries', [LocationLookupController::class, 'getCountries'])->name('locations.countries');
@@ -31,6 +31,12 @@ Route::prefix('institutions')->group(function () {
     Route::delete('/{institution}/rfp-platforms/{rfpsPlatform}', [InstitutionRFPPlatformController::class, 'destroyInstitutionPlatform'])->name('institutions.rfp-platforms.destroy');
 });
 
+Route::prefix('rfps')->group(function () {
+    Route::get('/', [RFPsController::class, 'index'])->name('rfps.index');
+    Route::post('/scrape', [RFPsController::class, 'scrape'])->name('rfps.scrape');
+    Route::get('/{rfp}', [RFPsController::class, 'show'])->name('rfps.show');
+});
+
 Route::prefix('rfps-platform')->group(function () {
     Route::get('/', [RFPsPlatformController::class, 'index'])->name('rfps-platform.index');
     Route::get('/create', [RFPsPlatformController::class, 'create'])->name('rfps-platform.create');
@@ -42,5 +48,6 @@ Route::prefix('rfps-platform')->group(function () {
     Route::put('/{rfpsPlatform}', [RFPsPlatformController::class, 'update'])->name('rfps-platform.update');
     Route::delete('/{rfpsPlatform}', [RFPsPlatformController::class, 'destroy'])->name('rfps-platform.destroy');
     Route::post('/{rfpsPlatform}/institutions', [InstitutionRFPPlatformController::class, 'storePlatformInstitution'])->name('rfps-platform.institutions.store');
+    Route::post('/{rfpsPlatform}/institutions/import', [InstitutionRFPPlatformController::class, 'importPlatformInstitutions'])->name('rfps-platform.institutions.import');
     Route::delete('/{rfpsPlatform}/institutions/{institution}', [InstitutionRFPPlatformController::class, 'destroyPlatformInstitution'])->name('rfps-platform.institutions.destroy');
 });

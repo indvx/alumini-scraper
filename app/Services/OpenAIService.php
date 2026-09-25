@@ -33,11 +33,11 @@ class OpenAIService
         ];
     }
 
-    public function content(array $messages, ?string $input = null, ?array $tools = [],): string
+    public function content(array $messages, ?string $input = null, ?array $tools = []): string
     {
         Log::info('OpenAI content initialized');
         Log::info($messages);
-        if (!empty($tools)) {
+        if (! empty($tools)) {
             try {
                 $response = $this->client->responses()->create([
                     'model' => 'gpt-5.6-luna',
@@ -51,9 +51,11 @@ class OpenAIService
                     'input' => $input,
                 ]);
                 Log::info('OpenAI tools response', ['response' => $response]);
+
                 return trim($response->outputText);
             } catch (\Throwable $e) {
                 Log::info('OpenAI tools error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
                 return '';
             }
         } else {
@@ -61,7 +63,7 @@ class OpenAIService
                 $response = $this->client->chat()->create([
                     'model' => 'gpt-4o-mini',
                     'messages' => $messages,
-                    'temperature' => 0
+                    'temperature' => 0,
                 ]);
 
                 Log::info('OpenAI prompt response', ['response' => $response]);

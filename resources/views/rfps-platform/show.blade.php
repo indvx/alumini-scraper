@@ -186,7 +186,7 @@
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                         <div>
                             <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>Institutions</span>
+                                <span>Institution relations</span>
                                 <span
                                     class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
                                     {{ $platform->rfpInstitutions->count() }}
@@ -196,15 +196,26 @@
                                 Educational institutions using this platform.
                             </p>
                         </div>
-                        <button type="button"
-                            onclick="document.getElementById('add-institution-relation-form').classList.toggle('hidden');"
-                            class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1 shadow-sm transition-all">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>Add</span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button"
+                                onclick="document.getElementById('add-institution-relation-form').classList.toggle('hidden'); document.getElementById('import-institution-relation-form').classList.add('hidden');"
+                                class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1 shadow-sm transition-all">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span>Add</span>
+                            </button>
+                            <button type="button"
+                                onclick="document.getElementById('import-institution-relation-form').classList.toggle('hidden'); document.getElementById('add-institution-relation-form').classList.add('hidden');"
+                                class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600 text-xs font-semibold flex items-center gap-1 shadow-sm transition-all">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <span>Import</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Add Relation Form (Collapsible) -->
@@ -367,9 +378,90 @@
                         </form>
                     </div>
 
+                    <!-- Import Relation Form (Collapsible) -->
+                    <div id="import-institution-relation-form"
+                        class="hidden p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 transition-all">
+                        <div class="flex items-center justify-between">
+                            <h4
+                                class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                Import Related Institutions (CSV)
+                            </h4>
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                            Upload a CSV file containing institution details or URLs to link institutions against
+                            <strong>{{ $platform->name }}</strong>.
+                        </p>
+                        <form action="{{ route('rfps-platform.institutions.import', $platform) }}" method="POST"
+                            enctype="multipart/form-data" class="space-y-3">
+                            @csrf
+                            <div>
+                                <label for="csv_file"
+                                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                    Select CSV File <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="file" id="csv_file" name="csv_file" accept=".csv,.txt" required
+                                    class="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 dark:file:bg-rose-950/50 dark:file:text-rose-300">
+                                <p class="text-[10px] text-slate-400 mt-1">
+                                    Expected CSV columns: <code
+                                        class="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">institution_name,
+                                        source_url, confidence, status, notes</code>
+                                </p>
+                            </div>
+
+
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <div>
+                                    <label for="import_confidence"
+                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                        Default Confidence (%)
+                                    </label>
+                                    <input type="number" min="0" max="100" id="import_confidence"
+                                        name="confidence" value="98"
+                                        class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                </div>
+
+                                <div>
+                                    <label for="import_status"
+                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                        Default Status
+                                    </label>
+                                    <select id="import_status" name="status"
+                                        class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                        <option value="active" selected>Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="pending">Pending</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                                <button type="button"
+                                    onclick="document.getElementById('import-institution-relation-form').classList.add('hidden');"
+                                    class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    Import
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+
                     <!-- List of Attached Institutions -->
                     @if ($platform->rfpInstitutions->count() > 0)
-                        <div class="space-y-3">
+                        <div class="space-y-3 max-h-[520px] overflow-y-auto pr-1.5">
                             @foreach ($platform->rfpInstitutions as $inst)
                                 <div
                                     class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2.5">
@@ -529,7 +621,8 @@
                     btn.type = 'button';
                     btn.className =
                         'institution-opt-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-rose-50 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-between';
-                    const parts = [item.city || item.state || item.type || '', item.country || ''].filter(Boolean);
+                    const parts = [item.city || item.state || item.type || '', item.country || ''].filter(
+                        Boolean);
                     const sub = parts.join(' • ');
                     btn.innerHTML = `
                         <span class="font-medium text-slate-900 dark:text-white">${escapeHtml(item.name)}</span>

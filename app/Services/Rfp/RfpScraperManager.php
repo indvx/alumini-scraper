@@ -11,6 +11,7 @@ use App\Models\RFPsPlatform;
 use App\Services\Rfp\Discovery\ProcurementPlatformDiscoveryService;
 use App\Services\Rfp\Support\ScraperRegistry;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class RfpScraperManager
 {
@@ -30,44 +31,52 @@ class RfpScraperManager
         ?Institution $institution = null,
         ?RFPsPlatform $platformRecord = null
     ): ScraperResult {
-
         try {
-            $discoveryResult = $this->discoveryService->discoverPortal(
+            try {
+                $discoveryResult = $this->discoveryService->discoverPortal(
+                    universityName: $universityName,
+                    platformName: $platform,
+                    institution: $institution,
+                    platformRecord: $platformRecord,
+                    allowExternalLookup: false
+                );
+            } catch (Exception $e) {
+                return ScraperResult::failure($e->getMessage(), ScrapeMethod::API);
+            }
+
+            if (! $discoveryResult->isSuccess()) {
+                return ScraperResult::failure(
+                    "Procurement portal URL for '{$universityName}' on platform '{$platform}' was not found in database.",
+                    ScrapeMethod::API
+                );
+            }
+
+            $resolvedInstitution = $discoveryResult->institution ?? $institution;
+            $resolvedPlatform = $discoveryResult->platformRecord ?? $platformRecord;
+
+            $scrapeData = new RfpScrapeData(
                 universityName: $universityName,
-                platformName: $platform,
-                institution: $institution,
-                platformRecord: $platformRecord
+                portalUrl: $discoveryResult->portalUrl,
+                type: $status,
+                fromDate: $fromDate,
+                toDate: $toDate,
+                institutionId: $resolvedInstitution?->id,
+                platformId: $resolvedPlatform?->id
             );
-        } catch (Exception $e) {
-            return ScraperResult::failure($e->getMessage(), ScrapeMethod::API);
+
+            $scraper = $this->scraperRegistry->getScraperForPlatform($platform);
+            $result = $scraper->scrape($scrapeData);
+            if ($persist && ! empty($result->rfps)) {
+                $this->persistenceService->saveMany($result->rfps);
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            Log::error("Scraping error for '{$universityName}' on platform '{$platform}': {$e->getMessage()}", [
+                'exception' => $e,
+            ]);
+
+            return ScraperResult::failure("Scraping exception: {$e->getMessage()}", ScrapeMethod::API);
         }
-
-        if (! $discoveryResult->isSuccess()) {
-            return ScraperResult::failure(
-                "Procurement portal URL for '{$universityName}' on platform '{$platform}' was not found in database.",
-                ScrapeMethod::API
-            );
-        }
-
-        $resolvedInstitution = $discoveryResult->institution ?? $institution;
-        $resolvedPlatform = $discoveryResult->platformRecord ?? $platformRecord;
-
-        $scrapeData = new RfpScrapeData(
-            universityName: $universityName,
-            portalUrl: $discoveryResult->portalUrl,
-            type: $status,
-            fromDate: $fromDate,
-            toDate: $toDate,
-            institutionId: $resolvedInstitution?->id,
-            platformId: $resolvedPlatform?->id
-        );
-
-        $scraper = $this->scraperRegistry->getScraperForPlatform($platform);
-        $result = $scraper->scrape($scrapeData);
-        if ($persist && ! empty($result->rfps)) {
-            $this->persistenceService->saveMany($result->rfps);
-        }
-
-        return $result;
     }
 }

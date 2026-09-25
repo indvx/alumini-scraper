@@ -7,6 +7,10 @@ use App\Models\RFP;
 
 class RfpPersistenceService
 {
+    public function __construct(
+        private AlumniRfpMatcher $alumniRfpMatcher,
+    ) {}
+
     /**
      * Persist or update an array of RfpData DTOs in database.
      *
@@ -18,6 +22,10 @@ class RfpPersistenceService
         $savedModels = [];
 
         foreach ($rfps as $rfpData) {
+            if (! $this->alumniRfpMatcher->isRelevant($rfpData)) {
+                continue;
+            }
+
             $savedModels[] = $this->save($rfpData);
         }
 

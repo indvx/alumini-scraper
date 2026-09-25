@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Institution;
 use App\Models\RFPsPlatform;
 use App\Repositories\Contracts\RFPsPlatformRepositoryInterface;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class RFPsPlatformController extends Controller
         ]);
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $filters = [
             'search' => $request->input('search'),
@@ -84,7 +85,7 @@ class RFPsPlatformController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('rfps-platform.create');
     }
@@ -114,7 +115,7 @@ class RFPsPlatformController extends Controller
             ->with('success', "RFP Platform '{$platform->name}' created successfully.");
     }
 
-    public function show(RFPsPlatform $rfpsPlatform)
+    public function show(RFPsPlatform $rfpsPlatform): View
     {
         $rfpsPlatform->load('rfpInstitutions');
         $initialInstitutions = Institution::query()
@@ -129,7 +130,7 @@ class RFPsPlatformController extends Controller
         ]);
     }
 
-    public function edit(RFPsPlatform $rfpsPlatform)
+    public function edit(RFPsPlatform $rfpsPlatform): View
     {
         return view('rfps-platform.edit', [
             'platform' => $rfpsPlatform,

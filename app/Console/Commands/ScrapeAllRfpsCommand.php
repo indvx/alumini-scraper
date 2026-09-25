@@ -15,7 +15,7 @@ class ScrapeAllRfpsCommand extends Command
                             {--type=open : Opportunity type (open or past or all)}
                             {--institution= : Optional institution filter to match specific university/institution name}
                             {--platform= : Optional platform filter to match specific platform(s)}
-                            {--limit=20 : Maximum number of institutions to scrape}
+                            {--limit=all : Maximum number of institutions to scrape}
                             {--from= : Start date filter (YYYY-MM-DD)}
                             {--to= : End date filter (YYYY-MM-DD)}
                             {--delay=0 : Delay between scraping runs in seconds}';
@@ -27,7 +27,7 @@ class ScrapeAllRfpsCommand extends Command
         $type = $this->option('type') ?? 'open';
         $institutionFilter = $this->option('institution');
         $platformFilter = $this->option('platform');
-        $limit = (int) ($this->option('limit') ?? 20);
+        $limit = $this->option('limit') === 'all' ? null : (int) $this->option('limit');
         $fromDate = $this->option('from');
         $toDate = $this->option('to');
         $delay = (int) ($this->option('delay') ?? 0);
@@ -52,7 +52,7 @@ class ScrapeAllRfpsCommand extends Command
             $institutionQuery->where('name', 'like', "%{$institutionFilter}%");
         }
 
-        if ($limit > 0) {
+        if ($limit) {
             $institutionQuery->limit($limit);
         }
 
@@ -87,10 +87,10 @@ class ScrapeAllRfpsCommand extends Command
             }
 
             $platforms = $platformQuery->get();
-            // }
 
             if ($platforms->isEmpty()) {
                 $this->warn("No platforms available to scrape for institution '{$institution->name}'. Skipping.");
+
                 continue;
             }
 
@@ -101,6 +101,7 @@ class ScrapeAllRfpsCommand extends Command
                 $platformName = $platformRecord->name;
                 if (! $platformName) {
                     $this->warn("No platform name available for institution '{$institution->name}'. Skipping.");
+
                     continue;
                 }
                 $this->output->write(" -> Scraping <comment>{$institution->name}</comment> on <comment>{$platformName}</comment>... ");

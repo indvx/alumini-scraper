@@ -9,13 +9,16 @@
             OpenStreetMap Nominatim and Overpass APIs.
         </p>
 
-        <!-- <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <a href="{{ route('dashboard') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 font-semibold text-base border border-slate-300 dark:border-slate-700 shadow-sm transition-all">
                 Dashboard
             </a>
             <a href="{{ route('institutions.index') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-base shadow-lg shadow-rose-600/20 transition-all">
                 Institutions &rarr;
             </a>
-        </div> -->
+            <a href="{{ route('rfps.index') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-base shadow-sm transition-all">
+                RFPs Directory
+            </a>
+        </div>
     </div>
 </x-layouts.app>

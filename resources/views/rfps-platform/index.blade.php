@@ -273,9 +273,11 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="p-4 border-t border-slate-200 dark:border-slate-800">
-                    {{ $platforms->withQueryString()->links() }}
-                </div>
+                @if ($platforms->hasPages())
+                    <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                        {{ $platforms->withQueryString()->links() }}
+                    </div>
+                @endif
         </div>
     @else
         <div class="p-12 text-center">
