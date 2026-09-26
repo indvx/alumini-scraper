@@ -47,12 +47,8 @@
             <div class="flex items-center justify-between h-16">
                 <!-- Brand Logo -->
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('home') }}"
+                    <a href="{{ route('home') }}" title="Go to Home page"
                         class="flex items-center gap-2.5 group font-black text-xl text-slate-900 dark:text-white transition-colors">
-                        <div
-                            class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 via-rose-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-rose-600/20 group-hover:scale-105 transition-all">
-                            AS
-                        </div>
                         <span class="tracking-tight">Alumni<span
                                 class="text-rose-600 dark:text-rose-500">Scraper</span></span>
                     </a>
@@ -60,19 +56,19 @@
 
                 <!-- Navigation Links -->
                 <div class="flex items-center gap-1 sm:gap-2">
-                    <a href="{{ route('home') }}"
+                    <a href="{{ route('home') }}" title="Go to Home page"
                         class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold {{ request()->routeIs('home') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }} transition-all">
                         Home
                     </a>
-                    <a href="{{ route('institutions.index') }}"
+                    <a href="{{ route('institutions.index') }}" title="Browse Educational Institutions directory"
                         class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold {{ request()->routeIs('institutions.*') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }} transition-all">
                         Institutions
                     </a>
-                    <a href="{{ route('rfps-platform.index') }}"
+                    <a href="{{ route('rfps-platform.index') }}" title="Browse Procurement Platforms directory"
                         class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold {{ request()->routeIs('rfps-platform.*') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }} transition-all">
                         Platform
                     </a>
-                    <a href="{{ route('rfps.index') }}"
+                    <a href="{{ route('rfps.index') }}" title="Browse Procurement RFPs directory"
                         class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold {{ request()->routeIs('rfps.*') ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }} transition-all">
                         RFPs
                     </a>
@@ -96,7 +92,7 @@
                     </div>
                     <span class="font-medium">{{ session('success') }}</span>
                 </div>
-                <button type="button" onclick="dismissToast('success-alert')"
+                <button type="button" onclick="dismissToast('success-alert')" title="Dismiss alert message"
                     class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -119,7 +115,7 @@
                     </div>
                     <span class="font-medium">{{ session('error') }}</span>
                 </div>
-                <button type="button" onclick="dismissToast('error-alert')"
+                <button type="button" onclick="dismissToast('error-alert')" title="Dismiss alert message"
                     class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -131,30 +127,18 @@
     </div>
 
     <!-- Main Content Layout -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {{ $slot }}
     </main>
 
-    <!-- Unified Footer -->
-    <footer class="mt-auto bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 w-full">
+    <!-- Sticky Footer -->
+    <footer
+        class="sticky bottom-0 z-40 mt-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-4 w-full transition-all">
         <div
             class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
             <div class="flex items-center gap-2">
-                <div
-                    class="w-5 h-5 rounded-md bg-rose-600 text-white flex items-center justify-center text-[10px] font-black">
-                    AS</div>
                 <p>&copy; {{ date('Y') }} <strong>AlumniScraper</strong>. Ingest, scrape, and match procurement
                     RFPs.</p>
-            </div>
-            <div class="flex items-center gap-4 font-semibold text-slate-600 dark:text-slate-300">
-                <a href="{{ route('home') }}"
-                    class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">Home</a>
-                <a href="{{ route('institutions.index') }}"
-                    class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">Institutions</a>
-                <a href="{{ route('rfps.index') }}"
-                    class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">RFPs Directory</a>
-                <a href="{{ route('rfps-platform.index') }}"
-                    class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">Platforms</a>
             </div>
         </div>
     </footer>
