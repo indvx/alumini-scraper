@@ -14,7 +14,8 @@
 
             <div class="flex items-center gap-3">
                 <a href="{{ route('rfps-platform.edit', $platform) }}"
-                    class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-all">
+                    title="Edit platform configuration &amp; details"
+                    class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold inline-flex items-center gap-2 shadow-sm transition-all">
                     <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -28,7 +29,8 @@
                     @csrf
                     @method('DELETE')
                     <button type="submit"
-                        class="px-4 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 hover:bg-rose-100 text-xs font-bold inline-flex items-center gap-1.5 transition-all">
+                        title="Permanently delete this platform record"
+                        class="px-4 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 hover:bg-rose-100 text-xs font-bold inline-flex items-center gap-2 transition-all">
                         <svg class="w-4 h-4 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -41,10 +43,10 @@
         </div>
 
         <!-- Main Grid Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
 
-            <!-- Left 2 Columns: Platform Specs & Details -->
-            <div class="lg:col-span-2 space-y-6">
+            <!-- Left Column: Platform Specs & Details -->
+            <div class="lg:col-span-6 space-y-6">
                 <div
                     class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
 
@@ -177,8 +179,8 @@
                 </div>
             </div>
 
-            <!-- Right 1 Column: Associated Institutions Relation Card -->
-            <div class="lg:col-span-1 space-y-6">
+            <!-- Right Column: Associated Institutions Relation Card (Expanded width) -->
+            <div class="lg:col-span-6 space-y-6">
 
                 <!-- Associated Institutions Card -->
                 <div
@@ -186,7 +188,7 @@
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                         <div>
                             <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>Institution relations</span>
+                                <span>Institution associations</span>
                                 <span
                                     class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
                                     {{ $platform->rfpInstitutions->count() }}
@@ -198,18 +200,20 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <button type="button"
+                                title="Open form to add an institution association"
                                 onclick="document.getElementById('add-institution-relation-form').classList.toggle('hidden'); document.getElementById('import-institution-relation-form').classList.add('hidden');"
-                                class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1 shadow-sm transition-all">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
                                 <span>Add</span>
                             </button>
                             <button type="button"
+                                title="Open CSV upload form to bulk import institution associations"
                                 onclick="document.getElementById('import-institution-relation-form').classList.toggle('hidden'); document.getElementById('add-institution-relation-form').classList.add('hidden');"
-                                class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600 text-xs font-semibold flex items-center gap-1 shadow-sm transition-all">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600 text-xs font-bold flex items-center gap-2 shadow-sm transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                 </svg>
@@ -218,9 +222,11 @@
                         </div>
                     </div>
 
-                    <!-- Add Relation Form (Collapsible) -->
-                    <div id="add-institution-relation-form"
-                        class="hidden p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 transition-all">
+                    <!-- Relation Forms Overlay Container -->
+                    <div class="relative z-30">
+                        <!-- Add Relation Form (Collapsible Overlay) -->
+                        <div id="add-institution-relation-form"
+                            class="hidden absolute top-0 left-0 right-0 z-30 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-3 transition-all">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
                             Add Institution Relation
                         </h4>
@@ -367,21 +373,21 @@
                             <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                                 <button type="button"
                                     onclick="document.getElementById('add-institution-relation-form').classList.add('hidden');"
-                                    class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                    class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 transition-colors">
                                     Cancel
                                 </button>
                                 <button type="submit"
-                                    class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition-all">
-                                    Save
+                                    class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all">
+                                    Save Relation
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <!-- Import Relation Form (Collapsible) -->
+                    <!-- Import Relation Form (Collapsible Overlay) -->
                     <div id="import-institution-relation-form"
-                        class="hidden p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 transition-all">
-                        <div class="flex items-center justify-between">
+                        class="hidden absolute top-0 left-0 right-0 z-30 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-3 transition-all">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                             <h4
                                 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor"
@@ -391,6 +397,14 @@
                                 </svg>
                                 Import Related Institutions (CSV)
                             </h4>
+                            <button type="button"
+                                title="Close import form"
+                                onclick="document.getElementById('import-institution-relation-form').classList.add('hidden');"
+                                class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400">
                             Upload a CSV file containing institution details or URLs to link institutions against
@@ -442,21 +456,21 @@
                             <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                                 <button type="button"
                                     onclick="document.getElementById('import-institution-relation-form').classList.add('hidden');"
-                                    class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                    class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 transition-colors">
                                     Cancel
                                 </button>
                                 <button type="submit"
-                                    class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
+                                    class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                     </svg>
-                                    Import
+                                    Import CSV
                                 </button>
                             </div>
                         </form>
                     </div>
+                </div>
 
 
                     <!-- List of Attached Institutions -->

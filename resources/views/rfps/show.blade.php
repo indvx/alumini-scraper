@@ -4,7 +4,8 @@
         <!-- Header Navigation & Quick Actions -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <a href="{{ route('rfps.index') }}"
-                class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                title="Return to RFPs procurement directory"
+                class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -14,6 +15,7 @@
 
             @if ($rfp->opportunity_url || $rfp->portal_url)
                 <a href="{{ $rfp->opportunity_url ?: $rfp->portal_url }}" target="_blank" rel="noopener"
+                    title="Open official procurement opportunity URL in a new window"
                     class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold inline-flex items-center gap-2 shadow-sm transition-all">
                     <span>View Official Opportunity</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,11 +26,11 @@
             @endif
         </div>
 
-        <!-- Main Content -->
+        <!-- Main Content Grid Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <!-- Left 2 Columns: Main Details -->
             <div class="lg:col-span-2 space-y-6">
-                <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
 
                     <!-- Header -->
                     <div class="space-y-3 border-b border-slate-100 dark:border-slate-800 pb-6">
@@ -36,8 +38,7 @@
                             @php
                                 $statusLower = strtolower((string) $rfp->status);
                             @endphp
-                            <span
-                                class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider
                                 {{ $statusLower === 'open' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : '' }}
                                 {{ $statusLower === 'awarded' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : '' }}
                                 {{ in_array($statusLower, ['past', 'closed', 'evaluation']) ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : '' }}
@@ -47,21 +48,19 @@
                             </span>
 
                             @if ($rfp->reference_id)
-                                <span
-                                    class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                                <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
                                     Ref: {{ $rfp->reference_id }}
                                 </span>
                             @endif
 
                             @if ($rfp->project_id)
-                                <span
-                                    class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                                <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
                                     Project ID: {{ $rfp->project_id }}
                                 </span>
                             @endif
                         </div>
 
-                        <h1 class="text-2xl font-black text-slate-900 dark:text-white leading-tight">
+                        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight">
                             {{ $rfp->title }}
                         </h1>
 
@@ -80,9 +79,9 @@
                     @if ($rfp->description)
                         <div class="space-y-2">
                             <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-                                Description</h3>
-                            <div
-                                class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-2 whitespace-pre-line">
+                                Description
+                            </h3>
+                            <div class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-2 whitespace-pre-line">
                                 {{ $rfp->description }}
                             </div>
                         </div>
@@ -91,17 +90,16 @@
                     <!-- Timeline & Key Dates -->
                     <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-                            Opportunity Dates</h3>
+                            Opportunity Dates
+                        </h3>
                         <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                            <div
-                                class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                                 <dt class="text-slate-400 mb-1">Open Date</dt>
                                 <dd class="font-bold text-slate-900 dark:text-white text-sm">
                                     {{ $rfp->date_open ? \Carbon\Carbon::parse($rfp->date_open)->format('F d, Y H:i') : 'N/A' }}
                                 </dd>
                             </div>
-                            <div
-                                class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                                 <dt class="text-slate-400 mb-1">Submission Deadline</dt>
                                 <dd class="font-bold text-slate-900 dark:text-white text-sm">
                                     {{ $rfp->date_close ? \Carbon\Carbon::parse($rfp->date_close)->format('F d, Y H:i') : 'N/A' }}
@@ -117,10 +115,10 @@
             <div class="lg:col-span-1 space-y-6">
                 <!-- Institution Card -->
                 @if ($rfp->institution)
-                    <div
-                        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-                            Institution</h3>
+                            Institution
+                        </h3>
                         <div>
                             <a href="{{ route('institutions.show', $rfp->institution) }}"
                                 class="text-base font-extrabold text-slate-900 dark:text-white hover:text-rose-600 transition-colors">
@@ -135,10 +133,10 @@
 
                 <!-- Platform Card -->
                 @if ($rfp->platform)
-                    <div
-                        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-                            Procurement Platform</h3>
+                            Procurement Platform
+                        </h3>
                         <div>
                             <a href="{{ route('rfps-platform.show', $rfp->platform) }}"
                                 class="text-base font-extrabold text-slate-900 dark:text-white hover:text-rose-600 transition-colors">
@@ -152,25 +150,28 @@
                 @endif
 
                 <!-- Technical Details Card -->
-                <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Metadata
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                        Metadata
                     </h3>
                     <dl class="space-y-2 text-xs">
-                        <div class="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                             <dt class="text-slate-400">Source</dt>
                             <dd class="font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase">
-                                {{ $rfp->source }}</dd>
+                                {{ is_object($rfp->source) ? $rfp->source->value : $rfp->source }}
+                            </dd>
                         </div>
-                        <div class="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                             <dt class="text-slate-400">Public Award</dt>
                             <dd class="font-semibold text-slate-700 dark:text-slate-300">
-                                {{ $rfp->is_public_award ? 'Yes' : 'No' }}</dd>
+                                {{ $rfp->is_public_award ? 'Yes' : 'No' }}
+                            </dd>
                         </div>
-                        <div class="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                             <dt class="text-slate-400">Created At</dt>
                             <dd class="text-slate-700 dark:text-slate-300">
-                                {{ $rfp->created_at ? $rfp->created_at->format('M d, Y') : 'N/A' }}</dd>
+                                {{ $rfp->created_at ? $rfp->created_at->format('M d, Y') : 'N/A' }}
+                            </dd>
                         </div>
                     </dl>
                 </div>

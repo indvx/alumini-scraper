@@ -24,84 +24,94 @@
 @endphp
 
 <div id="locationSearchCardContainer"
-    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 md:p-4 shadow-sm">
-    <div class="max-w-3xl space-y-1">
-        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
-            Discover Educational Institutions
-        </h1>
-        <p class="text-slate-600 dark:text-slate-400 text-sm">
-            Select Country &amp; State to discover and ingest schools, colleges, universities, and kindergartens via
-            OpenStreetMap.
-        </p>
+    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
+    <div class="flex items-start justify-between gap-4">
+        <div class="max-w-3xl space-y-1">
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                Discover Educational Institutions
+            </h2>
+            <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
+                Select Country &amp; State to discover and ingest schools, colleges, universities, and kindergartens via OpenStreetMap.
+            </p>
+        </div>
+        <button type="button"
+            title="Close scrape section"
+            onclick="document.getElementById('scrape-institutions-container').classList.add('hidden');"
+            class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
 
     <!-- Location Search Form -->
-    <form action="{{ route('institutions.search') }}" method="POST" class="mt-2 space-y-2" id="cardLocationSearchForm">
+    <form action="{{ route('institutions.search') }}" method="POST" class="space-y-4" id="cardLocationSearchForm">
         @csrf
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
             <!-- Country Field (Mandatory) -->
             <div class="relative">
                 <label for="cardCountryInput"
-                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                     Country <span class="text-rose-500">*</span>
                 </label>
                 <input type="text" id="cardCountryInput" name="country" value="{{ $country }}" required
                     autocomplete="off" placeholder="Select Country..."
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all" />
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all" />
                 <input type="hidden" id="cardCountryId" name="country_id" />
 
                 <!-- Suggestions Dropdown -->
                 <div id="cardCountrySuggestions"
-                    class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                    class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-xs sm:text-sm">
                 </div>
             </div>
 
             <!-- State Field (Mandatory) -->
             <div id="cardStateContainer" class="relative {{ empty($country) ? 'hidden' : '' }}">
                 <label for="cardStateInput"
-                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                     State / Province <span class="text-rose-500">*</span>
                 </label>
                 <input type="text" id="cardStateInput" name="state" value="{{ $state }}"
                     {{ !empty($country) ? 'required' : '' }} autocomplete="off" placeholder="Select State..."
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all" />
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all" />
                 <input type="hidden" id="cardStateId" name="state_id" />
 
                 <!-- Suggestions Dropdown -->
                 <div id="cardStateSuggestions"
-                    class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                    class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-xs sm:text-sm">
                 </div>
             </div>
 
             <!-- City Field (Optional) -->
             <div id="cardCityContainer" class="relative {{ empty($state) ? 'hidden' : '' }}">
                 <label for="cardCityInput"
-                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                     City <span class="text-slate-400 font-normal lowercase">(optional)</span>
                 </label>
                 <input type="text" id="cardCityInput" name="city" value="{{ $city }}" autocomplete="off"
                     placeholder="Select City..."
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all" />
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all" />
                 <input type="hidden" id="cardCityId" name="city_id" />
 
                 <!-- Suggestions Dropdown -->
                 <div id="cardCitySuggestions"
-                    class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                    class="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden divide-y divide-slate-100 dark:divide-slate-700 text-xs sm:text-sm">
                 </div>
             </div>
         </div>
 
         <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+            class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
             <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                <label class="inline-flex items-center gap-2 cursor-pointer">
+                <label class="inline-flex items-center gap-2 cursor-pointer select-none">
                     <input type="checkbox" name="force_refresh" value="1"
-                        class="rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+                        class="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500">
                     <span>Force fresh query from OpenStreetMap (bypass cached results)</span>
                 </label>
             </div>
             <button type="submit" id="cardLocationSubmitBtn"
-                class="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
+                title="Search OpenStreetMap &amp; ingest educational institutions for this location"
+                class="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
                 <svg id="cardLocationSearchIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -115,7 +125,7 @@
     <!-- Search Result Notification -->
     @if (isset($searchResult) && $searchResult)
         <div
-            class="mt-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm flex items-center justify-between">
+            class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm flex items-center justify-between">
             <div>
                 <strong>Search Completed for
                     "{{ is_array($searchResult['search']) ? $searchResult['search']['query'] : $searchResult['search']->query }}":</strong>
@@ -131,7 +141,7 @@
 
     @if (isset($searchError) && $searchError)
         <div
-            class="mt-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm">
+            class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs sm:text-sm">
             <strong>Ingestion Error:</strong> {{ $searchError }}
         </div>
     @endif
