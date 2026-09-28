@@ -160,6 +160,13 @@ final class AlumniRfpMatcher
             'community engagement',
             'community outreach',
             'constituent engagement',
+
+            'crm',
+            'customer relationship management',
+            'customer engagement',
+            'customer experience',
+            'customer communication',
+            'customer communications',
         ]);
 
         if (! $hasAudience) {
