@@ -88,24 +88,27 @@ class RFPsController extends Controller
             'to_date' => 'nullable|date',
         ]);
 
-        $institutionName = trim((string) ($validated['institution_name'] && $validated['institution_name'] != 'all' ? $validated['institution_name'] : ''));
-        $platformName = trim((string) ($validated['platform_name'] && $validated['platform_name'] != 'all' ? $validated['platform_name'] : ''));
+        $institutionInput = $validated['institution_name'] ?? '';
+        $platformInput = $validated['platform_name'] ?? '';
+
+        $institutionName = trim((string) ($institutionInput !== 'all' ? $institutionInput : ''));
+        $platformName = trim((string) ($platformInput !== 'all' ? $platformInput : ''));
         $type = strtolower($validated['type'] ?? 'open');
 
         try {
             // Case 1: Specific institution specified -> execute rfp:scrape-institution command
-            if (!empty($institutionName)) {
+            if (! empty($institutionName)) {
                 $params = [
                     'university' => $institutionName,
-                    '--platform' => !empty($platformName) ? $platformName : 'Bonfire',
+                    '--platform' => ! empty($platformName) ? $platformName : 'Bonfire',
                     '--type' => $type,
                 ];
 
-                if (!empty($validated['from_date'])) {
+                if (! empty($validated['from_date'])) {
                     $params['--from'] = $validated['from_date'];
                 }
 
-                if (!empty($validated['to_date'])) {
+                if (! empty($validated['to_date'])) {
                     $params['--to'] = $validated['to_date'];
                 }
 
@@ -113,7 +116,7 @@ class RFPsController extends Controller
                 $target = "'{$institutionName}' on platform '" . ($params['--platform']) . "'";
             }
             // Case 2: Platform specified without specific institution -> execute rfp:scrape-platform command
-            elseif (!empty($platformName)) {
+            elseif (! empty($platformName)) {
                 $exitCode = Artisan::call('rfp:scrape-platform', [
                     'platform' => $platformName,
                     '--type' => $type,
