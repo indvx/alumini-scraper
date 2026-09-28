@@ -166,24 +166,24 @@ class InstitutionController extends Controller
             'search_id' => $request->input('search_id'),
         ];
 
-        $perPage = (int) $request->input('per_page', 41);
+        $perPage = (int) $request->input('per_page', 21);
         $paginated = $this->institutionRepository->getPaginated($filters, $perPage);
         $institutions = $paginated->items();
         $currentPage = $paginated->currentPage();
-        $filename = "institutions_page_{$currentPage}".date('Y-m-d_His').'.csv';
+        $filename = "institutions_page_{$currentPage}" . date('Y-m-d_His') . '.csv';
         if (! empty($filters['search'])) {
             $cleanedSearch = str_replace([' ', ','], '_', $filters['search']);
-            $filename = "{$cleanedSearch}_institutions_page_{$currentPage}_".date('Y-m-d_His').'.csv';
+            $filename = "{$cleanedSearch}_institutions_page_{$currentPage}_" . date('Y-m-d_His') . '.csv';
         }
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
         $callback = function () use ($institutions) {
             $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             fputcsv($file, ['ID', 'Name', 'Type', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Postcode', 'Phone', 'Website', 'OSM ID']);
 
