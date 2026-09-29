@@ -28,12 +28,29 @@ class RFPsController extends Controller
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('project_id', 'like', "%{$search}%")
                     ->orWhere('reference_id', 'like', "%{$search}%")
-                    ->orWhere('department', 'like', "%{$search}%");
+                    ->orWhere('department', 'like', "%{$search}%")
+                    ->orWhereHas('institution', function ($iq) use ($search) {
+                        $iq->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('platform', function ($pq) use ($search) {
+                        $pq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
         if ($status !== '' && $status !== 'all') {
-            $query->where('status', $status);
+            $statusLower = strtolower($status);
+            if ($statusLower === 'open') {
+                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['open', 'active']);
+            } elseif ($statusLower === 'past' || $statusLower === 'closed') {
+                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['past', 'closed', 'evaluation', 'complete', 'completed']);
+            } elseif ($statusLower === 'awarded') {
+                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['awarded', 'award']);
+            } elseif ($statusLower === 'cancelled' || $statusLower === 'canceled') {
+                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['cancelled', 'canceled']);
+            } else {
+                $query->where(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), $statusLower);
+            }
         }
 
         if ($institutionId && $institutionId !== 'all') {
@@ -44,9 +61,18 @@ class RFPsController extends Controller
             $query->where('rfps_platform_id', $platformId);
         }
 
+        // Filtered counts calculation
+        $filteredQuery = clone $query;
+        $filteredCount = $filteredQuery->count();
+        $filteredOpenCount = (clone $query)->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['open', 'active'])->count();
+
         $rfps = $query->latest('date_open')->latest('id')->paginate(15)->withQueryString();
 
         $institutions = Institution::query()
+            ->where(function ($q) {
+                $q->whereHas('rfpPlatforms')
+                    ->orWhereHas('rfps');
+            })
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -65,7 +91,9 @@ class RFPsController extends Controller
             'institutions' => $institutions,
             'platforms' => $platforms,
             'totalCount' => RFP::count(),
-            'openCount' => RFP::where('status', 'open')->count(),
+            'openCount' => RFP::whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['open', 'active'])->count(),
+            'filteredCount' => $filteredCount,
+            'filteredOpenCount' => $filteredOpenCount,
         ]);
     }
 
@@ -81,6 +109,7 @@ class RFPsController extends Controller
     public function scrape(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'institution_id' => 'nullable',
             'institution_name' => 'nullable|string|max:255',
             'platform_name' => 'nullable|string|max:255',
             'type' => 'nullable|string|in:open,past,all',
@@ -88,19 +117,32 @@ class RFPsController extends Controller
             'to_date' => 'nullable|date',
         ]);
 
+        $institutionId = $validated['institution_id'] ?? null;
         $institutionInput = $validated['institution_name'] ?? '';
         $platformInput = $validated['platform_name'] ?? '';
 
-        $institutionName = trim((string) ($institutionInput !== 'all' ? $institutionInput : ''));
+        $institutionName = '';
+        if (! empty($institutionId) && $institutionId !== 'all') {
+            $inst = Institution::find($institutionId);
+            if ($inst) {
+                $institutionName = $inst->name;
+            }
+        }
+
+        if (empty($institutionName) && ! empty($institutionInput) && $institutionInput !== 'all') {
+            $institutionName = trim($institutionInput);
+        }
+
         $platformName = trim((string) ($platformInput !== 'all' ? $platformInput : ''));
         $type = strtolower($validated['type'] ?? 'open');
 
         try {
             // Case 1: Specific institution specified -> execute rfp:scrape-institution command
             if (! empty($institutionName)) {
+                $platformToUse = ! empty($platformName) ? $platformName : 'Bonfire';
                 $params = [
                     'university' => $institutionName,
-                    '--platform' => ! empty($platformName) ? $platformName : 'Bonfire',
+                    '--platform' => $platformToUse,
                     '--type' => $type,
                 ];
 
@@ -113,7 +155,7 @@ class RFPsController extends Controller
                 }
 
                 $exitCode = Artisan::call('rfp:scrape-institution', $params);
-                $target = "'{$institutionName}' on platform '" . ($params['--platform']) . "'";
+                $target = "'{$institutionName}' on platform '{$platformToUse}'";
             }
             // Case 2: Platform specified without specific institution -> execute rfp:scrape-platform command
             elseif (! empty($platformName)) {

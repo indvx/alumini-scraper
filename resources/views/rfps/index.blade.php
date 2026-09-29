@@ -26,41 +26,38 @@
         <!-- Filter Bar & Scrape Overlay Container -->
         <div class="relative z-30">
             <div id="scrape-rfps-form-container"
-                class="hidden absolute top-0 left-0 right-0 z-30 p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 transition-all">
-                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <h4
-                        class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Scrape Procurement Opportunities
-                    </h4>
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs text-slate-400 hidden sm:inline">Specify institution and platform to
-                            trigger scraper</span>
-                        <button type="button" title="Close scrape section"
-                            onclick="document.getElementById('scrape-rfps-form-container').classList.add('hidden');"
-                            class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                class="hidden absolute top-0 left-0 right-0 z-40 p-5 sm:p-6 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-2xl space-y-4 transition-all animate-in fade-in slide-in-from-top-2 duration-200">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                            <span class="flex h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>
+                            Scrape Procurement Opportunities
+                        </h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Launch live scraper tasks against Bonfire, OpenGov, Jaggaer, PlanetBids &amp; custom institutional portals.
+                        </p>
                     </div>
+                    <button type="button" title="Close scrape section"
+                        onclick="document.getElementById('scrape-rfps-form-container').classList.add('hidden');"
+                        class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
 
-                <form action="{{ route('rfps.scrape') }}" method="POST" class="space-y-4">
+                <form action="{{ route('rfps.scrape') }}" method="POST" class="space-y-4" onsubmit="document.getElementById('scrape-submit-btn-text').innerText='Launching Scraper...';">
                     @csrf
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                Select Institution <span class="text-rose-500">*</span>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                Select Institution
                             </label>
                             <select name="institution_id" id="scrape_institution_id"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                                <option value="all" selected>All</option>
+                                onchange="if(this.value !== 'all'){ document.getElementById('scrape_institution_name').value = ''; }"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                                <option value="all" selected>All Institutions</option>
                                 @foreach ($institutions as $inst)
                                     <option value="{{ $inst->id }}">{{ $inst->name }}</option>
                                 @endforeach
@@ -68,22 +65,21 @@
                         </div>
 
                         <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Or Custom Institution Name
                             </label>
-                            <input type="text" name="institution_name" placeholder="e.g. Houston City College"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                            <input type="text" name="institution_name" id="scrape_institution_name" placeholder="e.g. Houston Community College"
+                                oninput="if(this.value.trim() !== ''){ document.getElementById('scrape_institution_id').value = 'all'; }"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                         </div>
 
                         <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Select Platform <span class="text-rose-500">*</span>
                             </label>
                             <select name="platform_name" required
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                                <option value="all" selected>All</option>
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                                <option value="all" selected>All Platforms (Bonfire / OpenGov / etc)</option>
                                 <option value="Bonfire">Bonfire</option>
                                 <option value="OpenGov">OpenGov</option>
                                 <option value="Jaggaer">Jaggaer</option>
@@ -97,95 +93,90 @@
                         </div>
 
                         <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Opportunity Type
                             </label>
                             <select name="type"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                                 <option value="open" selected>Open Opportunities</option>
                                 <option value="past">Past / Closed Opportunities</option>
+                                <option value="all">All Opportunities</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 From Date (Optional)
                             </label>
                             <input type="date" name="from_date"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                         </div>
 
                         <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 To Date (Optional)
                             </label>
                             <input type="date" name="to_date"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <button type="button" title="Cancel scraping form"
-                            onclick="document.getElementById('scrape-rfps-form-container').classList.add('hidden');"
-                            class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all">
-                            Cancel
-                        </button>
-                        <button type="submit" title="Launch automated scraper for selected institution &amp; platform"
-                            class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <span>Start Scraping</span>
-                        </button>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                        <span class="text-[11px] text-slate-400 italic hidden sm:inline">
+                            💡 Tip: Leave institution &amp; platform as 'All' to run a system-wide scrape.
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" title="Cancel scraping form"
+                                onclick="document.getElementById('scrape-rfps-form-container').classList.add('hidden');"
+                                class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all">
+                                Cancel
+                            </button>
+                            <button type="submit" title="Launch automated scraper for selected institution &amp; platform"
+                                class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-all flex items-center gap-2">
+                                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                <span id="scrape-submit-btn-text">Start Scraping</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
 
-            <div
-                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <!-- RFP Filters Form -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
                 <form action="{{ route('rfps.index') }}" method="GET"
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div>
-                        <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search</label>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search</label>
                         <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
-                            placeholder="Title, description, ref ID..."
+                            placeholder="Title, inst name, ref ID..."
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                     </div>
 
                     <div>
-                        <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Status</label>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Status</label>
                         <select name="status"
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            <option value="all" {{ ($filters['status'] ?? 'all') == 'all' ? 'selected' : '' }}>All
-                                Statuses</option>
-                            <option value="open" {{ ($filters['status'] ?? '') == 'open' ? 'selected' : '' }}>Open
-                            </option>
-                            <option value="awarded" {{ ($filters['status'] ?? '') == 'awarded' ? 'selected' : '' }}>
-                                Awarded</option>
-                            <option value="past" {{ ($filters['status'] ?? '') == 'past' ? 'selected' : '' }}>Past /
-                                Closed</option>
-                            <option value="cancelled"
-                                {{ ($filters['status'] ?? '') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All Statuses</option>
+                            <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open</option>
+                            <option value="awarded" {{ ($filters['status'] ?? '') === 'awarded' ? 'selected' : '' }}>Awarded</option>
+                            <option value="past" {{ in_array($filters['status'] ?? '', ['past', 'closed']) ? 'selected' : '' }}>Past / Closed</option>
+                            <option value="cancelled" {{ in_array($filters['status'] ?? '', ['cancelled', 'canceled']) ? 'selected' : '' }}>Cancelled</option>
                         </select>
                     </div>
 
                     <div>
-                        <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Institution</label>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Institution</label>
                         <select name="institution_id"
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            <option value="all">All Institutions</option>
+                            <option value="all" {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Institutions</option>
                             @foreach ($institutions as $inst)
                                 <option value="{{ $inst->id }}"
-                                    {{ ($filters['institution_id'] ?? '') == $inst->id ? 'selected' : '' }}>
+                                    {{ (string)($filters['institution_id'] ?? '') === (string)$inst->id ? 'selected' : '' }}>
                                     {{ $inst->name }}
                                 </option>
                             @endforeach
@@ -193,14 +184,13 @@
                     </div>
 
                     <div>
-                        <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Platform</label>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Platform</label>
                         <select name="rfps_platform_id"
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            <option value="all">All Platforms</option>
+                            <option value="all" {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Platforms</option>
                             @foreach ($platforms as $plat)
                                 <option value="{{ $plat->id }}"
-                                    {{ ($filters['rfps_platform_id'] ?? '') == $plat->id ? 'selected' : '' }}>
+                                    {{ (string)($filters['rfps_platform_id'] ?? '') === (string)$plat->id ? 'selected' : '' }}>
                                     {{ $plat->name }}
                                 </option>
                             @endforeach
@@ -221,9 +211,18 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Showing page {{ $rfps->currentPage() }} of {{ $rfps->lastPage() }}</span>
-            <span>Total {{ $totalCount }} RFP(s) ({{ $openCount }} open)</span>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span class="font-medium">
+                Showing page {{ $rfps->currentPage() }} of {{ $rfps->lastPage() }}
+            </span>
+            <span class="flex items-center gap-1.5">
+                @if(($filters['search'] ?? '') !== '' || ($filters['status'] ?? 'all') !== 'all' || ($filters['institution_id'] ?? 'all') !== 'all' || ($filters['rfps_platform_id'] ?? 'all') !== 'all')
+                    <span class="px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold text-[11px]">Filtered: {{ $filteredCount }} result(s) ({{ $filteredOpenCount }} open)</span>
+                    <span>of {{ $totalCount }} total</span>
+                @else
+                    <span>Total <strong>{{ $totalCount }}</strong> RFP(s) (<strong>{{ $openCount }}</strong> open)</span>
+                @endif
+            </span>
         </div>
 
         <!-- RFP Items Container -->
