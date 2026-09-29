@@ -12,8 +12,7 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                <button type="button"
-                    title="Open OpenStreetMap location scraper to discover educational institutions"
+                <button type="button" title="Open OpenStreetMap location scraper to discover educational institutions"
                     onclick="document.getElementById('scrape-institutions-container').classList.toggle('hidden');"
                     class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shadow-md shadow-rose-600/20 flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +48,8 @@
                 <x-location-search-card />
             </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <div
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
                 <form action="{{ route('institutions.index') }}" method="GET"
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     @if (request('search_id'))
@@ -57,7 +57,8 @@
                     @endif
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search Name / Address</label>
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search
+                            Name / Address</label>
                         <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
                             placeholder="Name, city, state..."
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
@@ -87,14 +88,12 @@
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                     </div>
                     <div class="flex items-end gap-2">
-                        <button type="submit"
-                            title="Search educational institutions"
+                        <button type="submit" title="Apply filter to educational institutions"
                             class="w-full bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors shadow-sm">
-                            Search
+                            Apply
                         </button>
-                        <a href="{{ route('institutions.index') }}"
-                            title="Reset search criteria"
-                            class="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors">Reset</a>
+                        <a href="{{ route('institutions.index') }}" title="Reset search criteria"
+                            class="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors">Clear</a>
                     </div>
                 </form>
             </div>
@@ -126,7 +125,8 @@
                                 @endif
                             </div>
 
-                            <h3 class="text-base font-extrabold text-slate-900 dark:text-white hover:text-rose-600 transition-colors line-clamp-2">
+                            <h3
+                                class="text-base font-extrabold text-slate-900 dark:text-white hover:text-rose-600 transition-colors line-clamp-2">
                                 <a href="{{ route('institutions.show', $inst->id) }}"
                                     title="View details for {{ addslashes($inst->name) }}">
                                     {{ $inst->name }}
@@ -140,10 +140,12 @@
                             @endif
                         </div>
 
-                        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <div
+                            class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                             <div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
                                 @if ($inst->phone)
-                                    <a href="tel:{{ $inst->phone }}" class="hover:text-rose-600 p-1" title="Call {{ $inst->phone }}">
+                                    <a href="tel:{{ $inst->phone }}" class="hover:text-rose-600 p-1"
+                                        title="Call {{ $inst->phone }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -151,8 +153,10 @@
                                     </a>
                                 @endif
                                 @if ($inst->website)
-                                    <a href="{{ $inst->website }}" target="_blank" rel="noopener" class="hover:text-rose-600 p-1" title="Visit website: {{ $inst->website }}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <a href="{{ $inst->website }}" target="_blank" rel="noopener"
+                                        class="hover:text-rose-600 p-1" title="Visit website: {{ $inst->website }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                         </svg>
@@ -177,7 +181,8 @@
                                     <button type="submit"
                                         class="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                                         title="Delete {{ addslashes($inst->name) }}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -203,8 +208,10 @@
         @else
             <div
                 class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-500">
-                <p class="text-base font-semibold text-slate-700 dark:text-slate-300">No institutions match your search or filter.</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Try entering a location query above to discover new educational records.</p>
+                <p class="text-base font-semibold text-slate-700 dark:text-slate-300">No institutions match your search
+                    or filter.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Try entering a location query above to
+                    discover new educational records.</p>
             </div>
         @endif
     </div>

@@ -7,6 +7,7 @@ use App\Data\Rfp\RfpScrapeData;
 use App\Enums\Rfp\RfpStatus;
 use App\Enums\Scraper\ScrapeMethod;
 use App\Services\Rfp\Contracts\RfpNormalizer;
+use Illuminate\Support\Facades\Log;
 
 class BonfireNormalizer implements RfpNormalizer
 {
@@ -25,6 +26,7 @@ class BonfireNormalizer implements RfpNormalizer
             if (! $this->isWithinDateRange($closeDateStr, $scrapeData->fromDate, $scrapeData->toDate)) {
                 continue;
             }
+            Log::info("BonfireNormalizer: Item: ", $item);
             $opportunityUrl = $this->buildOpportunityUrl($item, $portalUrl, $defaultOpportunityUrl);
 
             $rfps[] = new RfpData(
@@ -35,7 +37,7 @@ class BonfireNormalizer implements RfpNormalizer
                 department: $item['DepartmentID'] ?? null,
                 dateClose: $closeDateStr,
                 isPublicAward: (bool) ($item['IsPublicAward'] ?? false),
-                status: $scrapeData->type,
+                status: $this->getBonfireStatus($item) ?? $scrapeData->type,
                 source: $source,
                 portalUrl: $portalUrl,
                 opportunityUrl: $opportunityUrl,
@@ -46,6 +48,31 @@ class BonfireNormalizer implements RfpNormalizer
         }
         return $rfps;
     }
+
+    protected function getBonfireStatus(array $item): ?RfpStatus
+    {
+        $statusId = $item['ProjectStatusID'] ?? $item['project_status_id'] ?? null;
+        $subStatusId = $item['ProjectSubStatusID'] ?? $item['project_sub_status_id'] ?? null;
+        $key = "{$statusId}-{$subStatusId}";
+        $map = [
+            '2-1' => RfpStatus::OPEN,
+
+            '4-1' => RfpStatus::CLOSED,
+            '4-2' => RfpStatus::CANCELLED,
+            '4-3' => RfpStatus::AWARDED,
+
+            '5-1' => RfpStatus::CLOSED,
+            '5-2' => RfpStatus::CANCELLED,
+            '5-3' => RfpStatus::AWARDED,
+        ];
+
+        if (isset($map[$key])) {
+            return $map[$key];
+        }
+
+        return null;
+    }
+
     protected function isWithinDateRange(?string $closeDateStr, ?string $fromDate, ?string $toDate): bool
     {
         if (empty($fromDate) && empty($toDate)) {

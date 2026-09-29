@@ -29,12 +29,13 @@
                 class="hidden absolute top-0 left-0 right-0 z-40 p-5 sm:p-6 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-2xl space-y-4 transition-all animate-in fade-in slide-in-from-top-2 duration-200">
                 <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-2">
-                            <span class="flex h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>
+                        <h4
+                            class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-2">
                             Scrape Procurement Opportunities
                         </h4>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Launch live scraper tasks against Bonfire, OpenGov, Jaggaer, PlanetBids &amp; custom institutional portals.
+                            Launch live scraper tasks against Bonfire, OpenGov, Jaggaer, PlanetBids &amp; custom
+                            institutional portals.
                         </p>
                     </div>
                     <button type="button" title="Close scrape section"
@@ -47,15 +48,16 @@
                     </button>
                 </div>
 
-                <form action="{{ route('rfps.scrape') }}" method="POST" class="space-y-4" onsubmit="document.getElementById('scrape-submit-btn-text').innerText='Launching Scraper...';">
+                <form id="scrape-rfps-form" action="{{ route('rfps.scrape') }}" method="POST" class="space-y-4"
+                    onsubmit="handleScrapeSubmit(event)">
                     @csrf
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Select Institution
                             </label>
                             <select name="institution_id" id="scrape_institution_id"
-                                onchange="if(this.value !== 'all'){ document.getElementById('scrape_institution_name').value = ''; }"
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                                 <option value="all" selected>All Institutions</option>
                                 @foreach ($institutions as $inst)
@@ -65,16 +67,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                Or Custom Institution Name
-                            </label>
-                            <input type="text" name="institution_name" id="scrape_institution_name" placeholder="e.g. Houston Community College"
-                                oninput="if(this.value.trim() !== ''){ document.getElementById('scrape_institution_id').value = 'all'; }"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Select Platform <span class="text-rose-500">*</span>
                             </label>
                             <select name="platform_name" required
@@ -93,7 +87,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Opportunity Type
                             </label>
                             <select name="type"
@@ -107,7 +102,8 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 From Date (Optional)
                             </label>
                             <input type="date" name="from_date"
@@ -115,7 +111,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                            <label
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 To Date (Optional)
                             </label>
                             <input type="date" name="to_date"
@@ -123,19 +120,30 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                    <div
+                        class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80">
                         <span class="text-[11px] text-slate-400 italic hidden sm:inline">
                             💡 Tip: Leave institution &amp; platform as 'All' to run a system-wide scrape.
                         </span>
                         <div class="flex items-center gap-2">
-                            <button type="button" title="Cancel scraping form"
+                            {{-- <button type="button" title="Cancel scraping form"
                                 onclick="document.getElementById('scrape-rfps-form-container').classList.add('hidden');"
                                 class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all">
                                 Cancel
-                            </button>
-                            <button type="submit" title="Launch automated scraper for selected institution &amp; platform"
+                            </button> --}}
+                            <button type="submit" id="scrape-submit-btn"
+                                title="Launch automated scraper for selected institution &amp; platform"
                                 class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-all flex items-center gap-2">
-                                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg id="scrape-spinner" class="w-4 h-4 hidden animate-spin" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                <svg id="scrape-icon" class="w-4 h-4" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
@@ -146,37 +154,96 @@
                 </form>
             </div>
 
-            <!-- RFP Filters Form -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-                <form action="{{ route('rfps.index') }}" method="GET"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search</label>
-                        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
-                            placeholder="Title, inst name, ref ID..."
-                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+            <!-- RFP Filters Form Container -->
+            <div
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3.5">
+                <!-- Always Visible Keywords Manager Section (Top of Search) -->
+                <div id="keywords-drawer"
+                    class="pb-3 border-b border-slate-100 dark:border-slate-800 space-y-2.5 transition-all">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <label
+                                class="inline-flex items-center gap-2 cursor-pointer text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 select-none">
+                                <input type="checkbox" id="enable-keywords-toggle" form="rfp-search-filter-form"
+                                    name="use_keywords" value="1"
+                                    {{ !empty($filters['use_keywords']) ? 'checked' : '' }}
+                                    onchange="onKeywordsToggleChange(this)"
+                                    class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4">
+                                <span>Search Keywords</span>
+                            </label>
+                        </div>
+
+                        <!-- Add Custom Keyword Input -->
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1">
+                                <input type="text" id="new-keyword-input" placeholder="Add keyword (e.g. CRM)..."
+                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomKeyword(); }"
+                                    class="px-2.5 py-1 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-44 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed">
+                                <button type="button" id="add-keyword-btn" onclick="addCustomKeyword()"
+                                    class="px-2.5 py-1 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-rose-600">
+                                    + Add
+                                </button>
+                                <button type="button" id="reset-keywords-btn" onclick="resetKeywords()"
+                                    title="Reset keywords to defaults"
+                                    class="px-2 py-1 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Reset</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- Horizontal Scrollable Keyword Badges Container -->
+                    <div id="keywords-container"
+                        class="flex items-center gap-2 overflow-x-auto whitespace-nowrap py-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 max-w-full">
+                        <!-- Populated dynamically with removable tag pills by JavaScript -->
+                    </div>
+                </div>
+
+                <form id="rfp-search-filter-form" action="{{ route('rfps.index') }}" method="GET"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    {{-- <div>
+                        <label
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search</label>
+                        <input type="text" name="search" id="rfp-search-input"
+                            value="{{ $filters['search'] ?? '' }}" placeholder="Title, inst name, ref ID..."
+                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div> --}}
+
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Status</label>
+                        <label
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Status</label>
                         <select name="status"
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All Statuses</option>
-                            <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open</option>
-                            <option value="awarded" {{ ($filters['status'] ?? '') === 'awarded' ? 'selected' : '' }}>Awarded</option>
-                            <option value="past" {{ in_array($filters['status'] ?? '', ['past', 'closed']) ? 'selected' : '' }}>Past / Closed</option>
-                            <option value="cancelled" {{ in_array($filters['status'] ?? '', ['cancelled', 'canceled']) ? 'selected' : '' }}>Cancelled</option>
+                            <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All
+                                Statuses</option>
+                            <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open
+                            </option>
+                            <option value="awarded" {{ ($filters['status'] ?? '') === 'awarded' ? 'selected' : '' }}>
+                                Awarded</option>
+                            <option value="past"
+                                {{ in_array($filters['status'] ?? '', ['past', 'closed']) ? 'selected' : '' }}>Past /
+                                Closed</option>
+                            <option value="cancelled"
+                                {{ in_array($filters['status'] ?? '', ['cancelled', 'canceled']) ? 'selected' : '' }}>
+                                Cancelled</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Institution</label>
+                        <label
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Institution</label>
                         <select name="institution_id"
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            <option value="all" {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Institutions</option>
+                            <option value="all"
+                                {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All
+                                Institutions</option>
                             @foreach ($institutions as $inst)
                                 <option value="{{ $inst->id }}"
-                                    {{ (string)($filters['institution_id'] ?? '') === (string)$inst->id ? 'selected' : '' }}>
+                                    {{ (string) ($filters['institution_id'] ?? '') === (string) $inst->id ? 'selected' : '' }}>
                                     {{ $inst->name }}
                                 </option>
                             @endforeach
@@ -184,13 +251,16 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Platform</label>
+                        <label
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Platform</label>
                         <select name="rfps_platform_id"
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            <option value="all" {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Platforms</option>
+                            <option value="all"
+                                {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Platforms
+                            </option>
                             @foreach ($platforms as $plat)
                                 <option value="{{ $plat->id }}"
-                                    {{ (string)($filters['rfps_platform_id'] ?? '') === (string)$plat->id ? 'selected' : '' }}>
+                                    {{ (string) ($filters['rfps_platform_id'] ?? '') === (string) $plat->id ? 'selected' : '' }}>
                                     {{ $plat->name }}
                                 </option>
                             @endforeach
@@ -198,30 +268,27 @@
                     </div>
 
                     <div class="flex items-end gap-2">
-                        <button type="submit" title="Search procurement RFPs"
+                        <button type="submit" title="Apply filters to the RFPs"
                             class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-colors shadow-sm">
-                            Search
+                            Apply
                         </button>
                         <a href="{{ route('rfps.index') }}" title="Reset all search filters"
                             class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors">
-                            Reset
+                            Clear
                         </a>
                     </div>
+                    <div id="hidden-keywords-inputs"></div>
                 </form>
             </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div
+            class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
             <span class="font-medium">
                 Showing page {{ $rfps->currentPage() }} of {{ $rfps->lastPage() }}
             </span>
             <span class="flex items-center gap-1.5">
-                @if(($filters['search'] ?? '') !== '' || ($filters['status'] ?? 'all') !== 'all' || ($filters['institution_id'] ?? 'all') !== 'all' || ($filters['rfps_platform_id'] ?? 'all') !== 'all')
-                    <span class="px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold text-[11px]">Filtered: {{ $filteredCount }} result(s) ({{ $filteredOpenCount }} open)</span>
-                    <span>of {{ $totalCount }} total</span>
-                @else
-                    <span>Total <strong>{{ $totalCount }}</strong> RFP(s) (<strong>{{ $openCount }}</strong> open)</span>
-                @endif
+                Total <strong>{{ $rfps->total() }}</strong> RFP(s)
             </span>
         </div>
 
@@ -410,4 +477,232 @@
         @endif
 
     </div>
+
+    <script>
+        // Scrape Form Submit Handling (Disables submit button & shows spinner during execution)
+        function handleScrapeSubmit(e) {
+            const btn = document.getElementById('scrape-submit-btn');
+            if (!btn) return;
+
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
+
+            const textEl = document.getElementById('scrape-submit-btn-text');
+            if (textEl) textEl.innerText = 'Scraping in Progress...';
+
+            const spinner = document.getElementById('scrape-spinner');
+            if (spinner) spinner.classList.remove('hidden');
+
+            const icon = document.getElementById('scrape-icon');
+            if (icon) icon.classList.add('hidden');
+        }
+
+        // 2. Multi-Select Keywords Manager System
+        const DEFAULT_KEYWORDS = [
+            'Alumni', 'Engagement', 'Event', 'Campaign', 'Community', 'Network',
+            'Alumnae', 'Alumnus', 'Alumna', 'Software', 'Social', 'Digital',
+            'Member', 'Membership', 'Mentor', 'Mentorship', 'Career', 'Fundraising',
+            'Donor', 'Constituent', 'Giving', 'CRM', 'Salesforce', 'Blackbaud',
+            'Raisers Edge', 'Directory', 'Associations', 'Association', 'Program',
+            'Platform', 'Technology Modernization', 'System Migration', 'Networking',
+            'Advancement', 'Volunteer', 'Reunion', 'Chapter', 'Portal', 'Migration',
+            'Replacement', 'Renewal', 'Procurement', 'Solicitation', 'HiveBrite',
+            'Almabase', 'PeopleGrove', 'Graduway', 'Gravyty', 'EnterpriseAlumni', 'Toucantech'
+        ];
+
+        // Active server-side selected keywords array
+        let activeSelectedKeywords = @json($filters['keywords'] ?? []);
+        if (!Array.isArray(activeSelectedKeywords)) {
+            activeSelectedKeywords = [];
+        }
+
+        function syncHiddenKeywordsInputs() {
+            const container = document.getElementById('hidden-keywords-inputs');
+            if (!container) return;
+
+            const toggle = document.getElementById('enable-keywords-toggle');
+            const isEnabled = toggle ? toggle.checked : true;
+
+            if (!isEnabled) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const visibleKeywords = getAllVisibleKeywords();
+
+            container.innerHTML = visibleKeywords
+                .map(kw => `<input type="hidden" name="keywords[]" value="${kw.replace(/"/g, '&quot;')}">`)
+                .join('');
+        }
+
+        function getCustomKeywords() {
+            try {
+                const stored = localStorage.getItem('rfp_custom_keywords');
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveCustomKeywords(keywords) {
+            try {
+                localStorage.setItem('rfp_custom_keywords', JSON.stringify(keywords));
+            } catch (e) {}
+        }
+
+        function getRemovedKeywords() {
+            try {
+                const stored = localStorage.getItem('rfp_removed_keywords');
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveRemovedKeywords(removed) {
+            try {
+                localStorage.setItem('rfp_removed_keywords', JSON.stringify(removed));
+            } catch (e) {}
+        }
+
+        function getAllVisibleKeywords() {
+            const removedKw = getRemovedKeywords().map(k => String(k).toLowerCase());
+            const customKw = getCustomKeywords();
+
+            // Default keywords excluding removed ones
+            let defaultFiltered = DEFAULT_KEYWORDS.filter(k => !removedKw.includes(k.toLowerCase()));
+
+            // Place custom keywords at the BEGINNING so user-added keywords appear first
+            let allKeywords = [];
+
+            customKw.forEach(ck => {
+                if (!removedKw.includes(ck.toLowerCase())) {
+                    allKeywords.push(ck);
+                }
+            });
+
+            defaultFiltered.forEach(dk => {
+                if (!allKeywords.map(k => k.toLowerCase()).includes(dk.toLowerCase())) {
+                    allKeywords.push(dk);
+                }
+            });
+
+            return allKeywords;
+        }
+
+        function renderKeywords() {
+            const container = document.getElementById('keywords-container');
+            if (!container) return;
+
+            const toggle = document.getElementById('enable-keywords-toggle');
+            const isEnabled = toggle ? toggle.checked : true;
+
+            const newKeywordInput = document.getElementById('new-keyword-input');
+            const addKeywordBtn = document.getElementById('add-keyword-btn');
+            const resetKeywordsBtn = document.getElementById('reset-keywords-btn');
+
+            if (newKeywordInput) newKeywordInput.disabled = !isEnabled;
+            if (addKeywordBtn) addKeywordBtn.disabled = !isEnabled;
+            if (resetKeywordsBtn) resetKeywordsBtn.disabled = !isEnabled;
+
+            if (!isEnabled) {
+                container.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                container.classList.remove('opacity-40', 'pointer-events-none');
+            }
+
+            let allKeywords = getAllVisibleKeywords();
+            let html = '';
+
+            allKeywords.forEach((kw) => {
+                html += `
+                    <div class="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 hover:border-rose-400 text-xs overflow-hidden shrink-0 transition-all font-medium">
+                        <button type="button" title="Click to remove ${kw} keywrod" onclick="removeKeyword('${kw.replace(/'/g, "\\'")}')" class="px-2.5 py-1 font-semibold select-none hover:text-rose-600 transition-colors">
+                            ${kw}
+                        </button>
+                    </div>
+                `;
+            });
+
+            if (allKeywords.length === 0) {
+                html =
+                    '<div class="inline-flex items-center gap-2 text-xs text-slate-400 italic"><span>No active keywords.</span><button type="button" onclick="resetKeywords()" class="text-rose-600 dark:text-rose-400 font-semibold underline not-italic hover:text-rose-700">Restore Default Keywords</button></div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function onKeywordsToggleChange(toggle) {
+            syncHiddenKeywordsInputs();
+            renderKeywords();
+        }
+
+        function removeKeyword(kw) {
+            const lowerKw = kw.toLowerCase();
+
+            // Remove from custom if custom
+            let customKw = getCustomKeywords();
+            customKw = customKw.filter(k => k.toLowerCase() !== lowerKw);
+            saveCustomKeywords(customKw);
+
+            // Add to removed list
+            let removedKw = getRemovedKeywords();
+            if (!removedKw.map(k => k.toLowerCase()).includes(lowerKw)) {
+                removedKw.push(kw);
+                saveRemovedKeywords(removedKw);
+            }
+
+            syncHiddenKeywordsInputs();
+            renderKeywords();
+        }
+
+        function addCustomKeyword() {
+            const input = document.getElementById('new-keyword-input');
+            if (!input) return;
+            const kw = input.value.trim();
+            if (!kw) return;
+
+            // If it was in removed, un-remove it
+            let removedKw = getRemovedKeywords();
+            removedKw = removedKw.filter(k => k.toLowerCase() !== kw.toLowerCase());
+            saveRemovedKeywords(removedKw);
+
+            // Prepend to custom keywords array
+            let customKw = getCustomKeywords();
+            customKw = customKw.filter(k => k.toLowerCase() !== kw.toLowerCase());
+            customKw.unshift(kw);
+            saveCustomKeywords(customKw);
+
+            input.value = '';
+
+            const toggle = document.getElementById('enable-keywords-toggle');
+            if (toggle) {
+                toggle.checked = true;
+            }
+
+            syncHiddenKeywordsInputs();
+            renderKeywords();
+
+            // Scroll container to start so new keyword is immediately visible
+            const container = document.getElementById('keywords-container');
+            if (container) {
+                container.scrollLeft = 0;
+            }
+        }
+
+        function resetKeywords() {
+            try {
+                localStorage.removeItem('rfp_removed_keywords');
+                localStorage.removeItem('rfp_custom_keywords');
+            } catch (e) {}
+            syncHiddenKeywordsInputs();
+            renderKeywords();
+        }
+
+        // Always render keywords on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            syncHiddenKeywordsInputs();
+            renderKeywords();
+        });
+    </script>
 </x-layouts.app>
