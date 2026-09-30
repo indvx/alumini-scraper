@@ -1,144 +1,239 @@
 # Educational Institution & RFP Procurement Intelligence Platform
 
-A Laravel platform for discovering educational institutions (Schools, Colleges, Universities, Kindergartens) globally using OpenStreetMap APIs and scraping procurement RFPs from public bidding platforms (Bonfire, OpenGov, etc.).
+A Laravel application for discovering educational institutions globally and tracking public RFP/procurement opportunities across institution procurement portals.
+
+This project combines OpenStreetMap-based institution discovery with a scraping and normalization pipeline for procurement platforms such as Bonfire and OpenGov. It stores institutions, platform relationships, and parsed opportunity data in a structured relational model, then exposes search and management interfaces for institutions, procurement platforms, and RFP records.
 
 ---
 
-## 🚀 Features & Capabilities
+## Features
 
-- **Global Institution Ingestion & Geocoding**:
-  - Search location areas (Country, State, City) via **OpenStreetMap Nominatim API**.
-  - Query **Overpass API** for administrative boundary university data with strict duplicate removal, coordinate distance validation, and name-matching logic.
-  - Store and cache locations, boundary search entries, and institution records.
+- Global institution discovery and geocoding:
+  - Search countries, states, and cities through OpenStreetMap Nominatim and related lookup flows.
+  - Query OpenStreetMap Overpass data to find institutional boundaries and related records.
+  - Store and cache location searches, boundaries, and institution metadata.
+  - Maintain institution-level attributes including name, type, address, coordinates, and country/state mapping.
 
-- **Automated RFP Procurement Scraping**:
-  - Extensible **Strategy Pattern** architecture with modular scrapers (`Bonfire`, `OpenGov`).
-  - Automated discovery of institution procurement portal URLs (Database cache fallback with OpenAI verification).
-  - Normalization of raw RFP payloads into structured DTOs (`RfpData`, `RfpScrapeData`, `ScraperResult`).
-  - Support for filtering by date range, opportunity status (Open, Closed/Past, Awarded, Cancelled), and institution/platform filters.
+- Automated RFP procurement scraping:
+  - Strategy-based scraper architecture for multiple procurement platforms.
+  - Built-in support for Bonfire and OpenGov scraping flows.
+  - Portal discovery using cached database mappings and OpenAI-assisted verification when needed.
+  - Normalize raw procurement payloads into structured RFP data models.
+  - Filter opportunity data by status, institution, platform, and date range.
 
-- **Institution & RFP Platform Management**:
-  - Full relational mapping between Institutions and RFP Platforms with pivot metadata (confidence scores, status, verification dates, notes, and source URLs).
-  - Bulk CSV import for linking institution procurement portal URLs.
-  - Streaming CSV export for institutions, platform lists, and search queries.
+- Institution and platform management:
+  - Manage institutions, procurement platforms, and their relationship metadata.
+  - Track confidence scores, verification timestamps, discovery source, notes, and platform URLs.
+  - Import and export institution/platform data through CSV workflows.
+  - Search and browse institution and platform records through Laravel views and API-style endpoints.
 
-- **Future-Ready Alumni RFP Matcher**:
-  - Built-in `AlumniRfpMatcher` service to analyze RFP titles, descriptions, and departments against keyword taxonomies (Alumni CRM, Engagement, Advancement, Fundraising, Reunion, Mentorship, Blackbaud, HiveBrite, Toucantech, etc.).
+- RFP search and filtering:
+  - Search across RFP title, description, department, institution, and platform fields.
+  - Filter by status such as open, past/closed, awarded, and cancelled.
+  - Browse results through paginated views.
 
----
-
-## 🛠️ Technology Stack
-
-- **Framework**: Laravel 12 (PHP 8.5)
-- **Database**: SQLite / MySQL / PostgreSQL
-- **Frontend**: Blade Templates, Tailwind CSS, Alpine.js
-- **Services & APIs**:
-  - OpenStreetMap Nominatim Geocoding API
-  - OpenStreetMap Overpass Interpreter API
-  - OpenAI API (OpenAI PHP SDK for portal URL verification)
-- **Code Quality**: Laravel Pint, Pest Testing Suite
+- Alumni and advancement-oriented matching:
+  - Includes an alumni/advancement keyword-based matcher to help identify relevant opportunities.
+  - Useful for identifying fundraising, engagement, advancement, reunion, CRM, and related procurement needs.
 
 ---
 
-## 📂 Architecture Overview
+## Technology Stack
 
-```
+- Framework: Laravel 13
+- PHP: ^8.3
+- Frontend: Blade templates, Tailwind CSS, Vite
+- Database: SQLite / MySQL / PostgreSQL via Laravel database config
+- External services:
+  - OpenStreetMap Nominatim
+  - OpenStreetMap Overpass
+  - OpenAI API for portal verification and discovery
+- Testing and quality:
+  - Pest
+  - Laravel Pint
+
+---
+
+## Project Structure
+
+```text
 app/
-├── Console/Commands/
-│   ├── ScrapeAllRfpsCommand.php           # rfp:scrape-all
-│   ├── ScrapeInstitutionRfpsCommand.php   # rfp:scrape-institution
-│   └── ScrapePlatformRfpsCommand.php      # rfp:scrape-platform
+├── Console/
+│   └── Commands/
+│       ├── ScrapeAllRfpsCommand.php
+│       ├── ScrapeInstitutionRfpsCommand.php
+│       └── ScrapePlatformRfpsCommand.php
 ├── Data/
-│   ├── Rfp/                               # DTOs: RfpData, RfpScrapeData, DiscoveryResult
-│   └── Scraper/                           # ScraperResult
+│   ├── Rfp/
+│   │   ├── DiscoveryResult.php
+│   │   ├── RfpData.php
+│   │   └── RfpScrapeData.php
+│   └── Scraper/
+│       └── ScraperResult.php
 ├── Enums/
-│   ├── Rfp/RfpStatus.php                  # OPEN, PAST, CLOSED, AWARDED, CANCELLED, ALL
-│   └── Scraper/                           # ScrapeMethod, ScrapeStatus
-├── Http/Controllers/
-│   ├── InstitutionController.php          # CRUD, CSV Export & Search API
-│   ├── InstitutionRFPPlatformController.php # Pivot relationship management & CSV import
-│   ├── LocationLookupController.php       # Dynamic Country/State/City lookups
-│   ├── LocationSearchController.php       # OSM location search & Overpass ingestion
-│   ├── RFPsController.php                 # RFP directory & web scrape trigger
-│   └── RFPsPlatformController.php         # Platform CRUD & CSV Export
+│   ├── Rfp/
+│   │   └── RfpStatus.php
+│   └── Scraper/
+│       ├── ScrapeMethod.php
+│       └── ScrapeStatus.php
+├── Http/
+│   └── Controllers/
+│       ├── InstitutionController.php
+│       ├── InstitutionRFPPlatformController.php
+│       ├── LocationLookupController.php
+│       ├── LocationSearchController.php
+│       ├── RFPsController.php
+│       └── RFPsPlatformController.php
 ├── Models/
-│   ├── Institution.php, RFP.php, RFPsPlatform.php, LocationSearch.php, Country.php, State.php, City.php
+│   ├── City.php
+│   ├── Country.php
+│   ├── Institution.php
+│   ├── LocationSearch.php
+│   ├── RFP.php
+│   ├── RFPsPlatform.php
+│   ├── State.php
+│   └── User.php
+├── Providers/
+│   ├── AppServiceProvider.php
+│   └── RepositoryServiceProvider.php
 ├── Repositories/
-│   ├── Contracts/                         # Repository interfaces
-│   └── Eloquent/                          # Institution, RFPsPlatform, LocationSearch repos
-└── Services/
-    ├── NominatimService.php               # OSM Geocoding
-    ├── OverpassService.php                # Overpass API parser & validation
-    ├── OpenAIService.php                  # OpenAI API client
-    └── Rfp/
-        ├── AlumniRfpMatcher.php           # Alumni/Advancement RFP keyword matcher
-        ├── RfpPersistenceService.php      # RFP model updater & database persistence
-        ├── RfpScraperManager.php          # Main scraping orchestration manager
-        ├── Discovery/                     # Portal URL discovery service
-        ├── Support/ScraperRegistry.php    # Scraper registry locator
-        └── Platforms/
-            ├── Bonfire/                   # Bonfire API Strategy, Normalizer, Config
-            └── OpenGov/                   # OpenGov API Strategy, Normalizer, Config
+│   ├── Contracts/
+│   └── Eloquent/
+├── Services/
+│   ├── NominatimService.php
+│   ├── OpenAIService.php
+│   ├── OverpassService.php
+│   └── Rfp/
+│       ├── AlumniRfpMatcher.php
+│       ├── Contracts/
+│       ├── Discovery/
+│       ├── Platforms/
+│       │   ├── Bonfire/
+│       │   └── OpenGov/
+│       ├── RfpPersistenceService.php
+│       ├── RfpScraperManager.php
+│       └── Support/
+│           └── ScraperRegistry.php
+├── ...
+config/
+database/
+public/
+resources/
+├── views/
+│   ├── institutions/
+│   ├── rfps/
+│   ├── rfps-platform/
+│   └── welcome.blade.php
+routes/
+└── web.php
 ```
 
 ---
 
-## ⚙️ Installation & Setup
+## Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd alumini-scraper
-   ```
+1. Clone the repository:
 
-2. **Install PHP & Node dependencies**:
-   ```bash
-   composer install
-   npm install
-   ```
+```bash
+git clone https://github.com/indvx/alumini-scraper.git
+cd alumini-scraper
+```
 
-3. **Configure Environment Variables**:
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-   Set up your database and OpenAI API key in `.env`:
-   ```env
-   DB_CONNECTION=sqlite
-   OPENAI_API_KEY=your-openai-api-key
-   ```
+2. Install PHP dependencies:
 
-4. **Run Database Migrations & Seeders**:
-   ```bash
-   php artisan migrate --seed
-   ```
+```bash
+composer install
+```
 
-5. **Build Assets & Launch Server**:
-   ```bash
-   npm run build
-   php artisan serve
-   ```
+3. Install frontend dependencies:
+
+```bash
+npm install
+```
+
+4. Copy the environment file and generate an application key:
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+5. Configure the database and API credentials in `.env`:
+
+```env
+DB_CONNECTION=sqlite
+# DB_DATABASE=/absolute/path/to/database.sqlite
+
+OPENAI_API_KEY=your-openai-api-key
+```
+
+If using SQLite, create the database file if needed:
+
+```bash
+touch database/database.sqlite
+```
+
+6. Run database migrations and seeders:
+
+```bash
+php artisan migrate --seed
+```
+
+7. Build the frontend assets:
+
+```bash
+npm run build
+```
+
+8. Start the application:
+
+```bash
+php artisan serve
+```
+
+For local Vite development, you can also run:
+
+```bash
+npm run dev
+```
 
 ---
 
-## 💻 Artisan Commands
+## Key Routes
 
-### 1. Scrape All Institutions
-Scrape RFPs across all institutions and platforms:
+The app exposes a set of management and search routes:
+
+- `/locations/countries`
+- `/locations/states`
+- `/locations/cities`
+- `/institutions`
+- `/institutions/create`
+- `/institutions/search-api/lookup`
+- `/rfps`
+- `/rfps-platform`
+
+These routes power the institution lookup, RFP browsing, and platform management flows.
+
+---
+
+## Artisan Commands
+
+### Scrape all institutions
+
 ```bash
 php artisan rfp:scrape-all --type=open
 php artisan rfp:scrape-all --type=past --limit=10 --delay=2
 php artisan rfp:scrape-all --institution="University of Illinois" --platform="Bonfire"
 ```
 
-### 2. Scrape Specific Institution
-Target a specific university or college:
+### Scrape a specific institution
+
 ```bash
 php artisan rfp:scrape-institution "University of Michigan" --platform=Bonfire --type=open
 ```
 
-### 3. Scrape by Platform
-Scrape all associated institutions for a specific bidding platform:
+### Scrape by platform
+
 ```bash
 php artisan rfp:scrape-platform Bonfire --type=open
 php artisan rfp:scrape-platform OpenGov --type=past
@@ -146,6 +241,36 @@ php artisan rfp:scrape-platform OpenGov --type=past
 
 ---
 
-## 📝 License
+## Database Model Overview
 
-This project is open-sourced under the MIT license.
+The application stores the core entities needed for institutional and procurement intelligence:
+
+- `LocationSearch`
+- `Institution`
+- `RFPsPlatform`
+- `Institution` <-> `RFPsPlatform` pivot relationship
+- `RFP`
+
+The relationship layer tracks things like discovery confidence, source URL, verification dates, and notes.
+
+---
+
+## Environment Notes
+
+The application expects:
+
+- Laravel application environment configuration
+- A database connection
+- An OpenAI API key for procurement portal verification
+
+The default `.env.example` includes the standard Laravel settings and exposes the OpenAI key hook via:
+
+```env
+OPENAI_API_KEY=your-openai-api-key
+```
+
+---
+
+## License
+
+This project is open-source and distributed under the MIT license.
