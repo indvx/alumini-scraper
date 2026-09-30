@@ -46,7 +46,7 @@ class ScrapePlatformRfpsCommand extends Command
                 $this->info("Scraping {$institution->name} on {$platformRecord->name}...");
                 $result = $manager->scrapeUniversity(
                     universityName: $institution->name,
-                    platform: $platformRecord->platform_type ?? 'Bonfire',
+                    platform: $platformRecord->name ?? $platformRecord->platform_type ?? 'Bonfire',
                     status: strtolower($type) === 'past' ? RfpStatus::PAST : RfpStatus::OPEN,
                     institution: $institution,
                     platformRecord: $platformRecord

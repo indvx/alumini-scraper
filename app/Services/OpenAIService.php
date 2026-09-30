@@ -35,8 +35,6 @@ class OpenAIService
 
     public function content(array $messages, ?string $input = null, ?array $tools = []): string
     {
-        Log::info('OpenAI content initialized');
-        Log::info($messages);
         if (! empty($tools)) {
             try {
                 $response = $this->client->responses()->create([
