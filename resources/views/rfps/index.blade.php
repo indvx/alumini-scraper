@@ -165,20 +165,21 @@
                                 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                                 Search Keywords
                             </h4>
-                        </div>
-
-                        <!-- Add Custom Keyword Input & Unified Select All Toggle -->
-                        <div class="flex items-center gap-1.5 flex-wrap">
                             <button type="button" id="toggle-all-keywords-btn" onclick="toggleSelectAllKeywords()"
                                 title="Select or deselect all keywords"
                                 class="px-3 py-1 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs">
                                 Select All
                             </button>
+                        </div>
+
+                        <!-- Add Custom Keyword Input & Unified Select All Toggle -->
+                        <div class="flex items-center gap-1.5 flex-wrap">
                             <input type="text" id="new-keyword-input" placeholder="Add keyword (e.g. CRM)..."
                                 onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomKeyword(); }"
-                                class="px-2.5 py-1 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-44">
+                                class="px-2.5 py-1 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-100">
                             <button type="button" id="add-keyword-btn" onclick="addCustomKeyword()"
-                                class="px-2.5 py-1 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs">
+                                class="px-2.5 py-1 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs"
+                                title="Click to add the keyword">
                                 + Add
                             </button>
                         </div>
@@ -711,7 +712,6 @@
                     html += `
                         <div class="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:border-indigo-400 text-xs overflow-hidden shrink-0 transition-all font-medium opacity-80 hover:opacity-100">
                             <button type="button" title="Click to select ${kw}" onclick="toggleKeyword('${kw.replace(/'/g, "\\'")}')" class="px-2.5 py-1 select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1">
-                                <span class="text-slate-400 dark:text-slate-500">+</span>
                                 <span>${kw}</span>
                             </button>
                             ${removeBtnHtml}
