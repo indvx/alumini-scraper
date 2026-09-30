@@ -300,18 +300,23 @@
                         $statusLower = strtolower((string) $rfp->status);
                     @endphp
                     <div
-                        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-400 dark:hover:border-slate-700 transition-all space-y-3">
+                        @if ($rfp->opportunity_url)
+                            onclick="if (!event.target.closest('a, button')) window.open('{{ $rfp->opportunity_url }}', '_blank');"
+                            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-400 dark:hover:border-slate-700 transition-all space-y-3 cursor-pointer group"
+                        @else
+                            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-400 dark:hover:border-slate-700 transition-all space-y-3"
+                        @endif>
                         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                             <div class="space-y-1.5 flex-1">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <!-- Status Badge -->
                                     <span
                                         class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider
-                                        {{ $statusLower === 'open' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : '' }}
-                                        {{ $statusLower === 'awarded' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : '' }}
-                                        {{ in_array($statusLower, ['past', 'closed', 'evaluation']) ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : '' }}
-                                        {{ in_array($statusLower, ['cancelled', 'canceled']) ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300' : '' }}
-                                    ">
+                                    {{ $statusLower === 'open' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : '' }}
+                                    {{ $statusLower === 'awarded' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : '' }}
+                                    {{ in_array($statusLower, ['past', 'closed', 'evaluation']) ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : '' }}
+                                    {{ in_array($statusLower, ['cancelled', 'canceled']) ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300' : '' }}
+                                ">
                                         {{ ucfirst($rfp->status) }}
                                     </span>
 
@@ -345,10 +350,16 @@
                                 <!-- Title -->
                                 <h3
                                     class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
-                                    <a href="{{ route('rfps.show', $rfp) }}"
-                                        title="View RFP procurement details for {{ addslashes($rfp->title) }}"
-                                        class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
-                                        {{ $rfp->title }}
+                                    <a href="{{ $rfp->opportunity_url ?: route('rfps.show', $rfp) }}"
+                                        @if($rfp->opportunity_url) target="_blank" rel="noopener noreferrer" @endif
+                                        title="View procurement opportunity: {{ addslashes($rfp->title) }}"
+                                        class="group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors inline-flex items-center gap-1.5 flex-wrap">
+                                        <span>{{ $rfp->title }}</span>
+                                        @if($rfp->opportunity_url)
+                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 inline group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        @endif
                                     </a>
                                 </h3>
                             </div>
@@ -356,7 +367,7 @@
                             <!-- Related Institution & Platform -->
                             <div class="flex sm:flex-col items-end gap-2 shrink-0">
                                 @if ($rfp->institution)
-                                    <a href="{{ route('institutions.show', $rfp->institution) }}"
+                                    <a href="{{ route('institutions.show', $rfp->institution) }}" onclick="event.stopPropagation();"
                                         title="View profile for {{ addslashes($rfp->institution->name) }}"
                                         class="px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors">
                                         <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor"
@@ -369,7 +380,7 @@
                                 @endif
 
                                 @if ($rfp->platform)
-                                    <a href="{{ route('rfps-platform.show', $rfp->platform) }}"
+                                    <a href="{{ route('rfps-platform.show', $rfp->platform) }}" onclick="event.stopPropagation();"
                                         title="View platform details for {{ addslashes($rfp->platform->name) }}"
                                         class="px-3 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-1.5 transition-colors">
                                         <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor"
@@ -394,29 +405,38 @@
                         <div
                             class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
                             <div class="flex items-center gap-4 flex-wrap">
-                                @if ($rfp->date_open)
-                                    <span class="flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <span>Open: <strong
-                                                class="text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($rfp->date_open)->format('M d, Y') }}</strong></span>
-                                    </span>
-                                @endif
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>Open: <strong
+                                            class="text-slate-700 dark:text-slate-300">{{ $rfp->date_open ? \Carbon\Carbon::parse($rfp->date_open)->format('M d, Y') : 'N/A' }}</strong></span>
+                                </span>
 
-                                @if ($rfp->date_close)
-                                    <span class="flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span>Deadline: <strong
-                                                class="text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($rfp->date_close)->format('M d, Y') }}</strong></span>
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>
+                                        @if ($rfp->date_close && \Carbon\Carbon::parse($rfp->date_close)->isPast())
+                                            <span class="text-red-600 dark:text-red-400">Closed: </span>
+                                            <strong class="text-slate-700 dark:text-slate-300">
+                                                {{ \Carbon\Carbon::parse($rfp->date_close)->format('M d, Y') }}
+                                            </strong>
+                                        @elseif ($rfp->date_close && $rfp->date_close != $rfp->date_open)
+                                            <span>Deadline:</span>
+                                            <strong class="text-slate-700 dark:text-slate-300">
+                                                {{ \Carbon\Carbon::parse($rfp->date_close)->format('M d, Y') }}
+                                            </strong>
+                                        @else
+                                            <span>N/A</span>
+                                        @endif
                                     </span>
-                                @endif
+                                </span>
 
                                 @if ($rfp->source)
                                     <span
@@ -426,25 +446,17 @@
                                 @endif
                             </div>
 
-                            <div class="flex items-center gap-2">
-                                <a href="{{ route('rfps.show', $rfp) }}"
-                                    title="View full procurement details for {{ addslashes($rfp->title) }}"
-                                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all">
-                                    <span>Details</span>
+                            @if ($rfp->opportunity_url)
+                                <a href="{{ $rfp->opportunity_url }}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();"
+                                    title="View external opportunity source for {{ addslashes($rfp->title) }}"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shrink-0 shadow-sm">
+                                    <span>View Opportunity</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
                                 </a>
-                                @if ($rfp->opportunity_url || $rfp->portal_url)
-                                    <a href="{{ $rfp->opportunity_url ?: $rfp->portal_url }}" target="_blank"
-                                        rel="noopener" title="Open official opportunity page in a new window"
-                                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-all w-fit">
-                                        <span>View Opportunity</span>
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                        </svg>
-                                    </a>
-                                @endif
-                            </div>
+                            @endif
                         </div>
                     </div>
                 @endforeach
