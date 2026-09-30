@@ -10,6 +10,7 @@ use App\Services\Rfp\RfpScraperManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RFPsController extends Controller
 {
@@ -77,7 +78,7 @@ class RFPsController extends Controller
                 'Graduway',
                 'Gravyty',
                 'EnterpriseAlumni',
-                'Toucantech'
+                'Toucantech',
             ];
         }
 
@@ -107,8 +108,7 @@ class RFPsController extends Controller
                         ->orWhere('description', 'like', "%{$kw}%")
                         ->orWhere('project_id', 'like', "%{$kw}%")
                         ->orWhere('reference_id', 'like', "%{$kw}%")
-                        ->orWhere('department', 'like', "%{$kw}%")
-                    ;
+                        ->orWhere('department', 'like', "%{$kw}%");
                 }
             });
         }
@@ -116,15 +116,15 @@ class RFPsController extends Controller
         if ($status !== '' && $status !== 'all') {
             $statusLower = strtolower($status);
             if ($statusLower === 'open') {
-                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['open', 'active']);
+                $query->whereIn(DB::raw('LOWER(status)'), ['open', 'active']);
             } elseif ($statusLower === 'past' || $statusLower === 'closed') {
-                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['past', 'closed', 'evaluation', 'complete', 'completed']);
+                $query->whereIn(DB::raw('LOWER(status)'), ['past', 'closed', 'evaluation', 'complete', 'completed']);
             } elseif ($statusLower === 'awarded') {
-                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['awarded', 'award']);
+                $query->whereIn(DB::raw('LOWER(status)'), ['awarded', 'award']);
             } elseif ($statusLower === 'cancelled' || $statusLower === 'canceled') {
-                $query->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['cancelled', 'canceled']);
+                $query->whereIn(DB::raw('LOWER(status)'), ['cancelled', 'canceled']);
             } else {
-                $query->where(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), $statusLower);
+                $query->where(DB::raw('LOWER(status)'), $statusLower);
             }
         }
 
@@ -158,8 +158,6 @@ class RFPsController extends Controller
             'institution_id' => $institutionId,
             'rfps_platform_id' => $platformId,
         ];
-
-        // dd($filters);
 
         return view('rfps.index', [
             'rfps' => $rfps,

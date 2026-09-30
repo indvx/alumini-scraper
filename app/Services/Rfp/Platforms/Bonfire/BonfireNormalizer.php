@@ -7,26 +7,24 @@ use App\Data\Rfp\RfpScrapeData;
 use App\Enums\Rfp\RfpStatus;
 use App\Enums\Scraper\ScrapeMethod;
 use App\Services\Rfp\Contracts\RfpNormalizer;
-use Illuminate\Support\Facades\Log;
 
 class BonfireNormalizer implements RfpNormalizer
 {
-    /** 
-     * @param array<string, mixed> $rawPayload 
-     * @return array<int, RfpData> 
+    /**
+     * @param  array<string, mixed>  $rawPayload
+     * @return array<int, RfpData>
      */
     public function normalize(array $rawPayload, RfpScrapeData $scrapeData, ScrapeMethod $source): array
     {
         $projects = $rawPayload['payload']['projects'] ?? $rawPayload['projects'] ?? [];
         $portalUrl = rtrim((string) $scrapeData->portalUrl, '/');
         $rfps = [];
-        $defaultOpportunityUrl = $portalUrl . '/portal/?tab=' . ($scrapeData->type === RfpStatus::PAST ? 'pastOpportunities' : 'openOpportunities');
+        $defaultOpportunityUrl = $portalUrl.'/portal/?tab='.($scrapeData->type === RfpStatus::PAST ? 'pastOpportunities' : 'openOpportunities');
         foreach ($projects as $projectId => $item) {
             $closeDateStr = $item['DateClose'] ?? null;
             if (! $this->isWithinDateRange($closeDateStr, $scrapeData->fromDate, $scrapeData->toDate)) {
                 continue;
             }
-            Log::info("BonfireNormalizer: Item: ", $item);
             $opportunityUrl = $this->buildOpportunityUrl($item, $portalUrl, $defaultOpportunityUrl);
 
             $rfps[] = new RfpData(
@@ -46,6 +44,7 @@ class BonfireNormalizer implements RfpNormalizer
                 rawData: $item
             );
         }
+
         return $rfps;
     }
 
@@ -92,20 +91,22 @@ class BonfireNormalizer implements RfpNormalizer
             }
         }
         if (! empty($toDate)) {
-            $toTime = strtotime($toDate . ' 23:59:59');
+            $toTime = strtotime($toDate.' 23:59:59');
             if ($toTime !== false && $closeTime > $toTime) {
                 return false;
             }
         }
+
         return true;
     }
+
     protected function buildOpportunityUrl(array $item, string $portalUrl, string $defaultOpportunityUrl): string
     {
         $existingUrl = $item['OpportunityURL'] ?? $item['opportunity_url'] ?? $item['opportunityUrl'] ?? $item['url'] ?? null;
         if (! empty($existingUrl)) {
             $url = (string) $existingUrl;
             if (str_starts_with($url, '/')) {
-                return $portalUrl . $url;
+                return $portalUrl.$url;
             }
 
             return $url;
@@ -114,10 +115,10 @@ class BonfireNormalizer implements RfpNormalizer
         $visibilityId = $item['ProjectVisibilityID'] ?? $item['project_visibility_id'] ?? $item['projectVisibilityId'] ?? null;
         $privateProjectId = $item['PrivateProjectID'] ?? $item['private_project_id'] ?? $item['privateProjectId'] ?? null;
         if ($privateProjectId && (int) $visibilityId === 2) {
-            return $portalUrl . '/opportunities/private/' . $privateProjectId;
+            return $portalUrl.'/opportunities/private/'.$privateProjectId;
         }
         if ($projectId) {
-            return $portalUrl . '/opportunities/' . $projectId;
+            return $portalUrl.'/opportunities/'.$projectId;
         }
 
         return $defaultOpportunityUrl;
