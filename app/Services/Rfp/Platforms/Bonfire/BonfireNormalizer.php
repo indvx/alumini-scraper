@@ -70,7 +70,7 @@ class BonfireNormalizer implements RfpNormalizer
             return $map[$key];
         }
 
-        return RfpStatus::CLOSED;
+        return null;
     }
 
     protected function isWithinDateRange(?string $closeDateStr, ?string $fromDate, ?string $toDate): bool

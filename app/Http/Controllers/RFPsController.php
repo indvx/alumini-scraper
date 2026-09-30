@@ -169,15 +169,6 @@ class RFPsController extends Controller
         ]);
     }
 
-    public function show(RFP $rfp): View
-    {
-        $rfp->load(['institution', 'platform']);
-
-        return view('rfps.show', [
-            'rfp' => $rfp,
-        ]);
-    }
-
     public function scrape(Request $request, RfpScraperManager $scraperManager): RedirectResponse
     {
         $validated = $request->validate([

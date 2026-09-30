@@ -158,60 +158,48 @@
             <div
                 class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3.5">
                 <!-- Always Visible Keywords Manager Section (Top of Search) -->
-                <div id="keywords-drawer"
-                    class="pb-3 border-b border-slate-100 dark:border-slate-800 space-y-2.5 transition-all">
+                <div id="keywords-drawer" class="space-y-2.5 transition-all">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div class="flex items-center gap-2">
-                            <label
-                                class="inline-flex items-center gap-2 cursor-pointer text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 select-none">
-                                <input type="checkbox" id="enable-keywords-toggle" form="rfp-search-filter-form"
-                                    name="use_keywords" value="1"
-                                    {{ !empty($filters['use_keywords']) ? 'checked' : '' }}
-                                    onchange="onKeywordsToggleChange(this)"
-                                    class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4">
-                                <span>Search Keywords</span>
-                            </label>
+                            <h4
+                                class="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                                Search Keywords
+                            </h4>
                         </div>
 
-                        <!-- Add Custom Keyword Input -->
-                        <div class="flex items-center gap-2">
-                            <div class="flex items-center gap-1">
-                                <input type="text" id="new-keyword-input" placeholder="Add keyword (e.g. CRM)..."
-                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomKeyword(); }"
-                                    class="px-2.5 py-1 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-44 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed">
-                                <button type="button" id="add-keyword-btn" onclick="addCustomKeyword()"
-                                    class="px-2.5 py-1 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-rose-600">
-                                    + Add
-                                </button>
-                                <button type="button" id="reset-keywords-btn" onclick="resetKeywords()"
-                                    title="Reset keywords to defaults"
-                                    class="px-2 py-1 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                    <span>Reset</span>
-                                </button>
-                            </div>
+                        <!-- Add Custom Keyword Input & Unified Select All Toggle -->
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <button type="button" id="toggle-all-keywords-btn" onclick="toggleSelectAllKeywords()"
+                                title="Select or deselect all keywords"
+                                class="px-3 py-1 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs">
+                                Select All
+                            </button>
+                            <input type="text" id="new-keyword-input" placeholder="Add keyword (e.g. CRM)..."
+                                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomKeyword(); }"
+                                class="px-2.5 py-1 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-44">
+                            <button type="button" id="add-keyword-btn" onclick="addCustomKeyword()"
+                                class="px-2.5 py-1 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs">
+                                + Add
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Horizontal Scrollable Keyword Badges Container -->
+                    <!-- 3-Row Multi-Row Flex Wrap with Vertical Scrollbar -->
                     <div id="keywords-container"
-                        class="flex items-center gap-2 overflow-x-auto whitespace-nowrap py-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 max-w-full">
-                        <!-- Populated dynamically with removable tag pills by JavaScript -->
+                        class="flex flex-wrap items-center gap-2 max-h-[110px] overflow-y-auto pr-1 py-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 max-w-full">
+                        <!-- Populated dynamically with selectable tag pills by JavaScript -->
                     </div>
                 </div>
 
                 <form id="rfp-search-filter-form" action="{{ route('rfps.index') }}" method="GET"
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    {{-- <div>
+                    <div>
                         <label
                             class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search</label>
                         <input type="text" name="search" id="rfp-search-input"
                             value="{{ $filters['search'] ?? '' }}" placeholder="Title, inst name, ref ID..."
                             class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                    </div> --}}
+                    </div>
 
                     <div>
                         <label
@@ -300,12 +288,10 @@
                         $statusLower = strtolower((string) $rfp->status);
                     @endphp
                     <div
-                        @if ($rfp->opportunity_url)
-                            onclick="if (!event.target.closest('a, button')) window.open('{{ $rfp->opportunity_url }}', '_blank');"
+                        @if ($rfp->opportunity_url) onclick="if (!event.target.closest('a, button')) window.open('{{ $rfp->opportunity_url }}', '_blank');"
                             class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-400 dark:hover:border-slate-700 transition-all space-y-3 cursor-pointer group"
                         @else
-                            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-400 dark:hover:border-slate-700 transition-all space-y-3"
-                        @endif>
+                            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-400 dark:hover:border-slate-700 transition-all space-y-3" @endif>
                         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                             <div class="space-y-1.5 flex-1">
                                 <div class="flex items-center gap-2 flex-wrap">
@@ -351,13 +337,15 @@
                                 <h3
                                     class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
                                     <a href="{{ $rfp->opportunity_url ?: route('rfps.show', $rfp) }}"
-                                        @if($rfp->opportunity_url) target="_blank" rel="noopener noreferrer" @endif
+                                        @if ($rfp->opportunity_url) target="_blank" rel="noopener noreferrer" @endif
                                         title="View procurement opportunity: {{ addslashes($rfp->title) }}"
                                         class="group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors inline-flex items-center gap-1.5 flex-wrap">
                                         <span>{{ $rfp->title }}</span>
-                                        @if($rfp->opportunity_url)
-                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 inline group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        @if ($rfp->opportunity_url)
+                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 inline group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                             </svg>
                                         @endif
                                     </a>
@@ -367,7 +355,8 @@
                             <!-- Related Institution & Platform -->
                             <div class="flex sm:flex-col items-end gap-2 shrink-0">
                                 @if ($rfp->institution)
-                                    <a href="{{ route('institutions.show', $rfp->institution) }}" onclick="event.stopPropagation();"
+                                    <a href="{{ route('institutions.show', $rfp->institution) }}"
+                                        onclick="event.stopPropagation();"
                                         title="View profile for {{ addslashes($rfp->institution->name) }}"
                                         class="px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors">
                                         <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor"
@@ -380,7 +369,8 @@
                                 @endif
 
                                 @if ($rfp->platform)
-                                    <a href="{{ route('rfps-platform.show', $rfp->platform) }}" onclick="event.stopPropagation();"
+                                    <a href="{{ route('rfps-platform.show', $rfp->platform) }}"
+                                        onclick="event.stopPropagation();"
                                         title="View platform details for {{ addslashes($rfp->platform->name) }}"
                                         class="px-3 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-1.5 transition-colors">
                                         <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor"
@@ -447,11 +437,13 @@
                             </div>
 
                             @if ($rfp->opportunity_url)
-                                <a href="{{ $rfp->opportunity_url }}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();"
+                                <a href="{{ $rfp->opportunity_url }}" target="_blank" rel="noopener noreferrer"
+                                    onclick="event.stopPropagation();"
                                     title="View external opportunity source for {{ addslashes($rfp->title) }}"
                                     class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shrink-0 shadow-sm">
                                     <span>View Opportunity</span>
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                     </svg>
@@ -509,7 +501,7 @@
             if (icon) icon.classList.add('hidden');
         }
 
-        // 2. Multi-Select Keywords Manager System
+        // 2. Multi-Select Keywords Selection Manager System
         const DEFAULT_KEYWORDS = [
             'Alumni', 'Engagement', 'Event', 'Campaign', 'Community', 'Network',
             'Alumnae', 'Alumnus', 'Alumna', 'Software', 'Social', 'Digital',
@@ -521,31 +513,6 @@
             'Replacement', 'Renewal', 'Procurement', 'Solicitation', 'HiveBrite',
             'Almabase', 'PeopleGrove', 'Graduway', 'Gravyty', 'EnterpriseAlumni', 'Toucantech'
         ];
-
-        // Active server-side selected keywords array
-        let activeSelectedKeywords = @json($filters['keywords'] ?? []);
-        if (!Array.isArray(activeSelectedKeywords)) {
-            activeSelectedKeywords = [];
-        }
-
-        function syncHiddenKeywordsInputs() {
-            const container = document.getElementById('hidden-keywords-inputs');
-            if (!container) return;
-
-            const toggle = document.getElementById('enable-keywords-toggle');
-            const isEnabled = toggle ? toggle.checked : true;
-
-            if (!isEnabled) {
-                container.innerHTML = '';
-                return;
-            }
-
-            const visibleKeywords = getAllVisibleKeywords();
-
-            container.innerHTML = visibleKeywords
-                .map(kw => `<input type="hidden" name="keywords[]" value="${kw.replace(/"/g, '&quot;')}">`)
-                .join('');
-        }
 
         function getCustomKeywords() {
             try {
@@ -562,38 +529,17 @@
             } catch (e) {}
         }
 
-        function getRemovedKeywords() {
-            try {
-                const stored = localStorage.getItem('rfp_removed_keywords');
-                return stored ? JSON.parse(stored) : [];
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function saveRemovedKeywords(removed) {
-            try {
-                localStorage.setItem('rfp_removed_keywords', JSON.stringify(removed));
-            } catch (e) {}
-        }
-
         function getAllVisibleKeywords() {
-            const removedKw = getRemovedKeywords().map(k => String(k).toLowerCase());
             const customKw = getCustomKeywords();
-
-            // Default keywords excluding removed ones
-            let defaultFiltered = DEFAULT_KEYWORDS.filter(k => !removedKw.includes(k.toLowerCase()));
-
-            // Place custom keywords at the BEGINNING so user-added keywords appear first
             let allKeywords = [];
 
             customKw.forEach(ck => {
-                if (!removedKw.includes(ck.toLowerCase())) {
+                if (!allKeywords.map(k => k.toLowerCase()).includes(ck.toLowerCase())) {
                     allKeywords.push(ck);
                 }
             });
 
-            defaultFiltered.forEach(dk => {
+            DEFAULT_KEYWORDS.forEach(dk => {
                 if (!allKeywords.map(k => k.toLowerCase()).includes(dk.toLowerCase())) {
                     allKeywords.push(dk);
                 }
@@ -602,68 +548,76 @@
             return allKeywords;
         }
 
-        function renderKeywords() {
-            const container = document.getElementById('keywords-container');
-            if (!container) return;
+        const serverKw = @json($filters['keywords'] ?? null);
 
-            const toggle = document.getElementById('enable-keywords-toggle');
-            const isEnabled = toggle ? toggle.checked : true;
+        function getSelectedKeywords() {
+            try {
+                const stored = localStorage.getItem('rfp_selected_keywords');
+                if (stored !== null) {
+                    return JSON.parse(stored);
+                }
+            } catch (e) {}
 
-            const newKeywordInput = document.getElementById('new-keyword-input');
-            const addKeywordBtn = document.getElementById('add-keyword-btn');
-            const resetKeywordsBtn = document.getElementById('reset-keywords-btn');
-
-            if (newKeywordInput) newKeywordInput.disabled = !isEnabled;
-            if (addKeywordBtn) addKeywordBtn.disabled = !isEnabled;
-            if (resetKeywordsBtn) resetKeywordsBtn.disabled = !isEnabled;
-
-            if (!isEnabled) {
-                container.classList.add('opacity-40', 'pointer-events-none');
-            } else {
-                container.classList.remove('opacity-40', 'pointer-events-none');
+            if (Array.isArray(serverKw)) {
+                return serverKw;
             }
 
-            let allKeywords = getAllVisibleKeywords();
+            // Default: select all visible keywords initially if no preference stored
+            return getAllVisibleKeywords();
+        }
+
+        function saveSelectedKeywords(selected) {
+            try {
+                localStorage.setItem('rfp_selected_keywords', JSON.stringify(selected));
+            } catch (e) {}
+        }
+
+        function syncHiddenKeywordsInputs() {
+            const container = document.getElementById('hidden-keywords-inputs');
+            if (!container) return;
+
+            const selectedKeywords = getSelectedKeywords();
+            const hasSelected = selectedKeywords.length > 0;
+
             let html = '';
-
-            allKeywords.forEach((kw) => {
-                html += `
-                    <div class="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 hover:border-rose-400 text-xs overflow-hidden shrink-0 transition-all font-medium">
-                        <button type="button" title="Click to remove ${kw} keywrod" onclick="removeKeyword('${kw.replace(/'/g, "\\'")}')" class="px-2.5 py-1 font-semibold select-none hover:text-rose-600 transition-colors">
-                            ${kw}
-                        </button>
-                    </div>
-                `;
-            });
-
-            if (allKeywords.length === 0) {
-                html =
-                    '<div class="inline-flex items-center gap-2 text-xs text-slate-400 italic"><span>No active keywords.</span><button type="button" onclick="resetKeywords()" class="text-rose-600 dark:text-rose-400 font-semibold underline not-italic hover:text-rose-700">Restore Default Keywords</button></div>';
+            if (hasSelected) {
+                html += '<input type="hidden" name="use_keywords" value="1">';
+                html += selectedKeywords
+                    .map(kw => `<input type="hidden" name="keywords[]" value="${kw.replace(/"/g, '&quot;')}">`)
+                    .join('');
+            } else {
+                html += '<input type="hidden" name="use_keywords" value="0">';
             }
 
             container.innerHTML = html;
         }
 
-        function onKeywordsToggleChange(toggle) {
+        function toggleKeyword(kw) {
+            let selected = getSelectedKeywords();
+            const lowerKw = kw.toLowerCase();
+            const exists = selected.some(k => k.toLowerCase() === lowerKw);
+
+            if (exists) {
+                selected = selected.filter(k => k.toLowerCase() !== lowerKw);
+            } else {
+                selected.push(kw);
+            }
+
+            saveSelectedKeywords(selected);
             syncHiddenKeywordsInputs();
             renderKeywords();
         }
 
-        function removeKeyword(kw) {
-            const lowerKw = kw.toLowerCase();
+        function toggleSelectAllKeywords() {
+            const all = getAllVisibleKeywords();
+            const selected = getSelectedKeywords();
+            const isAllSelected = all.length > 0 && selected.length === all.length;
 
-            // Remove from custom if custom
-            let customKw = getCustomKeywords();
-            customKw = customKw.filter(k => k.toLowerCase() !== lowerKw);
-            saveCustomKeywords(customKw);
-
-            // Add to removed list
-            let removedKw = getRemovedKeywords();
-            if (!removedKw.map(k => k.toLowerCase()).includes(lowerKw)) {
-                removedKw.push(kw);
-                saveRemovedKeywords(removedKw);
+            if (isAllSelected) {
+                saveSelectedKeywords([]);
+            } else {
+                saveSelectedKeywords([...all]);
             }
-
             syncHiddenKeywordsInputs();
             renderKeywords();
         }
@@ -674,45 +628,111 @@
             const kw = input.value.trim();
             if (!kw) return;
 
-            // If it was in removed, un-remove it
-            let removedKw = getRemovedKeywords();
-            removedKw = removedKw.filter(k => k.toLowerCase() !== kw.toLowerCase());
-            saveRemovedKeywords(removedKw);
-
-            // Prepend to custom keywords array
+            // Save to custom keywords
             let customKw = getCustomKeywords();
             customKw = customKw.filter(k => k.toLowerCase() !== kw.toLowerCase());
             customKw.unshift(kw);
             saveCustomKeywords(customKw);
 
+            // Automatically select the newly added custom keyword
+            let selected = getSelectedKeywords();
+            if (!selected.some(k => k.toLowerCase() === kw.toLowerCase())) {
+                selected.unshift(kw);
+                saveSelectedKeywords(selected);
+            }
+
             input.value = '';
 
-            const toggle = document.getElementById('enable-keywords-toggle');
-            if (toggle) {
-                toggle.checked = true;
-            }
-
             syncHiddenKeywordsInputs();
             renderKeywords();
 
-            // Scroll container to start so new keyword is immediately visible
             const container = document.getElementById('keywords-container');
             if (container) {
-                container.scrollLeft = 0;
+                container.scrollTop = 0;
             }
         }
 
-        function resetKeywords() {
-            try {
-                localStorage.removeItem('rfp_removed_keywords');
-                localStorage.removeItem('rfp_custom_keywords');
-            } catch (e) {}
+        function removeCustomKeyword(kw) {
+            const lowerKw = kw.toLowerCase();
+
+            // 1. Remove from custom keywords
+            let customKw = getCustomKeywords();
+            customKw = customKw.filter(k => k.toLowerCase() !== lowerKw);
+            saveCustomKeywords(customKw);
+
+            // 2. Remove from selected keywords
+            let selected = getSelectedKeywords();
+            selected = selected.filter(k => k.toLowerCase() !== lowerKw);
+            saveSelectedKeywords(selected);
+
             syncHiddenKeywordsInputs();
             renderKeywords();
         }
 
-        // Always render keywords on page load
+        function renderKeywords() {
+            const container = document.getElementById('keywords-container');
+            if (!container) return;
+
+            const selectedKeywords = getSelectedKeywords();
+            const customKeywords = getCustomKeywords();
+            const allKeywords = getAllVisibleKeywords();
+
+            const toggleAllBtn = document.getElementById('toggle-all-keywords-btn');
+            if (toggleAllBtn) {
+                const isAllSelected = allKeywords.length > 0 && selectedKeywords.length === allKeywords.length;
+                toggleAllBtn.innerText = isAllSelected ? 'Deselect All' : 'Select All';
+            }
+
+            let html = '';
+
+            allKeywords.forEach((kw) => {
+                const isSelected = selectedKeywords.some(k => k.toLowerCase() === kw.toLowerCase());
+                const isCustom = customKeywords.some(ck => ck.toLowerCase() === kw.toLowerCase());
+
+                let removeBtnHtml = '';
+                if (isCustom) {
+                    removeBtnHtml = `
+                        <button type="button" title="Delete custom keyword ${kw}" onclick="event.stopPropagation(); removeCustomKeyword('${kw.replace(/'/g, "\\'")}')" class="pr-2 pl-1 py-1 ${isSelected ? 'text-indigo-200 hover:text-white hover:bg-indigo-700' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'} font-black text-xs transition-colors select-none">
+                            ✕
+                        </button>
+                    `;
+                }
+
+                if (isSelected) {
+                    html += `
+                        <div class="inline-flex items-center rounded-xl border bg-indigo-600 hover:bg-indigo-700 text-white text-xs overflow-hidden shrink-0 transition-all font-bold shadow-xs">
+                            <button type="button" title="Click to unselect ${kw}" onclick="toggleKeyword('${kw.replace(/'/g, "\\'")}')" class="px-2.5 py-1 select-none flex items-center gap-1.5 hover:bg-indigo-700 transition-colors">
+                                <span>${kw}</span>
+                            </button>
+                            ${removeBtnHtml}
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:border-indigo-400 text-xs overflow-hidden shrink-0 transition-all font-medium opacity-80 hover:opacity-100">
+                            <button type="button" title="Click to select ${kw}" onclick="toggleKeyword('${kw.replace(/'/g, "\\'")}')" class="px-2.5 py-1 select-none hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1">
+                                <span class="text-slate-400 dark:text-slate-500">+</span>
+                                <span>${kw}</span>
+                            </button>
+                            ${removeBtnHtml}
+                        </div>
+                    `;
+                }
+            });
+
+            if (allKeywords.length === 0) {
+                html =
+                    '<div class="inline-flex items-center gap-2 text-xs text-slate-400 italic"><span>No keywords available.</span></div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Always render keywords on page load and sync server defaults on initial load
         document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.search.length === 0 && Array.isArray(serverKw)) {
+                saveSelectedKeywords(serverKw);
+            }
             syncHiddenKeywordsInputs();
             renderKeywords();
         });

@@ -34,7 +34,6 @@ Route::prefix('institutions')->group(function () {
 Route::prefix('rfps')->group(function () {
     Route::get('/', [RFPsController::class, 'index'])->name('rfps.index');
     Route::post('/scrape', [RFPsController::class, 'scrape'])->name('rfps.scrape');
-    Route::get('/{rfp}', [RFPsController::class, 'show'])->name('rfps.show');
 });
 
 Route::prefix('rfps-platform')->group(function () {
