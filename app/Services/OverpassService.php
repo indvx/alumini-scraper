@@ -9,8 +9,12 @@ use Illuminate\Support\Facades\Log;
 class OverpassService
 {
     protected array $overpassEndpoints = [
-        'https://overpass.private.coffee/api/interpreter',
         'https://overpass-api.de/api/interpreter',
+        'https://overpass.private.coffee/api/interpreter',
+        'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+        'https://overpass.osm.jp/api/interpreter',
+        'https://z.overpass-api.de/api/interpreter',
+        'https://lz4.overpass-api.de/api/interpreter',
     ];
 
     protected string $nominatimEndpoint = 'https://nominatim.openstreetmap.org/reverse';
@@ -44,7 +48,12 @@ class OverpassService
 
                 $response = Http::withHeaders([
                     'User-Agent' => $this->userAgent,
-                ])->timeout(180)->asForm()->post($endpoint, ['data' => $overpassQuery]);
+                    'Accept' => 'application/json',
+                ])->connectTimeout(10)
+                    ->timeout(180)
+                    ->asForm()
+                    ->post($endpoint, ['data' => $overpassQuery]);
+
 
                 $duration = round(microtime(true) - $startedAt, 3);
                 Log::info('Overpass request COMPLETE', [
@@ -578,7 +587,7 @@ class OverpassService
     {
         $words = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
         $ignored = ['the', 'of', 'at', 'and', 'university', 'universities', 'college', 'campus'];
-        $words = array_filter($words, fn ($word) => ! in_array($word, $ignored, true));
+        $words = array_filter($words, fn($word) => ! in_array($word, $ignored, true));
 
         return implode(' ', $words);
     }
