@@ -12,8 +12,7 @@
                 Back to Institutions Search
             </a>
             <div class="flex items-center gap-2">
-                <a href="{{ route('institutions.edit', $institution) }}"
-                    title="Edit institution profile &amp; details"
+                <a href="{{ route('institutions.edit', $institution) }}" title="Edit institution profile &amp; details"
                     class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-sm">
                     <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -25,8 +24,7 @@
                     onsubmit="return confirm('Are you sure you want to delete this institution?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit"
-                        title="Permanently delete this institution record"
+                    <button type="submit" title="Permanently delete this institution record"
                         class="px-4 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 hover:bg-rose-100 text-xs font-bold flex items-center gap-2 transition-all">
                         <svg class="w-4 h-4 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -103,6 +101,21 @@
                                 </span>
                             </div>
                         </div>
+                        {{-- @if ($institution->latitude && $institution->longitude)
+                            <div class="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                                <a href="https://www.google.com/maps/place/{{ $institution->latitude }},+{{ $institution->longitude }}"
+                                    target="_blank" rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 transition-colors w-fit">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Open Maps
+                                </a>
+                            </div>
+                        @endif --}}
 
                         <div
                             class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
@@ -172,175 +185,177 @@
                         <!-- Add Relation Form (Collapsible Overlay) -->
                         <div id="add-platform-relation-form"
                             class="hidden absolute top-0 left-0 right-0 z-30 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 transition-all">
-                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <div
+                                class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                                 <h4 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
                                     Procurement Portal Relation
                                 </h4>
-                                <button type="button"
-                                    title="Close form"
+                                <button type="button" title="Close form"
                                     onclick="document.getElementById('add-platform-relation-form').classList.add('hidden');"
                                     class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
                             <form action="{{ route('institutions.rfp-platforms.store', $institution) }}" method="POST"
                                 class="space-y-4">
-                            @csrf
-                            <div>
-                                <label for="rfp_platform_search_input"
-                                    class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                    Select RFP Platform <span class="text-rose-500">*</span>
-                                </label>
-                                <div class="relative" id="rfp_platform_lookup_wrapper">
-                                    <input type="hidden" id="rfps_platform_id" name="rfps_platform_id" required>
-                                    <div class="relative flex items-center">
-                                        <input type="text" id="rfp_platform_search_input"
-                                            placeholder="Type or select platform..." autocomplete="off" required
-                                            class="w-full px-3.5 py-2.5 pr-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                                        <button type="button" id="rfp_platform_clear_btn"
-                                            class="hidden absolute right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-
-                                    <div id="rfp_platform_dropdown"
-                                        class="hidden absolute z-30 left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-1 space-y-0.5">
-                                        <div id="rfp_platform_dropdown_header"
-                                            class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
-                                            Platforms
+                                @csrf
+                                <div>
+                                    <label for="rfp_platform_search_input"
+                                        class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                        Select RFP Platform <span class="text-rose-500">*</span>
+                                    </label>
+                                    <div class="relative" id="rfp_platform_lookup_wrapper">
+                                        <input type="hidden" id="rfps_platform_id" name="rfps_platform_id" required>
+                                        <div class="relative flex items-center">
+                                            <input type="text" id="rfp_platform_search_input"
+                                                placeholder="Type or select platform..." autocomplete="off" required
+                                                class="w-full px-3.5 py-2.5 pr-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                            <button type="button" id="rfp_platform_clear_btn"
+                                                class="hidden absolute right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
                                         </div>
-                                        <div id="rfp_platform_dropdown_list" class="space-y-0.5">
-                                            @foreach ($allRfpPlatforms as $plat)
-                                                <button type="button" data-id="{{ $plat->id }}"
-                                                    data-name="{{ $plat->name }}"
-                                                    class="rfp-platform-opt-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-rose-50 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-between">
-                                                    <span
-                                                        class="font-medium text-slate-900 dark:text-white">{{ $plat->name }}</span>
-                                                    @if ($plat->domain || $plat->platform_type)
+
+                                        <div id="rfp_platform_dropdown"
+                                            class="hidden absolute z-30 left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-1 space-y-0.5">
+                                            <div id="rfp_platform_dropdown_header"
+                                                class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
+                                                Platforms
+                                            </div>
+                                            <div id="rfp_platform_dropdown_list" class="space-y-0.5">
+                                                @foreach ($allRfpPlatforms as $plat)
+                                                    <button type="button" data-id="{{ $plat->id }}"
+                                                        data-name="{{ $plat->name }}"
+                                                        class="rfp-platform-opt-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-rose-50 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-between">
                                                         <span
-                                                            class="text-[10px] text-slate-400 dark:text-slate-500">{{ $plat->domain ?: $plat->platform_type }}</span>
-                                                    @endif
-                                                </button>
-                                            @endforeach
-                                        </div>
-                                        <div id="rfp_platform_dropdown_empty"
-                                            class="hidden p-3 text-center text-xs text-slate-500">
-                                            No matching RFP platform found.
+                                                            class="font-medium text-slate-900 dark:text-white">{{ $plat->name }}</span>
+                                                        @if ($plat->domain || $plat->platform_type)
+                                                            <span
+                                                                class="text-[10px] text-slate-400 dark:text-slate-500">{{ $plat->domain ?: $plat->platform_type }}</span>
+                                                        @endif
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                            <div id="rfp_platform_dropdown_empty"
+                                                class="hidden p-3 text-center text-xs text-slate-500">
+                                                No matching RFP platform found.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label for="confidence"
-                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                        Confidence (%)
-                                    </label>
-                                    <input type="number" min="0" max="100" id="confidence"
-                                        name="confidence" value="98"
-                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="confidence"
+                                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                            Confidence (%)
+                                        </label>
+                                        <input type="number" min="0" max="100" id="confidence"
+                                            name="confidence" value="98"
+                                            class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    </div>
+
+                                    <div>
+                                        <label for="rel_status"
+                                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                            Status
+                                        </label>
+                                        <select id="rel_status" name="status"
+                                            class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                            <option value="active" selected>Active</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="pending">Pending</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="discovery_method"
+                                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                            Discovery Method
+                                        </label>
+                                        <input type="text" id="discovery_method" name="discovery_method"
+                                            value="AI + Web Search" placeholder="e.g. AI + Web Search"
+                                            class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    </div>
+
+                                    <div>
+                                        <label for="source_title"
+                                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                            Source Title
+                                        </label>
+                                        <input type="text" id="source_title" name="source_title"
+                                            value="University procurement page"
+                                            placeholder="e.g. University procurement page"
+                                            class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label for="rel_status"
+                                    <label for="source_url"
                                         class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                        Status
+                                        Evidence URL (Source Link)
                                     </label>
-                                    <select id="rel_status" name="status"
-                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                                        <option value="active" selected>Active</option>
-                                        <option value="inactive">Inactive</option>
-                                        <option value="pending">Pending</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label for="discovery_method"
-                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                        Discovery Method
-                                    </label>
-                                    <input type="text" id="discovery_method" name="discovery_method"
-                                        value="AI + Web Search" placeholder="e.g. AI + Web Search"
+                                    <input type="url" id="source_url" name="source_url"
+                                        placeholder="https://procurement.example.edu/bids"
                                         class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
                                 </div>
 
-                                <div>
-                                    <label for="source_title"
-                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                        Source Title
-                                    </label>
-                                    <input type="text" id="source_title" name="source_title"
-                                        value="University procurement page"
-                                        placeholder="e.g. University procurement page"
-                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                                </div>
-                            </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="first_verified_at"
+                                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                            First Verified
+                                        </label>
+                                        <input type="date" id="first_verified_at" name="first_verified_at"
+                                            value="{{ date('Y-m-d') }}"
+                                            class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    </div>
 
-                            <div>
-                                <label for="source_url"
-                                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                    Evidence URL (Source Link)
-                                </label>
-                                <input type="url" id="source_url" name="source_url"
-                                    placeholder="https://procurement.example.edu/bids"
-                                    class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label for="first_verified_at"
-                                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                        First Verified
-                                    </label>
-                                    <input type="date" id="first_verified_at" name="first_verified_at"
-                                        value="{{ date('Y-m-d') }}"
-                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    <div>
+                                        <label for="last_verified_at"
+                                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                            Last Verified
+                                        </label>
+                                        <input type="date" id="last_verified_at" name="last_verified_at"
+                                            value="{{ date('Y-m-d') }}"
+                                            class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label for="last_verified_at"
+                                    <label for="notes"
                                         class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                        Last Verified
+                                        Notes
                                     </label>
-                                    <input type="date" id="last_verified_at" name="last_verified_at"
-                                        value="{{ date('Y-m-d') }}"
-                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    <textarea id="notes" name="notes" rows="2"
+                                        placeholder="e.g. Formal bid opportunities are posted through Bonfire."
+                                        class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
                                 </div>
-                            </div>
 
-                            <div>
-                                <label for="notes"
-                                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                    Notes
-                                </label>
-                                <textarea id="notes" name="notes" rows="2"
-                                    placeholder="e.g. Formal bid opportunities are posted through Bonfire."
-                                    class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
-                            </div>
-
-                            <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                                <button type="button"
-                                    onclick="document.getElementById('add-platform-relation-form').classList.add('hidden');"
-                                    class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                                    Cancel
-                                </button>
-                                <button type="submit"
-                                    class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all">
-                                    Save Relation
-                                </button>
-                            </div>
-                        </form>
+                                <div
+                                    class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                                    <button type="button"
+                                        onclick="document.getElementById('add-platform-relation-form').classList.add('hidden');"
+                                        class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit"
+                                        class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all">
+                                        Save Relation
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
 
                     <!-- List of Attached Platforms -->
                     @if ($institution->rfpPlatforms->count() > 0)
