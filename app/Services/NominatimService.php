@@ -3,16 +3,51 @@
 namespace App\Services;
 
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class NominatimService
 {
-    protected string $baseUrl = 'https://nominatim.openstreetmap.org';
+    protected string $baseUrl;
+
+    protected string $userAgent;
+
+    public function __construct()
+    {
+        $this->baseUrl = config('services.nominatim.base_url', env('NOMINATIM_BASE_URL', 'https://nominatim.openstreetmap.org'));
+        $this->userAgent = config('services.nominatim.user_agent', env('NOMINATIM_USER_AGENT', 'Mozilla/5.0 (compatible; AlumniInstitutionFinder/1.0)'));
+    }
 
     public function resolveLocationArea(string $query): array
     {
-        $response = Http::withHeaders([
-            'User-Agent' => 'my-school-finder-laravel/1.0',
+        $cacheKey = 'nominatim_area_'.md5(strtolower(trim($query)));
+
+        return Cache::remember($cacheKey, now()->addDays(30), function () use ($query) {
+            try {
+                return $this->fetchLocationAreaFromNominatim($query);
+            } catch (Exception $e) {
+                Log::warning('Nominatim geocoding failed: '.$e->getMessage().'. Attempting Photon fallback.');
+
+                return $this->fetchLocationAreaFromPhoton($query);
+            }
+        });
+    }
+
+    protected function fetchLocationAreaFromNominatim(string $query): array
+    {
+        usleep(1000000); // Respect 1 req/sec policy
+
+        $response = Http::retry(2, 2000, function (Exception $exception, $request) {
+            if (method_exists($exception, 'getResponse') && $exception->getResponse()) {
+                return $exception->getResponse()->status() === 429;
+            }
+
+            return false;
+        }, throw: false)->withHeaders([
+            'User-Agent' => $this->userAgent,
+            'Accept' => 'application/json',
+            'Accept-Language' => 'en-US,en;q=0.9',
         ])->timeout(30)->get($this->baseUrl.'/search', [
             'q' => $query,
             'format' => 'json',
@@ -21,13 +56,21 @@ class NominatimService
             'limit' => 10,
         ]);
 
+        if ($response->status() === 403) {
+            throw new Exception('Nominatim HTTP 403 (Forbidden). Check User-Agent header or API limits.');
+        }
+
+        if ($response->status() === 429) {
+            throw new Exception('Nominatim HTTP 429 (Rate Limit Exceeded).');
+        }
+
         if ($response->failed()) {
-            throw new Exception('Nominatim geocoding failed: '.$response->body());
+            throw new Exception('Nominatim failed with status HTTP '.$response->status());
         }
 
         $data = $response->json();
-        if (empty($data)) {
-            throw new Exception("Location not found: {$query}");
+        if (empty($data) || ! is_array($data)) {
+            throw new Exception("Location not found via Nominatim: {$query}");
         }
 
         $requestedName = strtolower(trim(explode(',', $query)[0]));
@@ -74,9 +117,58 @@ class NominatimService
         ];
     }
 
+    protected function fetchLocationAreaFromPhoton(string $query): array
+    {
+        $response = Http::withHeaders([
+            'User-Agent' => $this->userAgent,
+        ])->timeout(30)->get('https://photon.komoot.io/api/', [
+            'q' => $query,
+            'limit' => 5,
+            'lang' => 'en',
+        ]);
+
+        if ($response->failed()) {
+            throw new Exception("Geocoding failed for '{$query}'. Both Nominatim and Photon services were unreachable.");
+        }
+
+        $features = $response->json('features');
+        if (empty($features) || ! is_array($features)) {
+            throw new Exception("Location not found: {$query}");
+        }
+
+        $bestFeature = $features[0];
+        $properties = $bestFeature['properties'] ?? [];
+
+        $osmTypeRaw = strtoupper((string) ($properties['osm_type'] ?? 'R'));
+        $osmId = (int) ($properties['osm_id'] ?? 0);
+
+        $areaId = match ($osmTypeRaw) {
+            'R', 'RELATION' => 3600000000 + $osmId,
+            'W', 'WAY' => 2400000000 + $osmId,
+            default => 3600000000 + $osmId,
+        };
+
+        $placeName = $properties['name'] ?? $query;
+        $state = $properties['state'] ?? null;
+        $country = $properties['country'] ?? null;
+
+        $displayNameParts = array_filter([$placeName, $state, $country]);
+        $displayName = ! empty($displayNameParts) ? implode(', ', $displayNameParts) : $query;
+
+        return [
+            'display_name' => $displayName,
+            'area_id' => $areaId,
+            'place_name' => $placeName,
+            'state' => $state,
+            'country' => $country,
+        ];
+    }
+
     public function findInstitutionName(float $latitude, float $longitude): ?string
     {
         try {
+            usleep(1000000);
+
             $params = [
                 'lat' => $latitude,
                 'lon' => $longitude,
@@ -85,8 +177,8 @@ class NominatimService
                 'addressdetails' => 1,
             ];
 
-            $response = Http::withHeaders([
-                'User-Agent' => 'SchoolNameFinder/1.0',
+            $response = Http::retry(2, 2000, throw: false)->withHeaders([
+                'User-Agent' => $this->userAgent,
             ])->timeout(30)->get($this->baseUrl.'/reverse', $params);
 
             if ($response->failed()) {

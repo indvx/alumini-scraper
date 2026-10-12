@@ -3,6 +3,7 @@
 namespace App\Services\Rfp\Support;
 
 use App\Services\Rfp\Contracts\RfpPlatformScraper;
+use App\Services\Rfp\Platforms\BidNetDirect\BidNetDirectScraper;
 use App\Services\Rfp\Platforms\Bonfire\BonfireScraper;
 use App\Services\Rfp\Platforms\OpenGov\OpenGovScraper;
 use Illuminate\Support\ItemNotFoundException;
@@ -16,11 +17,13 @@ class ScraperRegistry
 
     public function __construct(
         BonfireScraper $bonfireScraper,
-        OpenGovScraper $openGovScraper
+        OpenGovScraper $openGovScraper,
+        BidNetDirectScraper $bidNetDirectScraper
     ) {
         $this->scrapers = [
             $bonfireScraper,
             $openGovScraper,
+            $bidNetDirectScraper,
         ];
     }
 

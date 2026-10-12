@@ -13,10 +13,11 @@ class ScrapeInstitutionRfpsCommand extends Command
 {
     protected $signature = 'rfp:scrape-institution
                             {university : Name of the institution}
-                            {--platform=Bonfire : Target platform (Bonfire, Jaggaer, PlanetBids, OpenGov)}
+                            {--platform=Bonfire : Target platform (Bonfire, Jaggaer, PlanetBids, OpenGov, BidNet Direct)}
                             {--type=open : Opportunity type (open or past)}
                             {--from= : Start date filter (YYYY-MM-DD)}
-                            {--to= : End date filter (YYYY-MM-DD)}';
+                            {--to= : End date filter (YYYY-MM-DD)}
+                            {--url= : Optional direct portal or listing URL to scrape}';
 
     protected $description = 'Scrape RFPs for a specific university/institution';
 
@@ -28,6 +29,7 @@ class ScrapeInstitutionRfpsCommand extends Command
             $type = $this->option('type') ?? 'open';
             $fromDate = $this->option('from');
             $toDate = $this->option('to');
+            $customUrl = $this->option('url');
 
             $statusEnum = strtolower($type) === 'past' || strtolower($type) === 'closed'
                 ? RfpStatus::PAST
@@ -48,7 +50,8 @@ class ScrapeInstitutionRfpsCommand extends Command
                 toDate: $toDate,
                 persist: true,
                 institution: $institution,
-                platformRecord: $platformRecord
+                platformRecord: $platformRecord,
+                customPortalUrl: $customUrl
             );
 
             if ($result->isFailure()) {

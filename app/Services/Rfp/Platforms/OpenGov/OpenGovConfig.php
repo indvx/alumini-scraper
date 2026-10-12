@@ -12,14 +12,14 @@ class OpenGovConfig
     {
         $code = strtolower(trim($govCode));
 
-        return self::BASE_API_URL . "/government/{$code}/project/public";
+        return self::BASE_API_URL."/government/{$code}/project/public";
     }
 
     public static function buildOpportunityUrl(string $govCode, string|int $projectId): string
     {
         $code = strtolower(trim($govCode));
 
-        return self::BASE_PORTAL_URL . "/{$code}/projects/{$projectId}";
+        return self::BASE_PORTAL_URL."/{$code}/projects/{$projectId}";
     }
 
     public static function extractGovCode(?string $url): ?string

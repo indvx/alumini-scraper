@@ -111,7 +111,7 @@ class OpenGovNormalizer implements RfpNormalizer
             }
         }
         if (! empty($toDate)) {
-            $toTime = strtotime($toDate . ' 23:59:59');
+            $toTime = strtotime($toDate.' 23:59:59');
             if ($toTime !== false && $closeTime > $toTime) {
                 return false;
             }
@@ -126,7 +126,7 @@ class OpenGovNormalizer implements RfpNormalizer
         if (! empty($existingUrl)) {
             $url = (string) $existingUrl;
             if (str_starts_with($url, '/')) {
-                return 'https://procurement.opengov.com' . $url;
+                return 'https://procurement.opengov.com'.$url;
             }
 
             return $url;

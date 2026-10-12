@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -19,7 +20,7 @@ class OverpassService
 
     protected string $nominatimEndpoint = 'https://nominatim.openstreetmap.org/reverse';
 
-    protected string $userAgent = 'my-school-finder-laravel/1.0';
+    protected string $userAgent = 'Mozilla/5.0 (compatible; AlumniInstitutionFinder/1.0)';
 
     protected array $nominatimCache = [];
 
@@ -36,6 +37,15 @@ class OverpassService
                 node["amenity"="university"](area:{$areaId});
                 way["amenity"="university"](area:{$areaId});
                 relation["amenity"="university"](area:{$areaId});
+                node["amenity"="school"](area:{$areaId});
+                way["amenity"="school"](area:{$areaId});
+                relation["amenity"="school"](area:{$areaId});
+                node["amenity"="college"](area:{$areaId});
+                way["amenity"="college"](area:{$areaId});
+                relation["amenity"="college"](area:{$areaId});
+                node["amenity"="kindergarten"](area:{$areaId});
+                way["amenity"="kindergarten"](area:{$areaId});
+                relation["amenity"="kindergarten"](area:{$areaId});
             );
             out center tags;
         OVERPASS;
@@ -53,7 +63,6 @@ class OverpassService
                     ->timeout(180)
                     ->asForm()
                     ->post($endpoint, ['data' => $overpassQuery]);
-
 
                 $duration = round(microtime(true) - $startedAt, 3);
                 Log::info('Overpass request COMPLETE', [
@@ -111,10 +120,10 @@ class OverpassService
             $lat = $el['lat'] ?? $el['center']['lat'] ?? null;
             $lon = $el['lon'] ?? $el['center']['lon'] ?? null;
 
-            if (! $this->isValidUniversityTags($tags)) {
+            if (! $this->isValidInstitutionTags($tags)) {
                 $invalidCount++;
                 Log::debug(
-                    'Overpass record rejected - invalid university tags',
+                    'Overpass record rejected - invalid institution tags',
                     [
                         'osm_type' => $type,
                         'osm_id' => $osmId,
@@ -240,7 +249,7 @@ class OverpassService
             if (! $validation['valid']) {
                 $validationFailedCount++;
                 Log::info(
-                    'University rejected by Nominatim',
+                    'Institution rejected by Nominatim',
                     [
                         'osm_type' => $type,
                         'osm_id' => $osmId,
@@ -263,7 +272,7 @@ class OverpassService
                 'osm_id' => $osmId,
                 'osm_type' => $type,
                 'name' => $name,
-                'type' => 'university',
+                'type' => strtolower(trim((string) ($tags['amenity'] ?? 'university'))),
                 'latitude' => $lat,
                 'longitude' => $lon,
                 'address' => $address,
@@ -283,7 +292,7 @@ class OverpassService
             ];
         }
 
-        Log::info('University processing COMPLETE', [
+        Log::info('Institution processing COMPLETE', [
             'input_count' => count($elements),
             'output_count' => count($records),
             'duplicates_removed' => $duplicateCount,
@@ -300,25 +309,23 @@ class OverpassService
         float $lat,
         float $lon,
         ?string $osmId,
-        string $osmType
+        string $osmType,
     ): array {
-        $cacheKey = implode(':', [$osmType, $osmId ?? '', round($lat, 5), round($lon, 5)]);
+        $cacheKey = 'nom_val_'.md5(implode(':', [$osmType, $osmId ?? '', round($lat, 5), round($lon, 5)]));
 
-        if (isset($this->nominatimCache[$cacheKey])) {
-            Log::info(
-                'Nominatim validation CACHE HIT',
-                [
-                    'osm_type' => $osmType,
-                    'osm_id' => $osmId,
-                    'name' => $name,
-                    'latitude' => $lat,
-                    'longitude' => $lon,
-                ]
-            );
+        return Cache::remember($cacheKey, now()->addDays(30), function () use ($name, $lat, $lon, $osmId, $osmType, $cacheKey) {
+            return $this->performNominatimValidation($name, $lat, $lon, $osmId, $osmType, $cacheKey);
+        });
+    }
 
-            return $this->nominatimCache[$cacheKey];
-        }
-
+    protected function performNominatimValidation(
+        string $name,
+        float $lat,
+        float $lon,
+        ?string $osmId,
+        string $osmType,
+        string $cacheKey
+    ): array {
         Log::info(
             'Nominatim validation START',
             [
@@ -337,8 +344,9 @@ class OverpassService
             $response = Http::withHeaders([
                 'User-Agent' => $this->userAgent,
                 'Accept' => 'application/json',
+                'Accept-Language' => 'en-US,en;q=0.9',
             ])
-                ->timeout(30)
+                ->timeout(10)
                 ->get(
                     $this->nominatimEndpoint,
                     [
@@ -352,71 +360,48 @@ class OverpassService
 
             $duration = round(microtime(true) - $startedAt, 3);
 
-            Log::info(
-                'Nominatim HTTP response',
-                [
-                    'osm_type' => $osmType,
-                    'osm_id' => $osmId,
-                    'overpass_name' => $name,
+            if ($response->status() === 429 || $response->status() === 403) {
+                Log::warning('Nominatim validation rate limited or forbidden (HTTP '.$response->status().'). Accepting Overpass record directly.', [
+                    'name' => $name,
                     'status' => $response->status(),
-                    'successful' => $response->successful(),
-                    'duration_seconds' => $duration,
-                ]
-            );
+                ]);
+
+                return [
+                    'valid' => true,
+                    'score' => 5,
+                    'reason' => 'nominatim_rate_limited_accepted_by_default',
+                    'name' => $name,
+                    'type' => $osmType,
+                    'category' => 'amenity',
+                ];
+            }
 
             if (! $response->successful()) {
-                Log::warning(
-                    'Nominatim validation FAILED - HTTP error',
-                    [
-                        'osm_type' => $osmType,
-                        'osm_id' => $osmId,
-                        'name' => $name,
-                        'status' => $response->status(),
-                        'body' => $response->body(),
-                        'duration_seconds' => $duration,
-                    ]
-                );
+                Log::warning('Nominatim validation HTTP error. Accepting Overpass record directly.', [
+                    'status' => $response->status(),
+                ]);
 
-                return $this->cacheValidationResult(
-                    $cacheKey,
-                    [
-                        'valid' => false,
-                        'score' => 0,
-                        'name' => null,
-                        'type' => null,
-                        'category' => null,
-                        'reason' => 'nominatim_http_error',
-                    ]
-                );
+                return [
+                    'valid' => true,
+                    'score' => 5,
+                    'reason' => 'nominatim_http_error_accepted_by_default',
+                    'name' => $name,
+                    'type' => $osmType,
+                    'category' => 'amenity',
+                ];
             }
 
             $data = $response->json();
 
-            Log::info(
-                'Nominatim validation RESULT',
-                [
-                    'osm_type' => $osmType,
-                    'osm_id' => $osmId,
-                    'overpass_name' => $name,
-                    'latitude' => $lat,
-                    'longitude' => $lon,
-                    'nominatim_result' => $data,
-                    'duration_seconds' => $duration,
-                ]
-            );
-
             if (! is_array($data)) {
-                return $this->cacheValidationResult(
-                    $cacheKey,
-                    [
-                        'valid' => false,
-                        'score' => 0,
-                        'name' => null,
-                        'type' => null,
-                        'category' => null,
-                        'reason' => 'invalid_nominatim_response',
-                    ]
-                );
+                return [
+                    'valid' => true,
+                    'score' => 5,
+                    'reason' => 'invalid_nominatim_response_accepted_by_default',
+                    'name' => $name,
+                    'type' => $osmType,
+                    'category' => 'amenity',
+                ];
             }
 
             $nominatimName = trim((string) ($data['name'] ?? ''));
@@ -427,9 +412,11 @@ class OverpassService
 
             $score = 0;
 
-            $isUniversityType = $nominatimType === 'university' || ($nominatimCategory === 'amenity' && $nominatimType === 'university');
+            $allowedEducationalTypes = ['university', 'school', 'college', 'kindergarten'];
+            $isEducationalType = in_array($nominatimType, $allowedEducationalTypes, true) ||
+                ($nominatimCategory === 'amenity' && in_array($nominatimType, $allowedEducationalTypes, true));
 
-            if ($isUniversityType) {
+            if ($isEducationalType) {
                 $score += 3;
             }
 
@@ -464,17 +451,18 @@ class OverpassService
             }
             $valid = $score >= $this->minimumValidationScore;
             $reason = 'score_below_threshold';
-            $nonUniversityTypes = ['restaurant', 'cafe', 'bar', 'pub', 'parking', 'fuel', 'hotel', 'motel', 'hospital', 'clinic', 'pharmacy', 'school', 'kindergarten', 'fast_food', 'boat', 'marina', 'parking_entrance', 'museum', 'park', 'stadium', 'theatre'];
+            $nonEducationalTypes = ['restaurant', 'cafe', 'bar', 'pub', 'parking', 'fuel', 'hotel', 'motel', 'hospital', 'clinic', 'pharmacy', 'fast_food', 'boat', 'marina', 'parking_entrance', 'museum', 'park', 'stadium', 'theatre'];
 
-            if (in_array($nominatimType, $nonUniversityTypes, true) && $nameSimilarity < 50 && ! $sameOsmObject) {
+            if (in_array($nominatimType, $nonEducationalTypes, true) && $nameSimilarity < 50 && ! $sameOsmObject) {
                 $valid = false;
-                $reason = 'nominatim_identifies_non_university';
+                $reason = 'nominatim_identifies_non_educational';
             }
 
             if ($valid) {
                 $reason = 'validation_passed';
             }
-            $result = [
+
+            return [
                 'valid' => $valid,
                 'score' => $score,
                 'reason' => $reason,
@@ -486,67 +474,30 @@ class OverpassService
                 'osm_type' => $nominatimOsmType,
                 'distance_meters' => $distance,
             ];
-            Log::info(
-                'Nominatim validation COMPLETE',
-                [
-                    'osm_type' => $osmType,
-                    'osm_id' => $osmId,
-                    'overpass_name' => $name,
-                    'nominatim_name' => $nominatimName,
-                    'nominatim_type' => $nominatimType,
-                    'nominatim_category' => $nominatimCategory,
-                    'nominatim_osm_type' => $nominatimOsmType,
-                    'nominatim_osm_id' => $nominatimOsmId,
-                    'name_similarity' => $nameSimilarity,
-                    'distance_meters' => $distance,
-                    'same_osm_object' => $sameOsmObject,
-                    'is_university_type' => $isUniversityType,
-                    'score' => $score,
-                    'minimum_score' => $this->minimumValidationScore,
-                    'valid' => $valid,
-                    'reason' => $reason,
-                    'duration_seconds' => $duration,
-                ]
-            );
-
-            return $this->cacheValidationResult($cacheKey, $result);
         } catch (Exception $e) {
-            $duration = round(microtime(true) - $startedAt, 3);
-            Log::error(
-                'Nominatim validation EXCEPTION',
-                [
-                    'osm_type' => $osmType,
-                    'osm_id' => $osmId,
-                    'overpass_name' => $name,
-                    'latitude' => $lat,
-                    'longitude' => $lon,
-                    'error' => $e->getMessage(),
-                    'exception' => get_class($e),
-                    'duration_seconds' => $duration,
-                ]
-            );
+            Log::error('Nominatim validation exception. Accepting Overpass record by default.', [
+                'error' => $e->getMessage(),
+            ]);
 
-            return $this->cacheValidationResult(
-                $cacheKey,
-                [
-                    'valid' => false,
-                    'score' => 0,
-                    'name' => null,
-                    'type' => null,
-                    'category' => null,
-                    'reason' => 'nominatim_exception',
-                ]
-            );
+            return [
+                'valid' => true,
+                'score' => 5,
+                'reason' => 'nominatim_exception_accepted_by_default',
+                'name' => $name,
+                'type' => $osmType,
+                'category' => 'amenity',
+            ];
         }
     }
 
-    protected function isValidUniversityTags(array $tags): bool
+    protected function isValidInstitutionTags(array $tags): bool
     {
         $amenity = strtolower(
             trim((string) ($tags['amenity'] ?? ''))
         );
 
-        if ($amenity !== 'university') {
+        $allowedAmenities = ['university', 'school', 'college', 'kindergarten'];
+        if (! in_array($amenity, $allowedAmenities, true)) {
             return false;
         }
 
@@ -586,8 +537,8 @@ class OverpassService
     protected function removeCommonWords(string $value): string
     {
         $words = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
-        $ignored = ['the', 'of', 'at', 'and', 'university', 'universities', 'college', 'campus'];
-        $words = array_filter($words, fn($word) => ! in_array($word, $ignored, true));
+        $ignored = ['the', 'of', 'at', 'and', 'university', 'universities', 'college', 'campus', 'school', 'kindergarten'];
+        $words = array_filter($words, fn ($word) => ! in_array($word, $ignored, true));
 
         return implode(' ', $words);
     }
