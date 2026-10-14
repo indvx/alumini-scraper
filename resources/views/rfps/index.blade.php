@@ -69,11 +69,11 @@
                         <div>
                             <label
                                 class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                                Select Platform <span class="text-rose-500">*</span>
+                                Select RFP Platforms <span class="text-rose-500">*</span>
                             </label>
                             <select name="platform_name" required
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                                <option value="all" selected>All Platforms (Bonfire / OpenGov / etc)</option>
+                                <option value="all" selected>All RFP Platforms (Bonfire / OpenGov / etc)</option>
                                 <option value="Bonfire">Bonfire</option>
                                 <option value="OpenGov">OpenGov</option>
                                 <option value="Jaggaer">Jaggaer</option>
@@ -155,58 +155,79 @@
             </div>
 
             <!-- RFP Filters Form Container -->
+            <!-- RFP Filters Form Container -->
             <div
-                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3.5">
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
                 <!-- Always Visible Keywords Manager Section (Top of Search) -->
-                <div id="keywords-drawer" class="space-y-2.5 transition-all">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div class="flex items-center gap-2">
+                <div id="keywords-drawer" class="space-y-3 transition-all">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 flex-wrap">
                             <h4
                                 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                                 Search Keywords
                             </h4>
                             <button type="button" id="toggle-all-keywords-btn" onclick="toggleSelectAllKeywords()"
                                 title="Select or deselect all keywords"
-                                class="px-3 py-1 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs">
+                                class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs">
                                 Select All
                             </button>
+                            <div class="flex items-center gap-1.5 ml-1">
+                                <label for="keyword-condition-select" class="text-xs font-bold text-slate-600 dark:text-slate-300">Condition:</label>
+                                <select id="keyword-condition-select" onchange="updateKeywordCondition(this.value)"
+                                    title="Keyword matching condition"
+                                    class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all cursor-pointer">
+                                    <option value="OR" {{ ($filters['keyword_condition'] ?? 'OR') === 'OR' ? 'selected' : '' }}>OR (Match Any)</option>
+                                    <option value="AND" {{ ($filters['keyword_condition'] ?? '') === 'AND' ? 'selected' : '' }}>AND (Match All)</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Add Custom Keyword Input & Unified Select All Toggle -->
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <input type="text" id="new-keyword-input" placeholder="Add keyword (e.g. CRM)..."
                                 onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomKeyword(); }"
-                                class="px-2.5 py-1 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-100">
+                                class="px-3 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-64 sm:w-80">
                             <button type="button" id="add-keyword-btn" onclick="addCustomKeyword()"
-                                class="px-2.5 py-1 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs"
+                                class="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs"
                                 title="Click to add the keyword">
                                 + Add
                             </button>
                         </div>
                     </div>
 
-                    <!-- 3-Row Multi-Row Flex Wrap with Vertical Scrollbar -->
+                    <!-- Increased Height Multi-Row Flex Wrap with Vertical Scrollbar -->
                     <div id="keywords-container"
-                        class="flex flex-wrap items-center gap-2 max-h-[110px] overflow-y-auto pr-1 py-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 max-w-full">
+                        class="flex flex-wrap items-center gap-2 min-h-[96px] max-h-[175px] overflow-y-auto pr-1 py-1.5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 max-w-full">
                         <!-- Populated dynamically with selectable tag pills by JavaScript -->
                     </div>
                 </div>
 
                 <form id="rfp-search-filter-form" action="{{ route('rfps.index') }}" method="GET"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     {{-- <div>
                         <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Search</label>
-                        <input type="text" name="search" id="rfp-search-input"
-                            value="{{ $filters['search'] ?? '' }}" placeholder="Title, inst name, ref ID..."
-                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Search
+                        </label>
+                        <div class="relative">
+                            <input type="text" name="search" id="rfp-search-input"
+                                value="{{ $filters['search'] ?? '' }}" placeholder="Title, ref ID, dept, inst..."
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
                     </div> --}}
 
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Status</label>
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Status
+                        </label>
                         <select name="status"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                             <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All
                                 Statuses</option>
                             <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open
@@ -224,9 +245,11 @@
 
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Institution</label>
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Institution
+                        </label>
                         <select name="institution_id"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                             <option value="all"
                                 {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All
                                 Institutions</option>
@@ -241,12 +264,14 @@
 
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Platform</label>
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            RFP Platforms
+                        </label>
                         <select name="rfps_platform_id"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                             <option value="all"
-                                {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Platforms
-                            </option>
+                                {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All RFP
+                                Platforms</option>
                             @foreach ($platforms as $plat)
                                 <option value="{{ $plat->id }}"
                                     {{ (string) ($filters['rfps_platform_id'] ?? '') === (string) $plat->id ? 'selected' : '' }}>
@@ -256,9 +281,29 @@
                         </select>
                     </div>
 
-                    <div class="flex items-end gap-2">
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Open Date
+                        </label>
+                        <input type="date" name="date_open" id="rfp-date-open"
+                            value="{{ $filters['date_open'] ?? '' }}"
+                            class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Closed Date
+                        </label>
+                        <input type="date" name="date_close" id="rfp-date-close"
+                            value="{{ $filters['date_close'] ?? '' }}"
+                            class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                    </div>
+
+                    <div class="col-span-1 sm:col-span-2 lg:col-span-5 flex items-center justify-end gap-2 pt-1">
                         <button type="submit" title="Apply filters to the RFPs"
-                            class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-colors shadow-sm">
+                            class="py-2.5 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-colors shadow-sm">
                             Apply
                         </button>
                         <a href="{{ route('rfps.index') }}" title="Reset all search filters"
@@ -266,6 +311,9 @@
                             Clear
                         </a>
                     </div>
+
+                    <input type="hidden" name="keyword_condition" id="hidden-keyword-condition"
+                        value="{{ $filters['keyword_condition'] ?? 'OR' }}">
                     <div id="hidden-keywords-inputs"></div>
                 </form>
             </div>
@@ -353,7 +401,7 @@
                                 </h3>
                             </div>
 
-                            <!-- Related Institution & Platform -->
+                            <!-- Related Institution & RFP Platform -->
                             <div class="flex sm:flex-col items-end gap-2 shrink-0">
                                 @if ($rfp->institution)
                                     <a href="{{ route('institutions.show', $rfp->institution) }}"
@@ -372,7 +420,7 @@
                                 @if ($rfp->platform)
                                     <a href="{{ route('rfps-platform.show', $rfp->platform) }}"
                                         onclick="event.stopPropagation();"
-                                        title="View platform details for {{ addslashes($rfp->platform->name) }}"
+                                        title="View RFP platform details for {{ addslashes($rfp->platform->name) }}"
                                         class="px-3 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-1.5 transition-colors">
                                         <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -728,11 +776,39 @@
             container.innerHTML = html;
         }
 
+        const serverKwCond = @json($filters['keyword_condition'] ?? 'OR');
+
+        function updateKeywordCondition(val) {
+            const hidden = document.getElementById('hidden-keyword-condition');
+            if (hidden) hidden.value = val;
+
+            const select = document.getElementById('keyword-condition-select');
+            if (select && select.value !== val) {
+                select.value = val;
+            }
+
+            try {
+                localStorage.setItem('rfp_keyword_condition', val);
+            } catch (e) {}
+        }
+
         // Always render keywords on page load and sync server defaults on initial load
         document.addEventListener('DOMContentLoaded', () => {
             if (window.location.search.length === 0 && Array.isArray(serverKw)) {
                 saveSelectedKeywords(serverKw);
             }
+
+            // Sync keyword condition
+            let initialKwCond = serverKwCond;
+            try {
+                const storedKwCond = localStorage.getItem('rfp_keyword_condition');
+                if (storedKwCond && !window.location.search.includes('keyword_condition') && !window.location.search
+                    .includes('condition')) {
+                    initialKwCond = storedKwCond;
+                }
+            } catch (e) {}
+            updateKeywordCondition(initialKwCond);
+
             syncHiddenKeywordsInputs();
             renderKeywords();
         });

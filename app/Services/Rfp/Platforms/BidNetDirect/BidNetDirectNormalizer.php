@@ -8,6 +8,7 @@ use App\Enums\Rfp\RfpStatus;
 use App\Enums\Scraper\ScrapeMethod;
 use App\Services\Rfp\Contracts\RfpNormalizer;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 
@@ -46,6 +47,11 @@ class BidNetDirectNormalizer implements RfpNormalizer
      */
     public function normalizeHtml(string $html, RfpScrapeData $scrapeData, ScrapeMethod $source): array
     {
+        Log::debug('BidNetDirectNormalizer::normalizeHtml', [
+            'html' => $html,
+            'scrapeData' => $scrapeData,
+            'source' => $source,
+        ]);
         if (trim($html) === '') {
             return [];
         }
@@ -61,6 +67,10 @@ class BidNetDirectNormalizer implements RfpNormalizer
                 $links = $rows->filter('a.solicitation-link');
             }
         }
+
+        Log::debug('BidNetDirectNormalizer::normalizeHtml', [
+            'total links' => $links->count(),
+        ]);
 
         if ($links->count() === 0) {
             return [];
@@ -267,7 +277,7 @@ class BidNetDirectNormalizer implements RfpNormalizer
 
         foreach (['m/d/Y', 'n/j/Y', 'Y-m-d', 'm-d-Y'] as $format) {
             try {
-                $date = Carbon::createFromFormat('!' . $format, $value);
+                $date = Carbon::createFromFormat('!'.$format, $value);
                 if ($date && $date->format($format) === $value) {
                     return $date->toDateString();
                 }
@@ -372,7 +382,7 @@ class BidNetDirectNormalizer implements RfpNormalizer
         }
 
         if (! empty($toDate)) {
-            $toTime = strtotime($toDate . ' 23:59:59');
+            $toTime = strtotime($toDate.' 23:59:59');
             if ($toTime !== false && $closeTime > $toTime) {
                 return false;
             }
