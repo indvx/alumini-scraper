@@ -37,19 +37,19 @@ class OverpassService
                 node["amenity"="university"](area:{$areaId});
                 way["amenity"="university"](area:{$areaId});
                 relation["amenity"="university"](area:{$areaId});
-                node["amenity"="school"](area:{$areaId});
-                way["amenity"="school"](area:{$areaId});
-                relation["amenity"="school"](area:{$areaId});
-                node["amenity"="college"](area:{$areaId});
-                way["amenity"="college"](area:{$areaId});
-                relation["amenity"="college"](area:{$areaId});
-                node["amenity"="kindergarten"](area:{$areaId});
-                way["amenity"="kindergarten"](area:{$areaId});
-                relation["amenity"="kindergarten"](area:{$areaId});
             );
             out center tags;
         OVERPASS;
         $lastError = null;
+        // node["amenity"="school"](area:{$areaId});
+        // way["amenity"="school"](area:{$areaId});
+        // relation["amenity"="school"](area:{$areaId});
+        // node["amenity"="college"](area:{$areaId});
+        // way["amenity"="college"](area:{$areaId});
+        // relation["amenity"="college"](area:{$areaId});
+        // node["amenity"="kindergarten"](area:{$areaId});
+        // way["amenity"="kindergarten"](area:{$areaId});
+        // relation["amenity"="kindergarten"](area:{$areaId});
 
         foreach ($this->overpassEndpoints as $endpoint) {
             try {
