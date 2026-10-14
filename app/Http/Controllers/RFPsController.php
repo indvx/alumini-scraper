@@ -17,16 +17,24 @@ class RFPsController extends Controller
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));
+        $status = trim((string) $request->input('status'));
+        $institutionId = $request->input('institution_id');
+        $platformId = $request->input('rfps_platform_id');
+        $dateOpen = $request->input('date_open');
+        $dateClose = $request->input('date_close');
+
+        $keywordCondition = strtoupper(trim((string) ($request->input('keyword_condition') ?? $request->input('condition') ?? 'OR')));
+        if (! in_array($keywordCondition, ['AND', 'OR'], true)) {
+            $keywordCondition = 'OR';
+        }
+
         $userKeyword = $request->has('use_keywords')
             ? boolval($request->input('use_keywords'))
             : (! $request->query());
         $rawKeywords = $request->input('keywords', []);
         $selectedKeywords = is_array($rawKeywords) ? array_values(array_filter(array_map('trim', $rawKeywords))) : [];
-        $status = trim((string) $request->input('status'));
-        $institutionId = $request->input('institution_id');
-        $platformId = $request->input('rfps_platform_id');
 
-        if (empty($search) && empty($status) && empty($institutionId) && empty($platformId)) {
+        if (empty($search) && empty($status) && empty($institutionId) && empty($platformId) && empty($dateOpen) && empty($dateClose) && ! $request->has('use_keywords')) {
             $userKeyword = true;
             $selectedKeywords = [
                 'Alumni',
@@ -102,13 +110,25 @@ class RFPsController extends Controller
         }
 
         if ($userKeyword && ! empty($selectedKeywords)) {
-            $query->where(function ($q) use ($selectedKeywords) {
-                foreach ($selectedKeywords as $kw) {
-                    $q->orWhere('title', 'like', "%{$kw}%")
-                        ->orWhere('description', 'like', "%{$kw}%")
-                        ->orWhere('project_id', 'like', "%{$kw}%")
-                        ->orWhere('reference_id', 'like', "%{$kw}%")
-                        ->orWhere('department', 'like', "%{$kw}%");
+            $query->where(function ($sub) use ($selectedKeywords, $keywordCondition) {
+                if ($keywordCondition === 'AND') {
+                    foreach ($selectedKeywords as $kw) {
+                        $sub->where(function ($kq) use ($kw) {
+                            $kq->where('title', 'like', "%{$kw}%")
+                                ->orWhere('description', 'like', "%{$kw}%")
+                                ->orWhere('project_id', 'like', "%{$kw}%")
+                                ->orWhere('reference_id', 'like', "%{$kw}%")
+                                ->orWhere('department', 'like', "%{$kw}%");
+                        });
+                    }
+                } else {
+                    foreach ($selectedKeywords as $kw) {
+                        $sub->orWhere('title', 'like', "%{$kw}%")
+                            ->orWhere('description', 'like', "%{$kw}%")
+                            ->orWhere('project_id', 'like', "%{$kw}%")
+                            ->orWhere('reference_id', 'like', "%{$kw}%")
+                            ->orWhere('department', 'like', "%{$kw}%");
+                    }
                 }
             });
         }
@@ -136,6 +156,14 @@ class RFPsController extends Controller
             $query->where('rfps_platform_id', $platformId);
         }
 
+        if (! empty($dateOpen)) {
+            $query->whereDate('date_open', '>=', $dateOpen);
+        }
+
+        if (! empty($dateClose)) {
+            $query->whereDate('date_close', '<=', $dateClose);
+        }
+
         $rfps = $query->latest('date_open')->latest('id')->paginate(15)->withQueryString();
 
         $institutions = Institution::query()
@@ -154,9 +182,13 @@ class RFPsController extends Controller
             'search' => $search,
             'use_keywords' => $userKeyword,
             'keywords' => $userKeyword ? $selectedKeywords : [],
+            'keyword_condition' => $keywordCondition,
+            'condition' => $keywordCondition,
             'status' => $status,
             'institution_id' => $institutionId,
             'rfps_platform_id' => $platformId,
+            'date_open' => $dateOpen,
+            'date_close' => $dateClose,
         ];
 
         return view('rfps.index', [
