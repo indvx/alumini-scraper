@@ -31,10 +31,12 @@ class ScraperRegistry
     {
         foreach ($this->scrapers as $scraper) {
             if ($scraper->supports($platform)) {
+                Log::debug('RFP scraper registry matched platform.', ['requested_platform' => $platform, 'scraper_class' => get_class($scraper), 'resolved_platform' => $scraper->getPlatformName()]);
                 return $scraper;
             }
         }
 
+        Log::error('No RFP scraper registered for requested platform.', ['requested_platform' => $platform, 'registered_scrapers' => array_map(fn ($scraper) => $scraper->getPlatformName(), $this->scrapers)]);
         throw new ItemNotFoundException("Scraper for platform '{$platform}' not found.");
     }
 
