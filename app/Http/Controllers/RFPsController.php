@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class RFPsController extends Controller
 {
@@ -243,8 +244,8 @@ class RFPsController extends Controller
             ->all();
 
         $validated = $request->validate([
-            'country' => ['required', 'string', 'in:' . implode(',', array_map(fn ($value) => str_replace(',', '\\,', $value), $validCountries))],
-            'state' => ['required', 'string', 'in:' . implode(',', array_map(fn ($value) => str_replace(',', '\\,', $value), $validStates))],
+            'country' => ['required', 'string', Rule::in($validCountries)],
+            'state' => ['required', 'string', Rule::in($validStates)],
             'institution_id' => 'nullable',
             'institution_name' => 'nullable|string|max:255',
             'platform_name' => 'required|string|max:255|exists:rfps_platforms,name',
