@@ -2,6 +2,8 @@
 
 namespace App\Services\Rfp\Platforms\OpenGov;
 
+
+use Illuminate\Support\Facades\Log;
 use App\Data\Rfp\RfpScrapeData;
 use App\Data\Scraper\ScraperResult;
 use App\Enums\Scraper\ScrapeMethod;

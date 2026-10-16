@@ -2,6 +2,8 @@
 
 namespace App\Services\Rfp\Support;
 
+
+use Illuminate\Support\Facades\Log;
 use App\Services\Rfp\Contracts\RfpPlatformScraper;
 use App\Services\Rfp\Platforms\BidNetDirect\BidNetDirectScraper;
 use App\Services\Rfp\Platforms\Bonfire\BonfireScraper;
