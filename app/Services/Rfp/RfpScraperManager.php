@@ -41,7 +41,10 @@ class RfpScraperManager
             $resolvedInstitution = $institution;
             $resolvedPlatform = $platformRecord;
 
-            if (empty($portalUrl)) {
+            $isStateScopedBidNetSearch = stripos($platform, 'bidnet') !== false
+                && ! empty($options['location']);
+
+            if (empty($portalUrl) && ! $isStateScopedBidNetSearch) {
                 try {
                     $discoveryResult = $this->discoveryService->discoverPortal(
                         universityName: $universityName,
