@@ -174,7 +174,7 @@ class RFPsController extends Controller
                     ->orWhereHas('rfps');
             })
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'state']);
 
         $platforms = RFPsPlatform::query()
             ->orderBy('name')
@@ -198,12 +198,14 @@ class RFPsController extends Controller
             'filters' => $filters,
             'institutions' => $institutions,
             'platforms' => $platforms,
+            'states' => array_keys(BidNetDirectConfig::LOCATION_FILTERS),
         ]);
     }
 
     public function scrape(Request $request, RfpScraperManager $scraperManager): RedirectResponse
     {
         $validated = $request->validate([
+            'state' => ['required', 'string', 'in:' . implode(',', array_keys(BidNetDirectConfig::LOCATION_FILTERS))],
             'institution_id' => 'nullable',
             'institution_name' => 'nullable|string|max:255',
             'platform_name' => 'nullable|string|max:255',
@@ -212,6 +214,7 @@ class RFPsController extends Controller
             'to_date' => 'nullable|date',
         ]);
 
+        $state = $validated['state'];
         $institutionId = $validated['institution_id'] ?? null;
         $institutionInput = $validated['institution_name'] ?? '';
         $platformInput = $validated['platform_name'] ?? '';
@@ -222,6 +225,7 @@ class RFPsController extends Controller
         $scrapeStartedAt = microtime(true);
         $scrapeContext = [
             'type' => $type,
+            'state' => $state,
             'institution_id' => $institutionId,
             'institution_name' => $institutionInput ?: null,
             'platform_name' => $platformInput ?: null,
@@ -241,16 +245,25 @@ class RFPsController extends Controller
         $institutionObj = null;
 
         if (! empty($institutionId) && $institutionId !== 'all') {
-            $inst = Institution::find($institutionId);
+            $inst = Institution::query()
+                ->whereKey($institutionId)
+                ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                ->first();
+
             if ($inst) {
                 $institutionName = $inst->name;
                 $institutionObj = $inst;
+            } else {
+                return redirect()->back()->withInput()->with('error', 'The selected institution does not belong to the selected state.');
             }
         }
 
         if (empty($institutionName) && ! empty($institutionInput) && $institutionInput !== 'all') {
             $institutionName = trim($institutionInput);
-            $institutionObj = Institution::where('name', 'like', "%{$institutionName}%")->first();
+            $institutionObj = Institution::query()
+                ->where('name', 'like', "%{$institutionName}%")
+                ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                ->first();
         }
 
         $platformName = trim((string) ($platformInput !== 'all' ? $platformInput : ''));
@@ -264,9 +277,7 @@ class RFPsController extends Controller
                     ->orWhere('platform_type', 'like', '%BidNet%')
                     ->first();
 
-                $listingUrl = BidNetDirectConfig::getPublicPortalUrl(
-                    in_array($type, ['past', 'closed'], true) ? 'closed' : 'open'
-                );
+                $listingUrl = null;
 
                 Log::info('RFP UI scrape run started.', $scrapeContext + ['institution' => 'BidNet Direct', 'platform' => 'BidNet Direct', 'listing_url' => $listingUrl]);
                 $result = $scraperManager->scrapeUniversity(
@@ -279,7 +290,7 @@ class RFPsController extends Controller
                     institution: null,
                     platformRecord: $platformRecord,
                     customPortalUrl: $listingUrl,
-                    options: ['platform' => 'BidNet Direct']
+                    options: ['platform' => 'BidNet Direct', 'location' => $state]
                 );
 
                 if ($result->isFailure()) {
@@ -333,9 +344,14 @@ class RFPsController extends Controller
 
             // Case Platform specified without specific institution
             elseif (! empty($platformName)) {
-                $platforms = RFPsPlatform::where('platform_type', 'like', "%{$platformName}%")
-                    ->orWhere('name', 'like', "%{$platformName}%")
-                    ->with('rfpInstitutions')
+                $platforms = RFPsPlatform::query()
+                    ->where(function ($query) use ($platformName) {
+                        $query->where('platform_type', 'like', "%{$platformName}%")
+                            ->orWhere('name', 'like', "%{$platformName}%");
+                    })
+                    ->with(['rfpInstitutions' => function ($query) use ($state) {
+                        $query->whereRaw('LOWER(TRIM(institutions.state)) = ?', [strtolower($state)]);
+                    }])
                     ->get();
 
                 if ($platforms->isEmpty()) {
@@ -345,7 +361,10 @@ class RFPsController extends Controller
                 foreach ($platforms as $pRecord) {
                     $instList = $pRecord->rfpInstitutions;
                     if ($instList->isEmpty()) {
-                        $instList = Institution::all();
+                        $instList = Institution::query()
+                            ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                            ->orderBy('name')
+                            ->get();
                     }
 
                     foreach ($instList as $inst) {
@@ -381,7 +400,11 @@ class RFPsController extends Controller
 
             // Case Bulk / All scrape
             else {
-                $institutions = Institution::with('rfpPlatforms')->get();
+                $institutions = Institution::query()
+                    ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                    ->with('rfpPlatforms')
+                    ->orderBy('name')
+                    ->get();
 
                 if ($institutions->isEmpty()) {
                     return redirect()->back()->with('error', 'No institutions found in database.');
