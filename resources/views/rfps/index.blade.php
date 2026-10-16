@@ -86,16 +86,9 @@
                             </label>
                             <select name="platform_name" required
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                                <option value="all" selected>All RFP Platforms (Bonfire / OpenGov / etc)</option>
-                                <option value="Bonfire">Bonfire</option>
-                                <option value="OpenGov">OpenGov</option>
-                                <option value="Jaggaer">Jaggaer</option>
-                                <option value="PlanetBids">PlanetBids</option>
-                                <option value="BidNet Direct">BidNet Direct</option>
+                                <option value="" selected disabled>Select a platform</option>
                                 @foreach ($platforms as $plat)
-                                    @if (!in_array($plat->name, ['Bonfire', 'OpenGov', 'Jaggaer', 'PlanetBids']))
-                                        <option value="{{ $plat->name }}">{{ $plat->name }}</option>
-                                    @endif
+                                    <option value="{{ $plat->name }}">{{ $plat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -105,11 +98,10 @@
                                 class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Opportunity Type
                             </label>
-                            <select name="type"
+                            <select name="type" required
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                                <option value="open" selected>Open Opportunities</option>
-                                <option value="past">Past / Closed Opportunities</option>
-                                <option value="all">All Opportunities</option>
+                                <option value="open" selected>Open</option>
+                                <option value="closed">Closed</option>
                             </select>
                         </div>
                     </div>
