@@ -188,16 +188,18 @@
                             </div>
                         </div>
 
-                        <!-- Add Custom Keyword Input & Unified Select All Toggle -->
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <input type="text" id="new-keyword-input" placeholder="Add keyword (e.g. CRM)..."
-                                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomKeyword(); }"
-                                class="px-3 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 w-64 sm:w-80">
-                            <button type="button" id="add-keyword-btn" onclick="addCustomKeyword()"
-                                class="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs"
-                                title="Click to add the keyword">
-                                + Add
-                            </button>
+                        <!-- Add Custom Keyword Input -->
+                        <div class="flex items-center w-full sm:w-auto">
+                            <div class="relative w-full sm:w-72 flex items-center">
+                                <input type="text" id="new-keyword-input" placeholder="Add keyword (e.g. CRM)..."
+                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomKeyword(); }"
+                                    class="w-full pl-3 pr-16 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                <button type="button" id="add-keyword-btn" onclick="addCustomKeyword()"
+                                    class="absolute right-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-xs"
+                                    title="Click to add the keyword">
+                                    + Add
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -209,8 +211,8 @@
                 </div>
 
                 <form id="rfp-search-filter-form" action="{{ route('rfps.index') }}" method="GET"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    {{-- <div>
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+                    <div>
                         <label
                             class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                             Search
@@ -225,7 +227,7 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
-                    </div> --}}
+                    </div>
 
                     <div>
                         <label
@@ -234,18 +236,11 @@
                         </label>
                         <select name="status"
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                            <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All
-                                Statuses</option>
-                            <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open
-                            </option>
-                            <option value="awarded" {{ ($filters['status'] ?? '') === 'awarded' ? 'selected' : '' }}>
-                                Awarded</option>
-                            <option value="past"
-                                {{ in_array($filters['status'] ?? '', ['past', 'closed']) ? 'selected' : '' }}>Past /
-                                Closed</option>
-                            <option value="cancelled"
-                                {{ in_array($filters['status'] ?? '', ['cancelled', 'canceled']) ? 'selected' : '' }}>
-                                Cancelled</option>
+                            <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All Statuses</option>
+                            <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open</option>
+                            <option value="awarded" {{ ($filters['status'] ?? '') === 'awarded' ? 'selected' : '' }}>Awarded</option>
+                            <option value="past" {{ in_array($filters['status'] ?? '', ['past', 'closed']) ? 'selected' : '' }}>Past / Closed</option>
+                            <option value="cancelled" {{ in_array($filters['status'] ?? '', ['cancelled', 'canceled']) ? 'selected' : '' }}>Cancelled</option>
                         </select>
                     </div>
 
@@ -256,12 +251,9 @@
                         </label>
                         <select name="institution_id"
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                            <option value="all"
-                                {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All
-                                Institutions</option>
+                            <option value="all" {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Institutions</option>
                             @foreach ($institutions as $inst)
-                                <option value="{{ $inst->id }}"
-                                    {{ (string) ($filters['institution_id'] ?? '') === (string) $inst->id ? 'selected' : '' }}>
+                                <option value="{{ $inst->id }}" {{ (string) ($filters['institution_id'] ?? '') === (string) $inst->id ? 'selected' : '' }}>
                                     {{ $inst->name }}
                                 </option>
                             @endforeach
@@ -275,12 +267,9 @@
                         </label>
                         <select name="rfps_platform_id"
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                            <option value="all"
-                                {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All RFP
-                                Platforms</option>
+                            <option value="all" {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All RFP Platforms</option>
                             @foreach ($platforms as $plat)
-                                <option value="{{ $plat->id }}"
-                                    {{ (string) ($filters['rfps_platform_id'] ?? '') === (string) $plat->id ? 'selected' : '' }}>
+                                <option value="{{ $plat->id }}" {{ (string) ($filters['rfps_platform_id'] ?? '') === (string) $plat->id ? 'selected' : '' }}>
                                     {{ $plat->name }}
                                 </option>
                             @endforeach
@@ -307,7 +296,7 @@
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                     </div>
 
-                    <div class="col-span-1 sm:col-span-2 lg:col-span-5 flex items-center justify-end gap-2 pt-1">
+                    <div class="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-6 flex items-center justify-end gap-2 pt-1">
                         <button type="submit" title="Apply filters to the RFPs"
                             class="py-2.5 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-colors shadow-sm">
                             Apply
@@ -337,7 +326,7 @@
 
         <!-- RFP Items Container -->
         @if ($rfps->isNotEmpty())
-            <div class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+            <div class="space-y-4">
                 @foreach ($rfps as $rfp)
                     @php
                         $statusLower = strtolower((string) $rfp->status);
@@ -408,7 +397,7 @@
                             </div>
 
                             <!-- Related Institution & RFP Platform -->
-                            <div class="flex sm:flex-col items-end gap-2 shrink-0">
+                            <div class="flex flex-wrap sm:flex-col sm:items-end items-start gap-2 shrink-0">
                                 @if ($rfp->institution)
                                     <a href="{{ route('institutions.show', $rfp->institution) }}"
                                         onclick="event.stopPropagation();"
@@ -495,7 +484,7 @@
                                 <a href="{{ $rfp->opportunity_url }}" target="_blank" rel="noopener noreferrer"
                                     onclick="event.stopPropagation();"
                                     title="View external opportunity source for {{ addslashes($rfp->title) }}"
-                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shrink-0 shadow-sm">
+                                    class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shrink-0 shadow-sm w-full sm:w-auto">
                                     <span>View Opportunity</span>
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
