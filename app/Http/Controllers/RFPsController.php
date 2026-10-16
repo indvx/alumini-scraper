@@ -406,8 +406,52 @@ class RFPsController extends Controller
                     ->orderBy('name')
                     ->get();
 
+                $bidNetRecord = RFPsPlatform::query()
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%BidNet%')
+                            ->orWhere('platform_type', 'like', '%BidNet%');
+                    })
+                    ->first();
+
+                $bidNetStartedAt = microtime(true);
+                $bidNetResult = $scraperManager->scrapeUniversity(
+                    universityName: 'BidNet Direct',
+                    platform: 'BidNet Direct',
+                    status: $statusEnum === RfpStatus::PAST ? RfpStatus::PAST : RfpStatus::OPEN,
+                    fromDate: $fromDate,
+                    toDate: $toDate,
+                    persist: true,
+                    institution: null,
+                    platformRecord: $bidNetRecord,
+                    customPortalUrl: null,
+                    options: ['platform' => 'BidNet Direct', 'location' => $state]
+                );
+
+                if ($bidNetResult->isSuccess()) {
+                    $successRuns++;
+                    $totalSaved += $bidNetResult->count();
+                    Log::info('RFP UI state-wide BidNet scrape completed.', $scrapeContext + [
+                        'platform' => 'BidNet Direct',
+                        'rfp_count' => $bidNetResult->count(),
+                        'duration_seconds' => round(microtime(true) - $bidNetStartedAt, 2),
+                    ]);
+                } else {
+                    $failedRuns++;
+                    Log::warning('RFP UI state-wide BidNet scrape failed.', $scrapeContext + [
+                        'platform' => 'BidNet Direct',
+                        'error' => $bidNetResult->errorMessage,
+                        'duration_seconds' => round(microtime(true) - $bidNetStartedAt, 2),
+                    ]);
+                }
+
                 if ($institutions->isEmpty()) {
-                    return redirect()->back()->with('error', 'No institutions found in database.');
+                    if ($successRuns > 0) {
+                        return redirect()
+                            ->route('rfps.index')
+                            ->with('success', "State-wide scrape completed for {$state}: {$totalSaved} RFP(s) saved. No matching institutions were found for institution-specific platforms.");
+                    }
+
+                    return redirect()->back()->with('error', 'No institutions found in the selected state and BidNet Direct did not complete successfully.');
                 }
 
                 foreach ($institutions as $inst) {
@@ -425,6 +469,10 @@ class RFPsController extends Controller
                     }
 
                     foreach ($platforms as $pRecord) {
+                        if (stripos((string) ($pRecord->name ?? ''), 'bidnet') !== false || stripos((string) ($pRecord->platform_type ?? ''), 'bidnet') !== false) {
+                            continue;
+                        }
+
                         Log::info('RFP UI scrape run started.', $scrapeContext + ['institution' => $inst->name, 'platform' => $pRecord->name ?? 'Bonfire']);
                         $runStartedAt = microtime(true);
                         $result = $scraperManager->scrapeUniversity(
