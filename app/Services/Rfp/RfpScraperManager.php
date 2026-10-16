@@ -34,6 +34,9 @@ class RfpScraperManager
         array $options = []
     ): ScraperResult {
         try {
+            $startedAt = microtime(true);
+            $context = ['institution' => $universityName, 'platform' => $platform, 'status' => $status->value, 'from_date' => $fromDate, 'to_date' => $toDate];
+            Log::info('RFP scraper manager started.', $context + ['custom_portal_url' => $customPortalUrl]);
             $portalUrl = $customPortalUrl;
             $resolvedInstitution = $institution;
             $resolvedPlatform = $platformRecord;
@@ -48,10 +51,12 @@ class RfpScraperManager
                         allowExternalLookup: false
                     );
                 } catch (Exception $e) {
+                    Log::warning('RFP portal discovery failed.', $context + ['exception' => $e]);
                     return ScraperResult::failure($e->getMessage(), ScrapeMethod::API);
                 }
 
                 if (! $discoveryResult->isSuccess()) {
+                    Log::warning('RFP portal discovery returned no portal.', $context);
                     return ScraperResult::failure(
                         "Procurement portal URL for '{$universityName}' on platform '{$platform}' was not found in database.",
                         ScrapeMethod::API
@@ -81,15 +86,18 @@ class RfpScraperManager
             );
 
             $scraper = $this->scraperRegistry->getScraperForPlatform($platform);
+            Log::info('RFP platform scraper selected.', $context + ['scraper_class' => get_class($scraper), 'portal_url' => $portalUrl]);
             $result = $scraper->scrape($scrapeData);
+            Log::info('RFP platform scraper returned.', $context + ['success' => $result->isSuccess(), 'rfp_count' => $result->count(), 'method' => $result->method?->value, 'error' => $result->errorMessage]);
             if ($persist && ! empty($result->rfps)) {
-                $this->persistenceService->saveMany($result->rfps);
+                $saved = $this->persistenceService->saveMany($result->rfps);
+                Log::info('RFP scrape persistence completed.', $context + ['received_count' => count($result->rfps), 'saved_count' => count($saved)]);
             }
 
             return $result;
         } catch (\Throwable $e) {
             Log::error("Scraping error for '{$universityName}' on platform '{$platform}': {$e->getMessage()}", [
-                'exception' => $e,
+                'institution' => $universityName, 'platform' => $platform, 'exception' => $e,
             ]);
 
             return ScraperResult::failure("Scraping exception: {$e->getMessage()}", ScrapeMethod::API);
