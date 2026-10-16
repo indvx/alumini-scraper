@@ -16,6 +16,8 @@ class OpenGovScraper implements RfpPlatformScraper
 
     public function scrape(RfpScrapeData $scrapeData): ScraperResult
     {
+        $startedAt = microtime(true);
+        Log::info('OpenGov scrape started.', ['institution' => $scrapeData->universityName, 'portal_url' => $scrapeData->portalUrl, 'status' => $scrapeData->type->value]);
         $strategy = $this->apiStrategy;
         $errors = [];
 
@@ -33,6 +35,7 @@ class OpenGovScraper implements RfpPlatformScraper
 
         try {
             $result = $strategy->extract($scrapeData);
+            Log::info('OpenGov extraction finished.', ['institution' => $scrapeData->universityName, 'success' => $result->isSuccess(), 'rfp_count' => $result->count(), 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
             if ($result->isSuccess() && $result->count() > 0) {
                 return $result;
             }
