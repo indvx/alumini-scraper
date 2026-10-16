@@ -620,29 +620,35 @@
 
         const serverKw = @json($filters['keywords'] ?? []);
         const userKeywordActive = @json((bool) ($filters['use_keywords'] ?? false));
+        let activeSelectedKeywords = [];
+
+        function initSelectedKeywords() {
+            if (userKeywordActive && Array.isArray(serverKw) && serverKw.length > 0) {
+                activeSelectedKeywords = [...serverKw];
+                return;
+            }
+
+            if (window.location.search.length > 0) {
+                try {
+                    const stored = localStorage.getItem('rfp_selected_keywords');
+                    if (stored !== null) {
+                        activeSelectedKeywords = JSON.parse(stored);
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            activeSelectedKeywords = [];
+        }
 
         function getSelectedKeywords() {
-            if (window.location.search.length === 0) {
-                return [];
-            }
-
-            try {
-                const stored = localStorage.getItem('rfp_selected_keywords');
-                if (stored !== null) {
-                    return JSON.parse(stored);
-                }
-            } catch (e) {}
-
-            if (userKeywordActive && Array.isArray(serverKw)) {
-                return serverKw;
-            }
-
-            return [];
+            return activeSelectedKeywords;
         }
 
         function saveSelectedKeywords(selected) {
+            activeSelectedKeywords = Array.isArray(selected) ? [...selected] : [];
             try {
-                localStorage.setItem('rfp_selected_keywords', JSON.stringify(selected));
+                localStorage.setItem('rfp_selected_keywords', JSON.stringify(activeSelectedKeywords));
             } catch (e) {}
         }
 
@@ -667,31 +673,31 @@
         }
 
         function toggleKeyword(kw) {
-            let selected = getSelectedKeywords();
             const lowerKw = kw.toLowerCase();
-            const exists = selected.some(k => k.toLowerCase() === lowerKw);
+            const exists = activeSelectedKeywords.some(k => k.toLowerCase() === lowerKw);
 
             if (exists) {
-                selected = selected.filter(k => k.toLowerCase() !== lowerKw);
+                activeSelectedKeywords = activeSelectedKeywords.filter(k => k.toLowerCase() !== lowerKw);
             } else {
-                selected.push(kw);
+                activeSelectedKeywords.push(kw);
             }
 
-            saveSelectedKeywords(selected);
+            saveSelectedKeywords(activeSelectedKeywords);
             syncHiddenKeywordsInputs();
             renderKeywords();
         }
 
         function toggleSelectAllKeywords() {
             const all = getAllVisibleKeywords();
-            const selected = getSelectedKeywords();
-            const isAllSelected = all.length > 0 && selected.length === all.length;
+            const isAllSelected = all.length > 0 && activeSelectedKeywords.length === all.length;
 
             if (isAllSelected) {
-                saveSelectedKeywords([]);
+                activeSelectedKeywords = [];
             } else {
-                saveSelectedKeywords([...all]);
+                activeSelectedKeywords = [...all];
             }
+
+            saveSelectedKeywords(activeSelectedKeywords);
             syncHiddenKeywordsInputs();
             renderKeywords();
         }
@@ -709,11 +715,10 @@
             saveCustomKeywords(customKw);
 
             // Automatically select the newly added custom keyword
-            let selected = getSelectedKeywords();
-            if (!selected.some(k => k.toLowerCase() === kw.toLowerCase())) {
-                selected.unshift(kw);
-                saveSelectedKeywords(selected);
+            if (!activeSelectedKeywords.some(k => k.toLowerCase() === kw.toLowerCase())) {
+                activeSelectedKeywords.unshift(kw);
             }
+            saveSelectedKeywords(activeSelectedKeywords);
 
             input.value = '';
 
@@ -735,9 +740,8 @@
             saveCustomKeywords(customKw);
 
             // 2. Remove from selected keywords
-            let selected = getSelectedKeywords();
-            selected = selected.filter(k => k.toLowerCase() !== lowerKw);
-            saveSelectedKeywords(selected);
+            activeSelectedKeywords = activeSelectedKeywords.filter(k => k.toLowerCase() !== lowerKw);
+            saveSelectedKeywords(activeSelectedKeywords);
 
             syncHiddenKeywordsInputs();
             renderKeywords();
@@ -818,6 +822,7 @@
         }
 
         function clearAllFilters() {
+            activeSelectedKeywords = [];
             try {
                 localStorage.removeItem('rfp_selected_keywords');
             } catch (e) {}
@@ -825,9 +830,7 @@
 
         // Always render keywords on page load and sync server defaults on initial load
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.location.search.length === 0) {
-                saveSelectedKeywords([]);
-            }
+            initSelectedKeywords();
 
             // Sync keyword condition
             let initialKwCond = serverKwCond;
