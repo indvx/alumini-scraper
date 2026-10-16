@@ -198,7 +198,7 @@ class RFPsController extends Controller
             'filters' => $filters,
             'institutions' => $institutions,
             'platforms' => $platforms,
-            'states' => array_keys(BidNetDirectConfig::LOCATION_FILTERS),
+            'states' => array_values(array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated'])),
         ]);
     }
 
