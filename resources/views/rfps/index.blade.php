@@ -34,7 +34,7 @@
                             Scrape Procurement Opportunities
                         </h4>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Launch live scraper tasks against Bonfire, OpenGov, Jaggaer, PlanetBids &amp; custom
+                            Launch live scraper tasks against Bonfire, OpenGov, Jaggaer, PlanetBids, BidNet Direct &amp; custom
                             institutional portals.
                         </p>
                     </div>
@@ -78,6 +78,7 @@
                                 <option value="OpenGov">OpenGov</option>
                                 <option value="Jaggaer">Jaggaer</option>
                                 <option value="PlanetBids">PlanetBids</option>
+                                <option value="BidNet Direct">BidNet Direct</option>
                                 @foreach ($platforms as $plat)
                                     @if (!in_array($plat->name, ['Bonfire', 'OpenGov', 'Jaggaer', 'PlanetBids']))
                                         <option value="{{ $plat->name }}">{{ $plat->name }}</option>
