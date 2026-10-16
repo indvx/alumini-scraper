@@ -277,32 +277,62 @@ class RFPsController extends Controller
                     ->orWhere('platform_type', 'like', '%BidNet%')
                     ->first();
 
-                $listingUrl = null;
+                $listingTypes = $type === 'all'
+                    ? ['open', 'closed']
+                    : [in_array($type, ['past', 'closed'], true) ? 'closed' : 'open'];
+                $totalBidNetSaved = 0;
+                $failedListingTypes = [];
 
-                Log::info('RFP UI scrape run started.', $scrapeContext + ['institution' => 'BidNet Direct', 'platform' => 'BidNet Direct', 'listing_url' => $listingUrl]);
-                $result = $scraperManager->scrapeUniversity(
-                    universityName: 'BidNet Direct',
-                    platform: 'BidNet Direct',
-                    status: $statusEnum,
-                    fromDate: $fromDate,
-                    toDate: $toDate,
-                    persist: true,
-                    institution: null,
-                    platformRecord: $platformRecord,
-                    customPortalUrl: $listingUrl,
-                    options: ['platform' => 'BidNet Direct', 'location' => $state]
-                );
+                foreach ($listingTypes as $listingType) {
+                    $runStartedAt = microtime(true);
+                    $result = $scraperManager->scrapeUniversity(
+                        universityName: 'BidNet Direct',
+                        platform: 'BidNet Direct',
+                        status: $listingType === 'closed' ? RfpStatus::PAST : RfpStatus::OPEN,
+                        fromDate: $fromDate,
+                        toDate: $toDate,
+                        persist: true,
+                        institution: null,
+                        platformRecord: $platformRecord,
+                        customPortalUrl: null,
+                        options: ['platform' => 'BidNet Direct', 'location' => $state]
+                    );
 
-                if ($result->isFailure()) {
-                    Log::warning('RFP UI scrape run failed.', $scrapeContext + ['platform' => 'BidNet Direct', 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
-                    return redirect()->back()->with('error', 'BidNet Direct scrape failed: '.$result->errorMessage);
+                    if ($result->isFailure()) {
+                        $failedListingTypes[] = $listingType;
+                        Log::warning('RFP UI BidNet scrape run failed.', $scrapeContext + [
+                            'platform' => 'BidNet Direct',
+                            'listing_type' => $listingType,
+                            'error' => $result->errorMessage,
+                            'duration_seconds' => round(microtime(true) - $runStartedAt, 2),
+                        ]);
+                        continue;
+                    }
+
+                    $totalBidNetSaved += $result->count();
+                    Log::info('RFP UI BidNet scrape run completed.', $scrapeContext + [
+                        'platform' => 'BidNet Direct',
+                        'listing_type' => $listingType,
+                        'rfp_count' => $result->count(),
+                        'duration_seconds' => round(microtime(true) - $runStartedAt, 2),
+                    ]);
                 }
 
-                Log::info('RFP UI scrape run completed.', $scrapeContext + ['platform' => 'BidNet Direct', 'rfp_count' => $result->count(), 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
-                Log::info('RFP UI scrape completed.', $scrapeContext + ['success_runs' => 1, 'failed_runs' => 0, 'rfp_count' => $result->count(), 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
+                Log::info('RFP UI BidNet scrape completed.', $scrapeContext + [
+                    'platform' => 'BidNet Direct',
+                    'listing_types' => $listingTypes,
+                    'failed_listing_types' => $failedListingTypes,
+                    'rfp_count' => $totalBidNetSaved,
+                    'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2),
+                ]);
+
+                if (! empty($failedListingTypes)) {
+                    return redirect()->back()->with('error', 'BidNet Direct scrape failed for: ' . implode(', ', $failedListingTypes) . '.');
+                }
+
                 return redirect()
                     ->route('rfps.index')
-                    ->with('success', 'BidNet Direct scrape completed: '.$result->count().' RFP(s) saved or updated.');
+                    ->with('success', "BidNet Direct scrape completed for {$state}: {$totalBidNetSaved} RFP(s) saved or updated.");
             }
 
             $totalSaved = 0;
