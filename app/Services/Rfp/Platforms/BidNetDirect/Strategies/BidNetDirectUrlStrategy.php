@@ -40,6 +40,8 @@ class BidNetDirectUrlStrategy implements RfpExtractionStrategy
      */
     public function extract(RfpScrapeData $scrapeData): ScraperResult
     {
+        $startedAt = microtime(true);
+        Log::info('BidNet Direct extraction started.', ['institution' => $scrapeData->universityName, 'portal_url' => $scrapeData->portalUrl, 'status' => $scrapeData->type->value]);
         try {
             if (! empty($scrapeData->options['html']) && is_string($scrapeData->options['html'])) {
                 $rfps = $this->normalizer->normalize(
@@ -76,7 +78,9 @@ class BidNetDirectUrlStrategy implements RfpExtractionStrategy
                 'Referer' => BidNetDirectConfig::ROOT_URL.'/',
             ])->timeout(20)->get($targetUrl);
 
+            Log::debug('BidNet Direct HTTP response received.', ['url' => $targetUrl, 'http_status' => $response->status()]);
             if (! $response->successful()) {
+                Log::warning('BidNet Direct request returned unsuccessful HTTP status.', ['url' => $targetUrl, 'http_status' => $response->status()]);
                 return ScraperResult::failure(
                     "HTTP request to BidNet Direct failed with status {$response->status()}",
                     ScrapeMethod::UI,
@@ -87,6 +91,7 @@ class BidNetDirectUrlStrategy implements RfpExtractionStrategy
             $html = $response->body();
 
             if (str_contains($html, 'challenge.js') && ! str_contains($html, 'solicitationsList')) {
+                Log::warning('BidNet Direct access blocked by WAF challenge.', ['url' => $targetUrl]);
                 return ScraperResult::failure(
                     'BidNet Direct access was blocked by an automated WAF/bot verification challenge.',
                     ScrapeMethod::UI,
@@ -100,11 +105,13 @@ class BidNetDirectUrlStrategy implements RfpExtractionStrategy
                 ScrapeMethod::UI
             );
 
+            Log::info('BidNet Direct page normalized.', ['url' => $targetUrl, 'rfp_count' => count($rfps), 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
             return ScraperResult::success($rfps, ScrapeMethod::UI, [
                 'url' => $targetUrl,
                 'count' => count($rfps),
             ]);
         } catch (Throwable $e) {
+            Log::error('BidNet Direct extraction exception.', ['institution' => $scrapeData->universityName, 'exception' => $e, 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
             return ScraperResult::failure(
                 "BidNet Direct extraction exception: {$e->getMessage()}",
                 ScrapeMethod::UI
