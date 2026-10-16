@@ -6,6 +6,7 @@ use App\Enums\Rfp\RfpStatus;
 use App\Models\Institution;
 use App\Models\RFPsPlatform;
 use App\Services\Rfp\RfpScraperManager;
+use App\Services\Rfp\Platforms\BidNetDirect\BidNetDirectConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -37,6 +38,52 @@ class ScrapeAllRfpsCommand extends Command
             'all' => RfpStatus::ALL,
             default => RfpStatus::OPEN,
         };
+
+        // BidNet Direct is a platform-wide public listing, not an institution-specific portal.
+        // When explicitly selected, scrape it once through the same manager/persistence pipeline.
+        if (! empty($platformFilter) && stripos($platformFilter, 'bidnet') !== false) {
+            $platformRecord = RFPsPlatform::query()
+                ->where('name', 'like', '%BidNet%')
+                ->orWhere('platform_type', 'like', '%BidNet%')
+                ->first();
+
+            $listingTypes = strtolower((string) $type) === 'all' ? ['open', 'closed'] :
+                [(strtolower((string) $type) === 'past') ? 'closed' : 'open'];
+            $total = 0;
+            $failed = false;
+
+            foreach ($listingTypes as $listingType) {
+                $result = $manager->scrapeUniversity(
+                    universityName: 'BidNet Direct',
+                    platform: 'BidNet Direct',
+                    status: $listingType === 'closed' ? RfpStatus::PAST : RfpStatus::OPEN,
+                    fromDate: $fromDate,
+                    toDate: $toDate,
+                    persist: true,
+                    institution: null,
+                    platformRecord: $platformRecord,
+                    customPortalUrl: BidNetDirectConfig::getPublicPortalUrl($listingType),
+                    options: ['platform' => 'BidNet Direct']
+                );
+
+                if ($result->isFailure()) {
+                    $failed = true;
+                    $this->error("BidNet Direct ({$listingType}) failed: {$result->errorMessage}");
+                } else {
+                    $count = $result->count();
+                    $total += $count;
+                    $this->info("BidNet Direct ({$listingType}): {$count} RFP(s) saved or updated.");
+                }
+
+                if ($delay > 0) {
+                    sleep($delay);
+                }
+            }
+
+            $this->info("BidNet Direct scrape completed. Total RFPs saved or updated: {$total}");
+
+            return $failed ? Command::FAILURE : Command::SUCCESS;
+        }
 
         // Query Institutions with eager loaded attached rfpPlatforms
         $institutionQuery = Institution::with(['rfpPlatforms' => function ($query) use ($platformFilter) {
@@ -99,6 +146,11 @@ class ScrapeAllRfpsCommand extends Command
 
             foreach ($platforms as $platformRecord) {
                 $platformName = $platformRecord->name;
+
+                // The platform-wide BidNet pass is handled separately below.
+                if (stripos((string) $platformName, 'bidnet') !== false) {
+                    continue;
+                }
                 if (! $platformName) {
                     $this->warn("No platform name available for institution '{$institution->name}'. Skipping.");
 
