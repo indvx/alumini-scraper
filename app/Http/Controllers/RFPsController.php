@@ -208,8 +208,8 @@ class RFPsController extends Controller
             'state' => ['required', 'string', 'in:' . implode(',', array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated']))],
             'institution_id' => 'nullable',
             'institution_name' => 'nullable|string|max:255',
-            'platform_name' => 'nullable|string|max:255',
-            'type' => 'nullable|string|in:open,past,all',
+            'platform_name' => 'required|string|max:255|exists:rfps_platforms,name',
+            'type' => 'required|string|in:open,closed',
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date',
         ]);
