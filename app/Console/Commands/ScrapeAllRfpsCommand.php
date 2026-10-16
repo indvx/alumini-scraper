@@ -118,6 +118,60 @@ class ScrapeAllRfpsCommand extends Command
         $successCount = 0;
         $failCount = 0;
         $summaryTable = [];
+
+        // Include BidNet Direct in the default all-platform run exactly once.
+        // Its public listing is platform-wide, so do not scrape it once per institution.
+        if (empty($platformFilter)) {
+            $bidNetRecord = RFPsPlatform::query()
+                ->where('name', 'like', '%BidNet%')
+                ->orWhere('platform_type', 'like', '%BidNet%')
+                ->first();
+
+            $listingTypes = strtolower((string) $type) === 'all' ? ['open', 'closed'] :
+                [(strtolower((string) $type) === 'past') ? 'closed' : 'open'];
+
+            foreach ($listingTypes as $listingType) {
+                $this->output->write(" -> Scraping <comment>BidNet Direct</comment> ({$listingType})... ");
+                $bidNetResult = $manager->scrapeUniversity(
+                    universityName: 'BidNet Direct',
+                    platform: 'BidNet Direct',
+                    status: $listingType === 'closed' ? RfpStatus::PAST : RfpStatus::OPEN,
+                    fromDate: $fromDate,
+                    toDate: $toDate,
+                    persist: true,
+                    institution: null,
+                    platformRecord: $bidNetRecord,
+                    customPortalUrl: BidNetDirectConfig::getPublicPortalUrl($listingType),
+                    options: ['platform' => 'BidNet Direct']
+                );
+
+                if ($bidNetResult->isFailure()) {
+                    $failCount++;
+                    $this->error("FAILED ({$bidNetResult->errorMessage})");
+                    $summaryTable[] = [
+                        'Institution' => 'Platform-wide',
+                        'Platform' => "BidNet Direct ({$listingType})",
+                        'Status' => 'Failed',
+                        'RFPs Count' => 0,
+                    ];
+                } else {
+                    $successCount++;
+                    $count = $bidNetResult->count();
+                    $totalRfpsSaved += $count;
+                    $this->info("<info>SUCCESS</info> ({$count} RFP(s) found)");
+                    $summaryTable[] = [
+                        'Institution' => 'Platform-wide',
+                        'Platform' => "BidNet Direct ({$listingType})",
+                        'Status' => 'Success',
+                        'RFPs Count' => $count,
+                    ];
+                }
+
+                if ($delay > 0) {
+                    sleep($delay);
+                }
+            }
+        }
         foreach ($institutions as $institution) {
             $instCountry = $institution->country;
 
