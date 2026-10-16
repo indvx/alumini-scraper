@@ -19,6 +19,8 @@ class RfpPersistenceService
      */
     public function saveMany(array $rfps): array
     {
+        $startedAt = microtime(true);
+        Log::info('Persisting scraped RFP records.', ['received_count' => count($rfps)]);
         $savedModels = [];
 
         foreach ($rfps as $rfpData) {
@@ -29,6 +31,7 @@ class RfpPersistenceService
             $savedModels[] = $this->save($rfpData);
         }
 
+        Log::info('Finished persisting scraped RFP records.', ['received_count' => count($rfps), 'saved_count' => count($savedModels), 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
         return $savedModels;
     }
 
@@ -67,8 +70,10 @@ class RfpPersistenceService
             $attributes['rfps_platform_id'] = $rfpData->rfpsPlatformId;
         }
 
+        $isNew = ! $rfp->exists;
         $rfp->fill($attributes);
         $rfp->save();
+        Log::debug('Persisted RFP record.', ['rfp_id' => $rfp->id, 'project_id' => $rfpData->projectId, 'source' => $sourceValue, 'operation' => $isNew ? 'created' : 'updated']);
 
         return $rfp;
     }
