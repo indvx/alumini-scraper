@@ -97,20 +97,22 @@ class ScrapeBidNetCommand extends Command
                 $this->info('Found ' . count($rfps) . ' solicitation(s).');
                 $this->info(json_encode($rfps, JSON_PRETTY_PRINT));
 
-                // foreach ($rfps as $rfp) {
-                //     try {
-                //         $this->line('Bid: '.($rfp->title ?: $rfp->projectId));
-                //         $persistenceService->save($rfp);
-                //         $processed++;
-                //     } catch (Throwable $e) {
-                //         $failed++;
-                //         $this->error('Failed to process a listing: '.$e->getMessage());
+                foreach ($rfps as $rfp) {
+                    try {
+                        $this->line('Saving/updating RFP: '.($rfp->title ?: $rfp->projectId));
+                        $persistenceService->save($rfp);
+                        $processed++;
+                    } catch (Throwable $e) {
+                        $failed++;
+                        $this->error('Failed to save/update an RFP: '.$e->getMessage());
 
-                //         Log::error('BidNet listing processing failed', [
-                //             'error' => $e->getMessage(),
-                //         ]);
-                //     }
-                // }
+                        Log::error('BidNet RFP persistence failed', [
+                            'project_id' => $rfp->projectId,
+                            'title' => $rfp->title,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
 
                 if ($delay > 0 && $page < $startPage + $pages - 1) {
                     sleep($delay);
