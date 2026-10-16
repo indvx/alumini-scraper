@@ -18,6 +18,7 @@ class ScrapeAllRfpsCommand extends Command
                             {--type=open : Opportunity type (open or past or all)}
                             {--institution= : Optional institution filter to match specific university/institution name}
                             {--platform= : Optional platform filter to match specific platform(s)}
+                            {--state= : Required single state to scrape}
                             {--limit=all : Maximum number of institutions to scrape}
                             {--from= : Start date filter (YYYY-MM-DD)}
                             {--to= : End date filter (YYYY-MM-DD)}
@@ -31,12 +32,21 @@ class ScrapeAllRfpsCommand extends Command
         $type = $this->option('type') ?? 'open';
         $institutionFilter = $this->option('institution');
         $platformFilter = $this->option('platform');
+        $state = trim((string) $this->option('state'));
         $limit = $this->option('limit') === 'all' ? null : (int) $this->option('limit');
+
+        if ($state === '' || BidNetDirectConfig::getLocationCode($state) === null) {
+            $this->error('A valid --state is required. Provide one supported state name or code.');
+
+            return Command::FAILURE;
+        }
+
+        $stateName = BidNetDirectConfig::STATE_CODE_TO_NAME[strtoupper($state)] ?? ucwords(strtolower($state));
         $fromDate = $this->option('from');
         $toDate = $this->option('to');
         $delay = (int) ($this->option('delay') ?? 0);
 
-        Log::info('CLI RFP scrape-all started.', ['type' => $type, 'institution_filter' => $institutionFilter, 'platform_filter' => $platformFilter, 'limit' => $limit, 'from_date' => $fromDate, 'to_date' => $toDate, 'delay' => $delay]);
+        Log::info('CLI RFP scrape-all started.', ['type' => $type, 'state' => $stateName, 'institution_filter' => $institutionFilter, 'platform_filter' => $platformFilter, 'limit' => $limit, 'from_date' => $fromDate, 'to_date' => $toDate, 'delay' => $delay]);
         $statusEnum = match (strtolower((string) $type)) {
             'past' => RfpStatus::PAST,
             'all' => RfpStatus::ALL,
@@ -66,8 +76,8 @@ class ScrapeAllRfpsCommand extends Command
                     persist: true,
                     institution: null,
                     platformRecord: $platformRecord,
-                    customPortalUrl: BidNetDirectConfig::getPublicPortalUrl($listingType),
-                    options: ['platform' => 'BidNet Direct']
+                    customPortalUrl: null,
+                    options: ['platform' => 'BidNet Direct', 'location' => $stateName]
                 );
 
                 if ($result->isFailure()) {
@@ -91,7 +101,9 @@ class ScrapeAllRfpsCommand extends Command
         }
 
         // Query Institutions with eager loaded attached rfpPlatforms
-        $institutionQuery = Institution::with(['rfpPlatforms' => function ($query) use ($platformFilter) {
+        $institutionQuery = Institution::query()
+            ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($stateName)])
+            ->with(['rfpPlatforms' => function ($query) use ($platformFilter) {
             if (! empty($platformFilter)) {
                 $query->where(function ($q) use ($platformFilter) {
                     $q->where('platform_type', 'like', "%{$platformFilter}%")
@@ -148,8 +160,8 @@ class ScrapeAllRfpsCommand extends Command
                     persist: true,
                     institution: null,
                     platformRecord: $bidNetRecord,
-                    customPortalUrl: BidNetDirectConfig::getPublicPortalUrl($listingType),
-                    options: ['platform' => 'BidNet Direct']
+                    customPortalUrl: null,
+                    options: ['platform' => 'BidNet Direct', 'location' => $stateName]
                 );
 
                 if ($bidNetResult->isFailure()) {
