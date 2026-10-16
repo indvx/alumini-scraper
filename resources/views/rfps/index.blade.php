@@ -53,6 +53,19 @@
                     @csrf
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
+                            <label for="scrape_country"
+                                class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                                Select Country <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="country" id="scrape_country" required
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+                                <option value="">Select one country</option>
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country }}">{{ $country }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label for="scrape_state"
                                 class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Select State <span class="text-rose-500">*</span>
@@ -60,8 +73,10 @@
                             <select name="state" id="scrape_state" required
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                                 <option value="">Select one state</option>
-                                @foreach ($states as $state)
-                                    <option value="{{ $state }}">{{ $state }}</option>
+                                @foreach ($statesByCountry as $countryName => $countryStates)
+                                    @foreach ($countryStates as $state)
+                                        <option value="{{ $state }}" data-country="{{ $countryName }}">{{ $state }}</option>
+                                    @endforeach
                                 @endforeach
                             </select>
                         </div>
@@ -74,7 +89,7 @@
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                                 <option value="all" selected>All Institutions</option>
                                 @foreach ($institutions as $inst)
-                                    <option value="{{ $inst->id }}" data-state="{{ $inst->state }}">{{ $inst->name }}</option>
+                                    <option value="{{ $inst->id }}" data-state="{{ $inst->state }}" data-country="{{ $inst->country }}">{{ $inst->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -539,28 +554,43 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const countrySelect = document.getElementById('scrape_country');
             const stateSelect = document.getElementById('scrape_state');
             const institutionSelect = document.getElementById('scrape_institution_id');
 
-            if (!stateSelect || !institutionSelect) {
-                return;
-            }
+            if (!countrySelect || !stateSelect || !institutionSelect) return;
 
+            const stateOptions = Array.from(stateSelect.options).filter(option => option.value !== '');
             const institutionOptions = Array.from(institutionSelect.options).filter(option => option.value !== 'all');
 
-            function filterInstitutionsByState() {
-                const selectedState = stateSelect.value.toLowerCase();
-                institutionSelect.value = 'all';
+            function filterByCountryAndState() {
+                const country = countrySelect.value.trim().toLowerCase();
+                const selectedState = stateSelect.value.trim().toLowerCase();
+                const currentStateOption = stateSelect.selectedOptions[0];
+                if (currentStateOption && currentStateOption.dataset.country &&
+                    currentStateOption.dataset.country.toLowerCase() !== country) {
+                    stateSelect.value = '';
+                }
 
+                stateOptions.forEach(option => {
+                    const matchesCountry = country !== '' && (option.dataset.country || '').trim().toLowerCase() === country;
+                    option.hidden = !matchesCountry;
+                    option.disabled = !matchesCountry;
+                });
+
+                institutionSelect.value = 'all';
                 institutionOptions.forEach(option => {
+                    const matchesCountry = country !== '' && (option.dataset.country || '').trim().toLowerCase() === country;
                     const matchesState = selectedState !== '' && (option.dataset.state || '').trim().toLowerCase() === selectedState;
-                    option.hidden = !matchesState;
-                    option.disabled = !matchesState;
+                    const visible = matchesCountry && matchesState;
+                    option.hidden = !visible;
+                    option.disabled = !visible;
                 });
             }
 
-            stateSelect.addEventListener('change', filterInstitutionsByState);
-            filterInstitutionsByState();
+            countrySelect.addEventListener('change', filterByCountryAndState);
+            stateSelect.addEventListener('change', filterByCountryAndState);
+            filterByCountryAndState();
         });
 
         // Scrape Form Submit Handling (Disables submit button & shows spinner during execution)
