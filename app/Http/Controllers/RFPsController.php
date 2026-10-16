@@ -443,35 +443,43 @@ class RFPsController extends Controller
                     })
                     ->first();
 
-                $bidNetStartedAt = microtime(true);
-                $bidNetResult = $scraperManager->scrapeUniversity(
-                    universityName: 'BidNet Direct',
-                    platform: 'BidNet Direct',
-                    status: $statusEnum === RfpStatus::PAST ? RfpStatus::PAST : RfpStatus::OPEN,
-                    fromDate: $fromDate,
-                    toDate: $toDate,
-                    persist: true,
-                    institution: null,
-                    platformRecord: $bidNetRecord,
-                    customPortalUrl: null,
-                    options: ['platform' => 'BidNet Direct', 'location' => $state]
-                );
+                $listingTypes = $type === 'all'
+                    ? ['open', 'closed']
+                    : [in_array($type, ['past', 'closed'], true) ? 'closed' : 'open'];
 
-                if ($bidNetResult->isSuccess()) {
-                    $successRuns++;
-                    $totalSaved += $bidNetResult->count();
-                    Log::info('RFP UI state-wide BidNet scrape completed.', $scrapeContext + [
-                        'platform' => 'BidNet Direct',
-                        'rfp_count' => $bidNetResult->count(),
-                        'duration_seconds' => round(microtime(true) - $bidNetStartedAt, 2),
-                    ]);
-                } else {
-                    $failedRuns++;
-                    Log::warning('RFP UI state-wide BidNet scrape failed.', $scrapeContext + [
-                        'platform' => 'BidNet Direct',
-                        'error' => $bidNetResult->errorMessage,
-                        'duration_seconds' => round(microtime(true) - $bidNetStartedAt, 2),
-                    ]);
+                foreach ($listingTypes as $listingType) {
+                    $bidNetStartedAt = microtime(true);
+                    $bidNetResult = $scraperManager->scrapeUniversity(
+                        universityName: 'BidNet Direct',
+                        platform: 'BidNet Direct',
+                        status: $listingType === 'closed' ? RfpStatus::PAST : RfpStatus::OPEN,
+                        fromDate: $fromDate,
+                        toDate: $toDate,
+                        persist: true,
+                        institution: null,
+                        platformRecord: $bidNetRecord,
+                        customPortalUrl: null,
+                        options: ['platform' => 'BidNet Direct', 'location' => $state]
+                    );
+
+                    if ($bidNetResult->isSuccess()) {
+                        $successRuns++;
+                        $totalSaved += $bidNetResult->count();
+                        Log::info('RFP UI state-wide BidNet scrape completed.', $scrapeContext + [
+                            'platform' => 'BidNet Direct',
+                            'listing_type' => $listingType,
+                            'rfp_count' => $bidNetResult->count(),
+                            'duration_seconds' => round(microtime(true) - $bidNetStartedAt, 2),
+                        ]);
+                    } else {
+                        $failedRuns++;
+                        Log::warning('RFP UI state-wide BidNet scrape failed.', $scrapeContext + [
+                            'platform' => 'BidNet Direct',
+                            'listing_type' => $listingType,
+                            'error' => $bidNetResult->errorMessage,
+                            'duration_seconds' => round(microtime(true) - $bidNetStartedAt, 2),
+                        ]);
+                    }
                 }
 
                 if ($institutions->isEmpty()) {
