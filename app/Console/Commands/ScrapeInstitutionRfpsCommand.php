@@ -24,6 +24,7 @@ class ScrapeInstitutionRfpsCommand extends Command
     public function handle(RfpScraperManager $manager): int
     {
         try {
+            $startedAt = microtime(true);
             $university = $this->argument('university');
             $platform = $this->option('platform') ?? 'Bonfire';
             $type = $this->option('type') ?? 'open';
@@ -35,6 +36,7 @@ class ScrapeInstitutionRfpsCommand extends Command
                 ? RfpStatus::PAST
                 : RfpStatus::OPEN;
 
+            Log::info('CLI institution RFP scrape started.', ['institution' => $university, 'platform' => $platform, 'type' => $type, 'from_date' => $fromDate, 'to_date' => $toDate, 'custom_url' => $customUrl]);
             $this->info("Scraping {$platform} {$type} RFPs for {$university}...");
 
             $institution = Institution::where('name', 'like', "%{$university}%")->first();
@@ -55,11 +57,13 @@ class ScrapeInstitutionRfpsCommand extends Command
             );
 
             if ($result->isFailure()) {
+                Log::warning('CLI institution RFP scrape failed.', ['institution' => $university, 'platform' => $platform, 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
                 $this->error("Scraping failed: {$result->errorMessage}");
 
                 return Command::FAILURE;
             }
 
+            Log::info('CLI institution RFP scrape completed.', ['institution' => $university, 'platform' => $platform, 'rfp_count' => $result->count(), 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
             $this->info("Execution status: {$result->status->value}");
             $this->info("Found {$result->count()} RFP(s).");
 

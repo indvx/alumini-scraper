@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RFPsController extends Controller
 {
@@ -218,6 +219,18 @@ class RFPsController extends Controller
         $fromDate = $validated['from_date'] ?? null;
         $toDate = $validated['to_date'] ?? null;
 
+        $scrapeStartedAt = microtime(true);
+        $scrapeContext = [
+            'type' => $type,
+            'institution_id' => $institutionId,
+            'institution_name' => $institutionInput ?: null,
+            'platform_name' => $platformInput ?: null,
+            'from_date' => $fromDate,
+            'to_date' => $toDate,
+            'user_id' => $request->user()?->id,
+        ];
+        Log::info('RFP UI scrape started.', $scrapeContext);
+
         $statusEnum = match ($type) {
             'past', 'closed' => RfpStatus::PAST,
             'all' => RfpStatus::ALL,
@@ -255,6 +268,7 @@ class RFPsController extends Controller
                     in_array($type, ['past', 'closed'], true) ? 'closed' : 'open'
                 );
 
+                Log::info('RFP UI scrape run started.', $scrapeContext + ['institution' => 'BidNet Direct', 'platform' => 'BidNet Direct', 'listing_url' => $listingUrl]);
                 $result = $scraperManager->scrapeUniversity(
                     universityName: 'BidNet Direct',
                     platform: 'BidNet Direct',
@@ -269,9 +283,12 @@ class RFPsController extends Controller
                 );
 
                 if ($result->isFailure()) {
+                    Log::warning('RFP UI scrape run failed.', $scrapeContext + ['platform' => 'BidNet Direct', 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
                     return redirect()->back()->with('error', 'BidNet Direct scrape failed: '.$result->errorMessage);
                 }
 
+                Log::info('RFP UI scrape run completed.', $scrapeContext + ['platform' => 'BidNet Direct', 'rfp_count' => $result->count(), 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
+                Log::info('RFP UI scrape completed.', $scrapeContext + ['success_runs' => 1, 'failed_runs' => 0, 'rfp_count' => $result->count(), 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
                 return redirect()
                     ->route('rfps.index')
                     ->with('success', 'BidNet Direct scrape completed: '.$result->count().' RFP(s) saved or updated.');
@@ -288,6 +305,7 @@ class RFPsController extends Controller
                     ->orWhere('platform_type', 'like', "%{$platformToUse}%")
                     ->first();
 
+                Log::info('RFP UI scrape run started.', $scrapeContext + ['institution' => $institutionName, 'platform' => $platformToUse]);
                 $result = $scraperManager->scrapeUniversity(
                     universityName: $institutionName,
                     platform: $platformToUse,
@@ -300,10 +318,13 @@ class RFPsController extends Controller
                 );
 
                 if ($result->isFailure()) {
+                    Log::warning('RFP UI scrape run failed.', $scrapeContext + ['institution' => $institutionName, 'platform' => $platformToUse, 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
                     return redirect()->back()->with('error', "Scraping failed for '{$institutionName}': {$result->errorMessage}");
                 }
 
                 $totalSaved = $result->count();
+                Log::info('RFP UI scrape run completed.', $scrapeContext + ['institution' => $institutionName, 'platform' => $platformToUse, 'rfp_count' => $totalSaved, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
+                Log::info('RFP UI scrape completed.', $scrapeContext + ['success_runs' => 1, 'failed_runs' => 0, 'rfp_count' => $totalSaved, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
 
                 return redirect()
                     ->route('rfps.index')
@@ -328,6 +349,8 @@ class RFPsController extends Controller
                     }
 
                     foreach ($instList as $inst) {
+                        Log::info('RFP UI scrape run started.', $scrapeContext + ['institution' => $inst->name, 'platform' => $pRecord->name ?? $platformName]);
+                        $runStartedAt = microtime(true);
                         $result = $scraperManager->scrapeUniversity(
                             universityName: $inst->name,
                             platform: $pRecord->name ?? $platformName,
@@ -342,12 +365,15 @@ class RFPsController extends Controller
                         if ($result->isSuccess()) {
                             $successRuns++;
                             $totalSaved += $result->count();
+                            Log::info('RFP UI scrape run completed.', $scrapeContext + ['institution' => $inst->name, 'platform' => $pRecord->name ?? $platformName, 'rfp_count' => $result->count(), 'duration_seconds' => round(microtime(true) - $runStartedAt, 2)]);
                         } else {
                             $failedRuns++;
+                            Log::warning('RFP UI scrape run failed.', $scrapeContext + ['institution' => $inst->name, 'platform' => $pRecord->name ?? $platformName, 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $runStartedAt, 2)]);
                         }
                     }
                 }
 
+                Log::info('RFP UI scrape completed.', $scrapeContext + ['success_runs' => $successRuns, 'failed_runs' => $failedRuns, 'rfp_count' => $totalSaved, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
                 return redirect()
                     ->route('rfps.index')
                     ->with('success', "Platform scrape completed for '{$platformName}': {$totalSaved} RFP(s) saved across {$successRuns} institution(s).");
@@ -376,6 +402,8 @@ class RFPsController extends Controller
                     }
 
                     foreach ($platforms as $pRecord) {
+                        Log::info('RFP UI scrape run started.', $scrapeContext + ['institution' => $inst->name, 'platform' => $pRecord->name ?? 'Bonfire']);
+                        $runStartedAt = microtime(true);
                         $result = $scraperManager->scrapeUniversity(
                             universityName: $inst->name,
                             platform: $pRecord->name ?? 'Bonfire',
@@ -390,17 +418,21 @@ class RFPsController extends Controller
                         if ($result->isSuccess()) {
                             $successRuns++;
                             $totalSaved += $result->count();
+                            Log::info('RFP UI scrape run completed.', $scrapeContext + ['institution' => $inst->name, 'platform' => $pRecord->name ?? 'Bonfire', 'rfp_count' => $result->count(), 'duration_seconds' => round(microtime(true) - $runStartedAt, 2)]);
                         } else {
                             $failedRuns++;
+                            Log::warning('RFP UI scrape run failed.', $scrapeContext + ['institution' => $inst->name, 'platform' => $pRecord->name ?? 'Bonfire', 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $runStartedAt, 2)]);
                         }
                     }
                 }
 
+                Log::info('RFP UI scrape completed.', $scrapeContext + ['success_runs' => $successRuns, 'failed_runs' => $failedRuns, 'rfp_count' => $totalSaved, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
                 return redirect()
                     ->route('rfps.index')
                     ->with('success', "All-institution scrape completed: {$totalSaved} RFP(s) saved across {$successRuns} platform run(s).");
             }
         } catch (\Throwable $e) {
+            Log::error('RFP UI scrape crashed.', $scrapeContext + ['exception' => $e, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
             return redirect()->back()->with('error', "Scraping error: {$e->getMessage()}");
         }
     }

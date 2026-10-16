@@ -25,6 +25,7 @@ class ScrapeAllRfpsCommand extends Command
 
     public function handle(RfpScraperManager $manager): int
     {
+        $startedAt = microtime(true);
         $type = $this->option('type') ?? 'open';
         $institutionFilter = $this->option('institution');
         $platformFilter = $this->option('platform');
@@ -33,6 +34,7 @@ class ScrapeAllRfpsCommand extends Command
         $toDate = $this->option('to');
         $delay = (int) ($this->option('delay') ?? 0);
 
+        Log::info('CLI RFP scrape-all started.', ['type' => $type, 'institution_filter' => $institutionFilter, 'platform_filter' => $platformFilter, 'limit' => $limit, 'from_date' => $fromDate, 'to_date' => $toDate, 'delay' => $delay]);
         $statusEnum = match (strtolower((string) $type)) {
             'past' => RfpStatus::PAST,
             'all' => RfpStatus::ALL,
@@ -82,6 +84,7 @@ class ScrapeAllRfpsCommand extends Command
 
             $this->info("BidNet Direct scrape completed. Total RFPs saved or updated: {$total}");
 
+            Log::info('CLI BidNet Direct scrape-all completed.', ['total_rfps' => $total, 'failed' => $failed, 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
             return $failed ? Command::FAILURE : Command::SUCCESS;
         }
 
@@ -106,11 +109,13 @@ class ScrapeAllRfpsCommand extends Command
         $institutions = $institutionQuery->get();
 
         if ($institutions->isEmpty()) {
+            Log::warning('CLI RFP scrape-all found no matching institutions.', ['institution_filter' => $institutionFilter, 'platform_filter' => $platformFilter]);
             $this->error('No matching institutions found in database.');
 
             return Command::FAILURE;
         }
 
+        Log::info('CLI RFP scrape-all selected institutions.', ['institution_count' => $institutions->count(), 'status' => $statusEnum->value]);
         $this->info("Starting RFP scrape process across {$institutions->count()} institution(s) (limit: {$limit})...");
         $this->info("Status mode: {$statusEnum->value}");
 

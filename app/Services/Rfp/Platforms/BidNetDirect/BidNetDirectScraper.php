@@ -17,6 +17,8 @@ class BidNetDirectScraper implements RfpPlatformScraper
 
     public function scrape(RfpScrapeData $scrapeData): ScraperResult
     {
+        $startedAt = microtime(true);
+        Log::info('BidNet Direct scrape started.', ['institution' => $scrapeData->universityName, 'portal_url' => $scrapeData->portalUrl, 'status' => $scrapeData->type->value]);
         $strategy = $this->urlStrategy;
         $errors = [];
 
@@ -34,6 +36,7 @@ class BidNetDirectScraper implements RfpPlatformScraper
 
         try {
             $result = $strategy->extract($scrapeData);
+            Log::info('BidNet Direct extraction finished.', ['institution' => $scrapeData->universityName, 'success' => $result->isSuccess(), 'rfp_count' => $result->count(), 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
             if ($result->isSuccess()) {
                 return $result;
             }
@@ -42,6 +45,7 @@ class BidNetDirectScraper implements RfpPlatformScraper
                 $errors[] = $result->errorMessage;
             }
         } catch (Throwable $e) {
+            Log::warning('BidNet Direct extraction threw an exception.', ['institution' => $scrapeData->universityName, 'exception' => $e]);
             $errors[] = $e->getMessage();
         }
 
