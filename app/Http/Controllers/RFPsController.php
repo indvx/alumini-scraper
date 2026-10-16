@@ -205,7 +205,7 @@ class RFPsController extends Controller
     public function scrape(Request $request, RfpScraperManager $scraperManager): RedirectResponse
     {
         $validated = $request->validate([
-            'state' => ['required', 'string', 'in:' . implode(',', array_keys(BidNetDirectConfig::LOCATION_FILTERS))],
+            'state' => ['required', 'string', 'in:' . implode(',', array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated']))],
             'institution_id' => 'nullable',
             'institution_name' => 'nullable|string|max:255',
             'platform_name' => 'nullable|string|max:255',
