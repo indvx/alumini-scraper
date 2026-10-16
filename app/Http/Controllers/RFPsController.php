@@ -174,7 +174,28 @@ class RFPsController extends Controller
                     ->orWhereHas('rfps');
             })
             ->orderBy('name')
-            ->get(['id', 'name', 'state']);
+            ->get(['id', 'name', 'state', 'country']);
+
+        $countries = Institution::query()
+            ->whereNotNull('country')
+            ->whereRaw("TRIM(country) <> ''")
+            ->distinct()
+            ->orderBy('country')
+            ->pluck('country')
+            ->values();
+
+        $statesByCountry = Institution::query()
+            ->whereNotNull('country')
+            ->whereRaw("TRIM(country) <> ''")
+            ->whereNotNull('state')
+            ->whereRaw("TRIM(state) <> ''")
+            ->select('country', 'state')
+            ->distinct()
+            ->orderBy('country')
+            ->orderBy('state')
+            ->get()
+            ->groupBy('country')
+            ->map(fn ($rows) => $rows->pluck('state')->values());
 
         $platforms = RFPsPlatform::query()
             ->orderBy('name')
@@ -198,14 +219,32 @@ class RFPsController extends Controller
             'filters' => $filters,
             'institutions' => $institutions,
             'platforms' => $platforms,
-            'states' => array_values(array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated'])),
+            'countries' => $countries,
+            'statesByCountry' => $statesByCountry,
         ]);
     }
 
     public function scrape(Request $request, RfpScraperManager $scraperManager): RedirectResponse
     {
+        $country = trim((string) $request->input('country'));
+        $validCountries = Institution::query()
+            ->whereNotNull('country')
+            ->whereRaw("TRIM(country) <> ''")
+            ->distinct()
+            ->pluck('country')
+            ->all();
+
+        $validStates = Institution::query()
+            ->where('country', $country)
+            ->whereNotNull('state')
+            ->whereRaw("TRIM(state) <> ''")
+            ->distinct()
+            ->pluck('state')
+            ->all();
+
         $validated = $request->validate([
-            'state' => ['required', 'string', 'in:' . implode(',', array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated']))],
+            'country' => ['required', 'string', 'in:' . implode(',', array_map(fn ($value) => str_replace(',', '\\,', $value), $validCountries))],
+            'state' => ['required', 'string', 'in:' . implode(',', array_map(fn ($value) => str_replace(',', '\\,', $value), $validStates))],
             'institution_id' => 'nullable',
             'institution_name' => 'nullable|string|max:255',
             'platform_name' => 'required|string|max:255|exists:rfps_platforms,name',
@@ -214,6 +253,7 @@ class RFPsController extends Controller
             'to_date' => 'nullable|date',
         ]);
 
+        $country = $validated['country'];
         $state = $validated['state'];
         $institutionId = $validated['institution_id'] ?? null;
         $institutionInput = $validated['institution_name'] ?? '';
@@ -225,6 +265,7 @@ class RFPsController extends Controller
         $scrapeStartedAt = microtime(true);
         $scrapeContext = [
             'type' => $type,
+            'country' => $country,
             'state' => $state,
             'institution_id' => $institutionId,
             'institution_name' => $institutionInput ?: null,
@@ -248,6 +289,7 @@ class RFPsController extends Controller
             $inst = Institution::query()
                 ->whereKey($institutionId)
                 ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
                 ->first();
 
             if ($inst) {
@@ -263,6 +305,7 @@ class RFPsController extends Controller
             $institutionObj = Institution::query()
                 ->where('name', 'like', "%{$institutionName}%")
                 ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
                 ->first();
         }
 
@@ -272,6 +315,11 @@ class RFPsController extends Controller
             // BidNet Direct exposes public, platform-wide listings rather than institution-specific portals.
             // Route it through the existing RFP scrape form and manager, using its public listing URL.
             if (strcasecmp($platformName, 'BidNet Direct') === 0 || strcasecmp($platformName, 'BidNet') === 0) {
+                if (! in_array(strtolower($country), ['usa', 'us', 'united states', 'united states of america'], true)
+                    || BidNetDirectConfig::getLocationCode($state) === null) {
+                    return redirect()->back()->withInput()->with('error', 'BidNet Direct location filtering currently supports supported U.S. states only. Choose a U.S. country/state or another platform.');
+                }
+
                 $platformRecord = RFPsPlatform::query()
                     ->where('name', 'like', '%BidNet%')
                     ->orWhere('platform_type', 'like', '%BidNet%')
@@ -295,7 +343,7 @@ class RFPsController extends Controller
                         institution: null,
                         platformRecord: $platformRecord,
                         customPortalUrl: null,
-                        options: ['platform' => 'BidNet Direct', 'location' => $state]
+                        options: ['platform' => 'BidNet Direct', 'location' => $state, 'country' => $country]
                     );
 
                     if ($result->isFailure()) {
@@ -393,6 +441,7 @@ class RFPsController extends Controller
                     if ($instList->isEmpty()) {
                         $instList = Institution::query()
                             ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                            ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
                             ->orderBy('name')
                             ->get();
                     }
