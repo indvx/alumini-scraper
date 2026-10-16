@@ -7,6 +7,7 @@ use App\Models\Institution;
 use App\Models\RFP;
 use App\Models\RFPsPlatform;
 use App\Services\Rfp\RfpScraperManager;
+use App\Services\Rfp\Platforms\BidNetDirect\BidNetDirectConfig;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -242,6 +243,40 @@ class RFPsController extends Controller
         $platformName = trim((string) ($platformInput !== 'all' ? $platformInput : ''));
 
         try {
+            // BidNet Direct exposes public, platform-wide listings rather than institution-specific portals.
+            // Route it through the existing RFP scrape form and manager, using its public listing URL.
+            if (strcasecmp($platformName, 'BidNet Direct') === 0 || strcasecmp($platformName, 'BidNet') === 0) {
+                $platformRecord = RFPsPlatform::query()
+                    ->where('name', 'like', '%BidNet%')
+                    ->orWhere('platform_type', 'like', '%BidNet%')
+                    ->first();
+
+                $listingUrl = BidNetDirectConfig::getPublicPortalUrl(
+                    in_array($type, ['past', 'closed'], true) ? 'closed' : 'open'
+                );
+
+                $result = $scraperManager->scrapeUniversity(
+                    universityName: 'BidNet Direct',
+                    platform: 'BidNet Direct',
+                    status: $statusEnum,
+                    fromDate: $fromDate,
+                    toDate: $toDate,
+                    persist: true,
+                    institution: null,
+                    platformRecord: $platformRecord,
+                    customPortalUrl: $listingUrl,
+                    options: ['platform' => 'BidNet Direct']
+                );
+
+                if ($result->isFailure()) {
+                    return redirect()->back()->with('error', 'BidNet Direct scrape failed: '.$result->errorMessage);
+                }
+
+                return redirect()
+                    ->route('rfps.index')
+                    ->with('success', 'BidNet Direct scrape completed: '.$result->count().' RFP(s) saved or updated.');
+            }
+
             $totalSaved = 0;
             $successRuns = 0;
             $failedRuns = 0;
