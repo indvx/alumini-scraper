@@ -35,7 +35,7 @@ class ScrapeAllRfpsCommand extends Command
         $state = trim((string) $this->option('state'));
         $limit = $this->option('limit') === 'all' ? null : (int) $this->option('limit');
 
-        if ($state === '' || BidNetDirectConfig::getLocationCode($state) === null) {
+        if ($state === '' || strcasecmp($state, 'Not Stated') === 0 || BidNetDirectConfig::getLocationCode($state) === null) {
             $this->error('A valid --state is required. Provide one supported state name or code.');
 
             return Command::FAILURE;
