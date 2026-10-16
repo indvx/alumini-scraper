@@ -101,7 +101,6 @@ class BidNetDirectNormalizer implements RfpNormalizer
             }
 
             $solicitationNumber = $this->extractSolicitationNumber($title);
-            $organization = $this->firstText($link, '.buyer-name');
             $location = $this->firstText($link, '.location');
 
             $timeRemaining = $this->firstText($link, '.timeRemaining');
@@ -120,14 +119,12 @@ class BidNetDirectNormalizer implements RfpNormalizer
             $statusEnum = $this->resolveStatus($closingDateParent, $closeDateStr, $statusLabel, $scrapeData->type);
             $opportunityUrl = BidNetDirectConfig::absoluteUrl($href, $portalUrl);
 
-            $department = $organization
-                ?: ($coverageType ?: ($location ? "Region: {$location}" : null));
+            $department = $coverageType ?: ($location ? "Region: {$location}" : null);
 
             $rawData = [
                 'external_id' => $projectId,
                 'project_id' => $projectId,
                 'solicitation_number' => $solicitationNumber,
-                'publishing_organization' => $organization,
                 'title' => $title,
                 'location' => $location,
                 'publication_date' => $pubDateStr,
@@ -194,11 +191,9 @@ class BidNetDirectNormalizer implements RfpNormalizer
             $opportunityUrl = $href !== '' ? BidNetDirectConfig::absoluteUrl($href, $portalUrl) : $portalUrl;
             $openDateStr = $item['publication_date'] ?? $item['date_open'] ?? $item['openDate'] ?? null;
             $coverageType = $item['coverage_type'] ?? null;
-            $organization = $item['publishing_organization'] ?? $item['buyer_name'] ?? $item['department'] ?? null;
             $location = $item['location'] ?? null;
 
-            $department = $organization
-                ?: ($coverageType ?: ($location ? "Region: {$location}" : null));
+            $department = $coverageType ?: ($location ? "Region: {$location}" : null);
 
             $rfps[] = new RfpData(
                 projectId: $projectId,
