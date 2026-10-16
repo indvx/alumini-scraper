@@ -582,17 +582,7 @@
         }
 
         // 2. Multi-Select Keywords Selection Manager System
-        const DEFAULT_KEYWORDS = [
-            'Alumni', 'Engagement', 'Event', 'Campaign', 'Community', 'Network',
-            'Alumnae', 'Alumnus', 'Alumna', 'Software', 'Social', 'Digital',
-            'Member', 'Membership', 'Mentor', 'Mentorship', 'Career', 'Fundraising',
-            'Donor', 'Constituent', 'Giving', 'CRM', 'Salesforce', 'Blackbaud',
-            'Raisers Edge', 'Directory', 'Associations', 'Association', 'Program',
-            'Platform', 'Technology Modernization', 'System Migration', 'Networking',
-            'Advancement', 'Volunteer', 'Reunion', 'Chapter', 'Portal', 'Migration',
-            'Replacement', 'Renewal', 'Procurement', 'Solicitation', 'HiveBrite',
-            'Almabase', 'PeopleGrove', 'Graduway', 'Gravyty', 'EnterpriseAlumni', 'Toucantech'
-        ];
+        const DEFAULT_KEYWORDS = @json($defaultKeywords ?? \App\Services\Rfp\AlumniRfpMatcher::getDefaultKeywords());
 
         function getCustomKeywords() {
             try {
