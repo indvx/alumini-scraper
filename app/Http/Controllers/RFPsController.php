@@ -170,6 +170,7 @@ class RFPsController extends Controller
         $rfps = $query->latest('date_open')->latest('id')->paginate(15)->withQueryString();
 
         $institutions = Institution::query()
+            ->with('search:id,country')
             ->where(function ($q) {
                 $q->whereHas('rfpPlatforms')
                     ->orWhereHas('rfps');
@@ -428,8 +429,9 @@ class RFPsController extends Controller
                         $query->where('platform_type', 'like', "%{$platformName}%")
                             ->orWhere('name', 'like', "%{$platformName}%");
                     })
-                    ->with(['rfpInstitutions' => function ($query) use ($state) {
-                        $query->whereRaw('LOWER(TRIM(institutions.state)) = ?', [strtolower($state)]);
+                    ->with(['rfpInstitutions' => function ($query) use ($state, $country) {
+                        $query->whereRaw('LOWER(TRIM(institutions.state)) = ?', [strtolower($state)])
+                            ->whereRaw('LOWER(TRIM(institutions.country)) = ?', [strtolower($country)]);
                     }])
                     ->get();
 
@@ -482,6 +484,7 @@ class RFPsController extends Controller
             else {
                 $institutions = Institution::query()
                     ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
+                    ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
                     ->with('rfpPlatforms')
                     ->orderBy('name')
                     ->get();
