@@ -26,6 +26,7 @@ class BonfireApiStrategy implements RfpExtractionStrategy
         $baseUrl = rtrim((string) $scrapeData->portalUrl, '/');
         $endpoint = BonfireConfig::getApiEndpoint($scrapeData->type->value);
         $apiUrl = $baseUrl.$endpoint;
+        Log::debug('Requesting Bonfire API endpoint.', ['institution' => $scrapeData->universityName, 'endpoint' => $apiUrl, 'status' => $scrapeData->type->value]);
 
         try {
             $response = Http::withHeaders([
@@ -33,12 +34,15 @@ class BonfireApiStrategy implements RfpExtractionStrategy
                 'Accept' => 'application/json',
             ])->timeout(15)->get($apiUrl);
 
+            Log::debug('Bonfire API response received.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
             if (! $response->successful()) {
+                Log::warning('Bonfire API request returned unsuccessful HTTP status.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
                 return ScraperResult::failure("HTTP request failed with status {$response->status()}", ScrapeMethod::API);
             }
 
             $rawPayload = $response->json();
             $rfps = $this->normalizer->normalize($rawPayload ?? [], $scrapeData, ScrapeMethod::API);
+            Log::info('Bonfire API payload normalized.', ['institution' => $scrapeData->universityName, 'rfp_count' => count($rfps)]);
 
             return ScraperResult::success($rfps, ScrapeMethod::API);
         } catch (\Throwable $e) {
