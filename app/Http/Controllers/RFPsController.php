@@ -178,24 +178,27 @@ class RFPsController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'state', 'country']);
 
-        $countries = Institution::query()
-            ->whereNotNull('country')
-            ->whereRaw("TRIM(country) <> ''")
-            ->distinct()
-            ->orderBy('country')
-            ->pluck('country')
+        // Use the Institution country accessor so blank institution.country values
+        // can fall back to the related location search's country.
+        $locationInstitutions = Institution::query()
+            ->with('search:id,country')
+            ->get(['id', 'state', 'country', 'search_id']);
+
+        $countries = $locationInstitutions
+            ->map(fn ($institution) => trim((string) $institution->country))
+            ->filter(fn ($country) => $country !== '')
+            ->unique()
+            ->sort()
             ->values();
 
-        $statesByCountry = Institution::query()
-            ->whereNotNull('country')
-            ->whereRaw("TRIM(country) <> ''")
-            ->whereNotNull('state')
-            ->whereRaw("TRIM(state) <> ''")
-            ->select('country', 'state')
-            ->distinct()
-            ->orderBy('country')
-            ->orderBy('state')
-            ->get()
+        $statesByCountry = $locationInstitutions
+            ->map(fn ($institution) => [
+                'country' => trim((string) $institution->country),
+                'state' => trim((string) $institution->state),
+            ])
+            ->filter(fn ($location) => $location['country'] !== '' && $location['state'] !== '')
+            ->unique(fn ($location) => mb_strtolower($location['country']).'|'.mb_strtolower($location['state']))
+            ->sortBy(fn ($location) => mb_strtolower($location['country']).'|'.mb_strtolower($location['state']))
             ->groupBy('country')
             ->map(fn ($rows) => $rows->pluck('state')->values());
 
@@ -229,19 +232,23 @@ class RFPsController extends Controller
     public function scrape(Request $request, RfpScraperManager $scraperManager): RedirectResponse
     {
         $country = trim((string) $request->input('country'));
-        $validCountries = Institution::query()
-            ->whereNotNull('country')
-            ->whereRaw("TRIM(country) <> ''")
-            ->distinct()
-            ->pluck('country')
+        $locationInstitutions = Institution::query()
+            ->with('search:id,country')
+            ->get(['id', 'state', 'country', 'search_id']);
+
+        $validCountries = $locationInstitutions
+            ->map(fn ($institution) => trim((string) $institution->country))
+            ->filter(fn ($value) => $value !== '')
+            ->unique()
+            ->values()
             ->all();
 
-        $validStates = Institution::query()
-            ->where('country', $country)
-            ->whereNotNull('state')
-            ->whereRaw("TRIM(state) <> ''")
-            ->distinct()
-            ->pluck('state')
+        $validStates = $locationInstitutions
+            ->filter(fn ($institution) => strcasecmp(trim((string) $institution->country), $country) === 0)
+            ->map(fn ($institution) => trim((string) $institution->state))
+            ->filter(fn ($value) => $value !== '')
+            ->unique()
+            ->values()
             ->all();
 
         $validated = $request->validate([
@@ -288,11 +295,7 @@ class RFPsController extends Controller
         $institutionObj = null;
 
         if (! empty($institutionId) && $institutionId !== 'all') {
-            $inst = Institution::query()
-                ->whereKey($institutionId)
-                ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
-                ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
-                ->first();
+            $inst = $this->applyLocationFilter(Institution::query()->whereKey($institutionId), $country, $state)->first();
 
             if ($inst) {
                 $institutionName = $inst->name;
@@ -304,11 +307,11 @@ class RFPsController extends Controller
 
         if (empty($institutionName) && ! empty($institutionInput) && $institutionInput !== 'all') {
             $institutionName = trim($institutionInput);
-            $institutionObj = Institution::query()
-                ->where('name', 'like', "%{$institutionName}%")
-                ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
-                ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
-                ->first();
+            $institutionObj = $this->applyLocationFilter(
+                Institution::query()->where('name', 'like', "%{$institutionName}%"),
+                $country,
+                $state
+            )->first();
         }
 
         $platformName = trim((string) ($platformInput !== 'all' ? $platformInput : ''));
@@ -430,8 +433,7 @@ class RFPsController extends Controller
                             ->orWhere('name', 'like', "%{$platformName}%");
                     })
                     ->with(['rfpInstitutions' => function ($query) use ($state, $country) {
-                        $query->whereRaw('LOWER(TRIM(institutions.state)) = ?', [strtolower($state)])
-                            ->whereRaw('LOWER(TRIM(institutions.country)) = ?', [strtolower($country)]);
+                        $this->applyLocationFilter($query, $country, $state, 'institutions');
                     }])
                     ->get();
 
@@ -442,9 +444,7 @@ class RFPsController extends Controller
                 foreach ($platforms as $pRecord) {
                     $instList = $pRecord->rfpInstitutions;
                     if ($instList->isEmpty()) {
-                        $instList = Institution::query()
-                            ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
-                            ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
+                        $instList = $this->applyLocationFilter(Institution::query(), $country, $state)
                             ->orderBy('name')
                             ->get();
                     }
@@ -482,9 +482,7 @@ class RFPsController extends Controller
 
             // Case Bulk / All scrape
             else {
-                $institutions = Institution::query()
-                    ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($state)])
-                    ->whereRaw('LOWER(TRIM(country)) = ?', [strtolower($country)])
+                $institutions = $this->applyLocationFilter(Institution::query(), $country, $state)
                     ->with('rfpPlatforms')
                     ->orderBy('name')
                     ->get();
@@ -598,4 +596,28 @@ class RFPsController extends Controller
             return redirect()->back()->with('error', "Scraping error: {$e->getMessage()}");
         }
     }
+
+    /**
+     * Filter institutions by state and country, falling back to the related
+     * location search's country when institutions.country is blank.
+     */
+    private function applyLocationFilter($query, string $country, string $state, string $table = '')
+    {
+        $stateColumn = $table !== '' ? "{$table}.state" : 'state';
+        $countryColumn = $table !== '' ? "{$table}.country" : 'country';
+
+        return $query
+            ->whereRaw("LOWER(TRIM({$stateColumn})) = ?", [mb_strtolower(trim($state))])
+            ->where(function ($countryQuery) use ($country, $countryColumn) {
+                $countryQuery->whereRaw("LOWER(TRIM({$countryColumn})) = ?", [mb_strtolower(trim($country))])
+                    ->orWhere(function ($fallbackQuery) use ($country, $countryColumn) {
+                        $fallbackQuery->where(function ($blankCountry) use ($countryColumn) {
+                            $blankCountry->whereNull($countryColumn)->orWhereRaw("TRIM({$countryColumn}) = ''");
+                        })->whereHas('search', function ($searchQuery) use ($country) {
+                            $searchQuery->whereRaw('LOWER(TRIM(country)) = ?', [mb_strtolower(trim($country))]);
+                        });
+                    });
+            });
+    }
+
 }
