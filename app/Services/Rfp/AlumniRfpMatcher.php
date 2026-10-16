@@ -6,6 +6,77 @@ use App\Data\Rfp\RfpData;
 
 final class AlumniRfpMatcher
 {
+    /**
+     * Default list of alumni and procurement keywords used for RFP filtering.
+     *
+     * @var array<int, string>
+     */
+    public const DEFAULT_KEYWORDS = [
+        'Alumni',
+        'Engagement',
+        'Event',
+        'Campaign',
+        'Community',
+        'Network',
+        'Alumnae',
+        'Alumnus',
+        'Alumna',
+        'Software',
+        'Social',
+        'Digital',
+        'Member',
+        'Membership',
+        'Mentor',
+        'Mentorship',
+        'Career',
+        'Fundraising',
+        'Donor',
+        'Constituent',
+        'Giving',
+        'CRM',
+        'Salesforce',
+        'Blackbaud',
+        'Raisers Edge',
+        'Directory',
+        'Associations',
+        'Association',
+        'Program',
+        'Platform',
+        'Technology Modernization',
+        'System Migration',
+        'Networking',
+        'Advancement',
+        'Volunteer',
+        'Reunion',
+        'Chapter',
+        'Portal',
+        'Migration',
+        'Replacement',
+        'Renewal',
+        'Procurement',
+        'Solicitation',
+        'HiveBrite',
+        'Almabase',
+        'PeopleGrove',
+        'Graduway',
+        'Gravyty',
+        'EnterpriseAlumni',
+        'Toucantech',
+    ];
+
+    /**
+     * Get the default alumni filter keywords from config or fallback constant.
+     *
+     * @return array<int, string>
+     */
+    public static function getDefaultKeywords(): array
+    {
+        /** @var array<int, string> $keywords */
+        $keywords = config('rfp.default_keywords', self::DEFAULT_KEYWORDS);
+
+        return $keywords;
+    }
+
     private const ALUMNI_TERMS = [
         'alumni',
         'alumnus',

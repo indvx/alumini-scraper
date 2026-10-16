@@ -6,8 +6,9 @@ use App\Enums\Rfp\RfpStatus;
 use App\Models\Institution;
 use App\Models\RFP;
 use App\Models\RFPsPlatform;
-use App\Services\Rfp\RfpScraperManager;
+use App\Services\Rfp\AlumniRfpMatcher;
 use App\Services\Rfp\Platforms\BidNetDirect\BidNetDirectConfig;
+use App\Services\Rfp\RfpScraperManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,67 +31,9 @@ class RFPsController extends Controller
             $keywordCondition = 'OR';
         }
 
-        $userKeyword = $request->has('use_keywords')
-            ? boolval($request->input('use_keywords'))
-            : (! $request->query());
+        $userKeyword = $request->boolean('use_keywords');
         $rawKeywords = $request->input('keywords', []);
         $selectedKeywords = is_array($rawKeywords) ? array_values(array_filter(array_map('trim', $rawKeywords))) : [];
-
-        if (empty($search) && empty($status) && empty($institutionId) && empty($platformId) && empty($dateOpen) && empty($dateClose) && ! $request->has('use_keywords')) {
-            $userKeyword = true;
-            $selectedKeywords = [
-                'Alumni',
-                'Engagement',
-                'Event',
-                'Campaign',
-                'Community',
-                'Network',
-                'Alumnae',
-                'Alumnus',
-                'Alumna',
-                'Software',
-                'Social',
-                'Digital',
-                'Member',
-                'Membership',
-                'Mentor',
-                'Mentorship',
-                'Career',
-                'Fundraising',
-                'Donor',
-                'Constituent',
-                'Giving',
-                'CRM',
-                'Salesforce',
-                'Blackbaud',
-                'Raisers Edge',
-                'Directory',
-                'Associations',
-                'Association',
-                'Program',
-                'Platform',
-                'Technology Modernization',
-                'System Migration',
-                'Networking',
-                'Advancement',
-                'Volunteer',
-                'Reunion',
-                'Chapter',
-                'Portal',
-                'Migration',
-                'Replacement',
-                'Renewal',
-                'Procurement',
-                'Solicitation',
-                'HiveBrite',
-                'Almabase',
-                'PeopleGrove',
-                'Graduway',
-                'Gravyty',
-                'EnterpriseAlumni',
-                'Toucantech',
-            ];
-        }
 
         $query = RFP::query()
             ->with(['institution', 'platform']);
@@ -199,13 +142,14 @@ class RFPsController extends Controller
             'institutions' => $institutions,
             'platforms' => $platforms,
             'states' => array_values(array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated'])),
+            'defaultKeywords' => AlumniRfpMatcher::getDefaultKeywords(),
         ]);
     }
 
     public function scrape(Request $request, RfpScraperManager $scraperManager): RedirectResponse
     {
         $validated = $request->validate([
-            'state' => ['required', 'string', 'in:' . implode(',', array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated']))],
+            'state' => ['required', 'string', 'in:'.implode(',', array_diff(array_keys(BidNetDirectConfig::LOCATION_FILTERS), ['Not Stated']))],
             'institution_id' => 'nullable',
             'institution_name' => 'nullable|string|max:255',
             'platform_name' => 'required|string|max:255|exists:rfps_platforms,name',
@@ -306,6 +250,7 @@ class RFPsController extends Controller
                             'error' => $result->errorMessage,
                             'duration_seconds' => round(microtime(true) - $runStartedAt, 2),
                         ]);
+
                         continue;
                     }
 
@@ -327,7 +272,7 @@ class RFPsController extends Controller
                 ]);
 
                 if (! empty($failedListingTypes)) {
-                    return redirect()->back()->with('error', 'BidNet Direct scrape failed for: ' . implode(', ', $failedListingTypes) . '.');
+                    return redirect()->back()->with('error', 'BidNet Direct scrape failed for: '.implode(', ', $failedListingTypes).'.');
                 }
 
                 return redirect()
@@ -360,6 +305,7 @@ class RFPsController extends Controller
 
                 if ($result->isFailure()) {
                     Log::warning('RFP UI scrape run failed.', $scrapeContext + ['institution' => $institutionName, 'platform' => $platformToUse, 'error' => $result->errorMessage, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
+
                     return redirect()->back()->with('error', "Scraping failed for '{$institutionName}': {$result->errorMessage}");
                 }
 
@@ -423,6 +369,7 @@ class RFPsController extends Controller
                 }
 
                 Log::info('RFP UI scrape completed.', $scrapeContext + ['success_runs' => $successRuns, 'failed_runs' => $failedRuns, 'rfp_count' => $totalSaved, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
+
                 return redirect()
                     ->route('rfps.index')
                     ->with('success', "Platform scrape completed for '{$platformName}': {$totalSaved} RFP(s) saved across {$successRuns} institution(s).");
@@ -536,12 +483,14 @@ class RFPsController extends Controller
                 }
 
                 Log::info('RFP UI scrape completed.', $scrapeContext + ['success_runs' => $successRuns, 'failed_runs' => $failedRuns, 'rfp_count' => $totalSaved, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
+
                 return redirect()
                     ->route('rfps.index')
                     ->with('success', "All-institution scrape completed: {$totalSaved} RFP(s) saved across {$successRuns} platform run(s).");
             }
         } catch (\Throwable $e) {
             Log::error('RFP UI scrape crashed.', $scrapeContext + ['exception' => $e, 'duration_seconds' => round(microtime(true) - $scrapeStartedAt, 2)]);
+
             return redirect()->back()->with('error', "Scraping error: {$e->getMessage()}");
         }
     }
