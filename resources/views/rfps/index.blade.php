@@ -565,11 +565,12 @@
 
             function filterByCountryAndState() {
                 const country = countrySelect.value.trim().toLowerCase();
-                const selectedState = stateSelect.value.trim().toLowerCase();
+                let selectedState = stateSelect.value.trim().toLowerCase();
                 const currentStateOption = stateSelect.selectedOptions[0];
                 if (currentStateOption && currentStateOption.dataset.country &&
                     currentStateOption.dataset.country.toLowerCase() !== country) {
                     stateSelect.value = '';
+                    selectedState = '';
                 }
 
                 stateOptions.forEach(option => {
