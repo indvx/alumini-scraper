@@ -40,6 +40,7 @@ class OpenGovApiStrategy implements RfpExtractionStrategy
         }
 
         $apiUrl = OpenGovConfig::getPublicProjectsEndpoint($govCode);
+        Log::debug('Preparing OpenGov API request.', ['institution' => $scrapeData->universityName, 'gov_code' => $govCode, 'endpoint' => $apiUrl]);
         $status = 'all';
         if ($scrapeData->type === RfpStatus::PAST) {
             $status = 'closed';
@@ -70,12 +71,15 @@ class OpenGovApiStrategy implements RfpExtractionStrategy
                 'Referer' => 'https://procurement.opengov.com/',
             ])->timeout(15)->post($apiUrl, $payload);
 
+            Log::debug('OpenGov API response received.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
             if (! $response->successful()) {
+                Log::warning('OpenGov API request returned unsuccessful HTTP status.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
                 return ScraperResult::failure("HTTP request failed with status {$response->status()}", ScrapeMethod::API);
             }
 
             $rawPayload = $response->json();
             $rfps = $this->normalizer->normalize($rawPayload ?? [], $scrapeData, ScrapeMethod::API);
+            Log::info('OpenGov API payload normalized.', ['institution' => $scrapeData->universityName, 'rfp_count' => count($rfps)]);
 
             return ScraperResult::success($rfps, ScrapeMethod::API);
         } catch (\Throwable $e) {
