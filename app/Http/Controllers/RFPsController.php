@@ -31,16 +31,9 @@ class RFPsController extends Controller
             $keywordCondition = 'OR';
         }
 
-        $userKeyword = $request->has('use_keywords')
-            ? boolval($request->input('use_keywords'))
-            : (! $request->query());
+        $userKeyword = $request->boolean('use_keywords');
         $rawKeywords = $request->input('keywords', []);
         $selectedKeywords = is_array($rawKeywords) ? array_values(array_filter(array_map('trim', $rawKeywords))) : [];
-
-        if (empty($search) && empty($status) && empty($institutionId) && empty($platformId) && empty($dateOpen) && empty($dateClose) && ! $request->has('use_keywords')) {
-            $userKeyword = true;
-            $selectedKeywords = AlumniRfpMatcher::getDefaultKeywords();
-        }
 
         $query = RFP::query()
             ->with(['institution', 'platform']);
