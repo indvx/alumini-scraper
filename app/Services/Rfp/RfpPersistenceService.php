@@ -2,10 +2,9 @@
 
 namespace App\Services\Rfp;
 
-
-use Illuminate\Support\Facades\Log;
 use App\Data\Rfp\RfpData;
 use App\Models\RFP;
+use Illuminate\Support\Facades\Log;
 
 class RfpPersistenceService
 {
@@ -34,6 +33,7 @@ class RfpPersistenceService
         }
 
         Log::info('Finished persisting scraped RFP records.', ['received_count' => count($rfps), 'saved_count' => count($savedModels), 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
+
         return $savedModels;
     }
 

@@ -34,7 +34,8 @@
                             Scrape Procurement Opportunities
                         </h4>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Launch live scraper tasks against Bonfire, OpenGov, Jaggaer, PlanetBids, BidNet Direct &amp; custom
+                            Launch live scraper tasks against Bonfire, OpenGov, Jaggaer, PlanetBids, BidNet Direct &amp;
+                            custom
                             institutional portals.
                         </p>
                     </div>
@@ -74,7 +75,8 @@
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                                 <option value="all" selected>All Institutions</option>
                                 @foreach ($institutions as $inst)
-                                    <option value="{{ $inst->id }}" data-state="{{ $inst->state }}">{{ $inst->name }}</option>
+                                    <option value="{{ $inst->id }}" data-state="{{ $inst->state }}">
+                                        {{ $inst->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -84,7 +86,8 @@
                                 class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                                 Select RFP Platforms <span class="text-rose-500">*</span>
                             </label>
-                            <select name="platform_name" required
+                            <select name="platform_name" id="scrape_platform_name" required
+                                onchange="handlePlatformChange(this.value)"
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                                 <option value="" selected disabled>Select a platform</option>
                                 @foreach ($platforms as $plat)
@@ -103,6 +106,21 @@
                                 <option value="open" selected>Open</option>
                                 <option value="closed">Closed</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div id="bidnet-info-banner"
+                        class="hidden p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 transition-all">
+                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <span class="font-bold">Zero-Token Browser Verification:</span>
+                            If BidNet Direct presents an AWS WAF CAPTCHA, a browser window will automatically pop up.
+                            Simply solve the puzzle with your mouse—the system automatically captures the data and saves
+                            all RFPs without requiring any token input.
                         </div>
                     </div>
 
@@ -129,7 +147,7 @@
                     <div
                         class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80">
                         <span class="text-[11px] text-slate-400 italic hidden sm:inline">
-                            💡 Tip: Leave institution &amp; platform as 'All' to run a system-wide scrape.
+                            💡 Tip: Leave institution as 'All' to run a system-wide scrape.
                         </span>
                         <div class="flex items-center gap-2">
                             {{-- <button type="button" title="Cancel scraping form"
@@ -161,7 +179,6 @@
             </div>
 
             <!-- RFP Filters Form Container -->
-            <!-- RFP Filters Form Container -->
             <div
                 class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
                 <!-- Always Visible Keywords Manager Section (Top of Search) -->
@@ -178,12 +195,17 @@
                                 Select All
                             </button>
                             <div class="flex items-center gap-1.5 ml-1">
-                                <label for="keyword-condition-select" class="text-xs font-bold text-slate-600 dark:text-slate-300">Condition:</label>
+                                <label for="keyword-condition-select"
+                                    class="text-xs font-bold text-slate-600 dark:text-slate-300">Condition:</label>
                                 <select id="keyword-condition-select" onchange="updateKeywordCondition(this.value)"
                                     title="Keyword matching condition"
                                     class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all cursor-pointer">
-                                    <option value="OR" {{ ($filters['keyword_condition'] ?? 'OR') === 'OR' ? 'selected' : '' }}>OR (Match Any)</option>
-                                    <option value="AND" {{ ($filters['keyword_condition'] ?? '') === 'AND' ? 'selected' : '' }}>AND (Match All)</option>
+                                    <option value="OR"
+                                        {{ ($filters['keyword_condition'] ?? 'OR') === 'OR' ? 'selected' : '' }}>OR
+                                        (Any)</option>
+                                    <option value="AND"
+                                        {{ ($filters['keyword_condition'] ?? '') === 'AND' ? 'selected' : '' }}>AND
+                                        (All)</option>
                                 </select>
                             </div>
                         </div>
@@ -236,11 +258,18 @@
                         </label>
                         <select name="status"
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                            <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All Statuses</option>
-                            <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open</option>
-                            <option value="awarded" {{ ($filters['status'] ?? '') === 'awarded' ? 'selected' : '' }}>Awarded</option>
-                            <option value="past" {{ in_array($filters['status'] ?? '', ['past', 'closed']) ? 'selected' : '' }}>Past / Closed</option>
-                            <option value="cancelled" {{ in_array($filters['status'] ?? '', ['cancelled', 'canceled']) ? 'selected' : '' }}>Cancelled</option>
+                            <option value="all" {{ ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' }}>All
+                                Statuses</option>
+                            <option value="open" {{ ($filters['status'] ?? '') === 'open' ? 'selected' : '' }}>Open
+                            </option>
+                            <option value="awarded" {{ ($filters['status'] ?? '') === 'awarded' ? 'selected' : '' }}>
+                                Awarded</option>
+                            <option value="past"
+                                {{ in_array($filters['status'] ?? '', ['past', 'closed']) ? 'selected' : '' }}>Past /
+                                Closed</option>
+                            <option value="cancelled"
+                                {{ in_array($filters['status'] ?? '', ['cancelled', 'canceled']) ? 'selected' : '' }}>
+                                Cancelled</option>
                         </select>
                     </div>
 
@@ -251,9 +280,12 @@
                         </label>
                         <select name="institution_id"
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                            <option value="all" {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All Institutions</option>
+                            <option value="all"
+                                {{ ($filters['institution_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All
+                                Institutions</option>
                             @foreach ($institutions as $inst)
-                                <option value="{{ $inst->id }}" {{ (string) ($filters['institution_id'] ?? '') === (string) $inst->id ? 'selected' : '' }}>
+                                <option value="{{ $inst->id }}"
+                                    {{ (string) ($filters['institution_id'] ?? '') === (string) $inst->id ? 'selected' : '' }}>
                                     {{ $inst->name }}
                                 </option>
                             @endforeach
@@ -267,9 +299,12 @@
                         </label>
                         <select name="rfps_platform_id"
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-                            <option value="all" {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All RFP Platforms</option>
+                            <option value="all"
+                                {{ ($filters['rfps_platform_id'] ?? 'all') === 'all' ? 'selected' : '' }}>All RFP
+                                Platforms</option>
                             @foreach ($platforms as $plat)
-                                <option value="{{ $plat->id }}" {{ (string) ($filters['rfps_platform_id'] ?? '') === (string) $plat->id ? 'selected' : '' }}>
+                                <option value="{{ $plat->id }}"
+                                    {{ (string) ($filters['rfps_platform_id'] ?? '') === (string) $plat->id ? 'selected' : '' }}>
                                     {{ $plat->name }}
                                 </option>
                             @endforeach
@@ -296,12 +331,14 @@
                             class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
                     </div>
 
-                    <div class="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-6 flex items-center justify-end gap-2 pt-1">
+                    <div
+                        class="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-6 flex items-center justify-end gap-2 pt-1">
                         <button type="submit" title="Apply filters to the RFPs"
                             class="py-2.5 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold transition-colors shadow-sm">
                             Apply
                         </button>
-                        <a href="{{ route('rfps.index') }}" onclick="clearAllFilters()" title="Reset all search filters"
+                        <a href="{{ route('rfps.index') }}" onclick="clearAllFilters()"
+                            title="Reset all search filters"
                             class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors">
                             Clear
                         </a>
@@ -527,7 +564,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const stateSelect = document.getElementById('scrape_state');
             const institutionSelect = document.getElementById('scrape_institution_id');
 
@@ -535,14 +572,16 @@
                 return;
             }
 
-            const institutionOptions = Array.from(institutionSelect.options).filter(option => option.value !== 'all');
+            const institutionOptions = Array.from(institutionSelect.options).filter(option => option.value !==
+                'all');
 
             function filterInstitutionsByState() {
                 const selectedState = stateSelect.value.toLowerCase();
                 institutionSelect.value = 'all';
 
                 institutionOptions.forEach(option => {
-                    const matchesState = selectedState !== '' && (option.dataset.state || '').trim().toLowerCase() === selectedState;
+                    const matchesState = selectedState !== '' && (option.dataset.state || '').trim()
+                        .toLowerCase() === selectedState;
                     option.hidden = !matchesState;
                     option.disabled = !matchesState;
                 });
@@ -551,6 +590,16 @@
             stateSelect.addEventListener('change', filterInstitutionsByState);
             filterInstitutionsByState();
         });
+
+        function handlePlatformChange(val) {
+            const banner = document.getElementById('bidnet-info-banner');
+            if (!banner) return;
+            if (val && val.toLowerCase().includes('bidnet')) {
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
 
         // Scrape Form Submit Handling (Disables submit button & shows spinner during execution)
         function handleScrapeSubmit(e) {

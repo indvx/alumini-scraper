@@ -2,8 +2,6 @@
 
 namespace App\Services\Rfp\Platforms\Bonfire\Strategies;
 
-
-use Illuminate\Support\Facades\Log;
 use App\Data\Rfp\RfpScrapeData;
 use App\Data\Scraper\ScraperResult;
 use App\Enums\Scraper\ScrapeMethod;
@@ -11,6 +9,7 @@ use App\Services\Rfp\Contracts\RfpExtractionStrategy;
 use App\Services\Rfp\Platforms\Bonfire\BonfireConfig;
 use App\Services\Rfp\Platforms\Bonfire\BonfireNormalizer;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class BonfireApiStrategy implements RfpExtractionStrategy
 {
@@ -39,6 +38,7 @@ class BonfireApiStrategy implements RfpExtractionStrategy
             Log::debug('Bonfire API response received.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
             if (! $response->successful()) {
                 Log::warning('Bonfire API request returned unsuccessful HTTP status.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
+
                 return ScraperResult::failure("HTTP request failed with status {$response->status()}", ScrapeMethod::API);
             }
 

@@ -12,6 +12,7 @@ use App\Services\Rfp\RfpScraperManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -156,6 +157,9 @@ class RFPsController extends Controller
             'type' => 'required|string|in:open,closed',
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date',
+            'waf_token' => 'nullable|string',
+            'html_content' => 'nullable|string',
+            'html_file' => 'nullable|file|max:15360|mimes:html,htm,txt',
         ]);
 
         $state = $validated['state'];
@@ -165,6 +169,18 @@ class RFPsController extends Controller
         $type = strtolower($validated['type'] ?? 'open');
         $fromDate = $validated['from_date'] ?? null;
         $toDate = $validated['to_date'] ?? null;
+
+        $rawWafToken = trim((string) ($request->input('waf_token') ?? ''));
+        if ($rawWafToken !== '') {
+            Cache::put('bidnet_waf_token', $rawWafToken, now()->addHours(2));
+        }
+
+        $htmlContent = null;
+        if ($request->hasFile('html_file') && $request->file('html_file')->isValid()) {
+            $htmlContent = $request->file('html_file')->get();
+        } elseif (! empty($validated['html_content'])) {
+            $htmlContent = trim((string) $validated['html_content']);
+        }
 
         $scrapeStartedAt = microtime(true);
         $scrapeContext = [
@@ -176,6 +192,8 @@ class RFPsController extends Controller
             'from_date' => $fromDate,
             'to_date' => $toDate,
             'user_id' => $request->user()?->id,
+            'has_waf_token' => ! empty($rawWafToken),
+            'has_html_content' => ! empty($htmlContent),
         ];
         Log::info('RFP UI scrape started.', $scrapeContext);
 
@@ -226,6 +244,19 @@ class RFPsController extends Controller
                     : [in_array($type, ['past', 'closed'], true) ? 'closed' : 'open'];
                 $totalBidNetSaved = 0;
                 $failedListingTypes = [];
+                $lastFailureMessage = null;
+
+                $options = [
+                    'platform' => 'BidNet Direct',
+                    'location' => $state,
+                ];
+
+                if (! empty($rawWafToken)) {
+                    $options['waf_token'] = $rawWafToken;
+                }
+                if (! empty($htmlContent)) {
+                    $options['html'] = $htmlContent;
+                }
 
                 foreach ($listingTypes as $listingType) {
                     $runStartedAt = microtime(true);
@@ -239,11 +270,12 @@ class RFPsController extends Controller
                         institution: null,
                         platformRecord: $platformRecord,
                         customPortalUrl: null,
-                        options: ['platform' => 'BidNet Direct', 'location' => $state]
+                        options: $options
                     );
 
                     if ($result->isFailure()) {
                         $failedListingTypes[] = $listingType;
+                        $lastFailureMessage = $result->errorMessage;
                         Log::warning('RFP UI BidNet scrape run failed.', $scrapeContext + [
                             'platform' => 'BidNet Direct',
                             'listing_type' => $listingType,
@@ -272,7 +304,9 @@ class RFPsController extends Controller
                 ]);
 
                 if (! empty($failedListingTypes)) {
-                    return redirect()->back()->with('error', 'BidNet Direct scrape failed for: '.implode(', ', $failedListingTypes).'.');
+                    $errMsg = $lastFailureMessage ?: 'BidNet Direct scrape failed for: '.implode(', ', $failedListingTypes).'.';
+
+                    return redirect()->back()->withInput()->with('error', $errMsg);
                 }
 
                 return redirect()

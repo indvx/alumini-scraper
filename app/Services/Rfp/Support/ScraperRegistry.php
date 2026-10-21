@@ -2,12 +2,11 @@
 
 namespace App\Services\Rfp\Support;
 
-
-use Illuminate\Support\Facades\Log;
 use App\Services\Rfp\Contracts\RfpPlatformScraper;
 use App\Services\Rfp\Platforms\BidNetDirect\BidNetDirectScraper;
 use App\Services\Rfp\Platforms\Bonfire\BonfireScraper;
 use App\Services\Rfp\Platforms\OpenGov\OpenGovScraper;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ItemNotFoundException;
 
 class ScraperRegistry
@@ -34,6 +33,7 @@ class ScraperRegistry
         foreach ($this->scrapers as $scraper) {
             if ($scraper->supports($platform)) {
                 Log::debug('RFP scraper registry matched platform.', ['requested_platform' => $platform, 'scraper_class' => get_class($scraper), 'resolved_platform' => $scraper->getPlatformName()]);
+
                 return $scraper;
             }
         }
