@@ -55,11 +55,13 @@ class RfpScraperManager
                     );
                 } catch (Exception $e) {
                     Log::warning('RFP portal discovery failed.', $context + ['exception' => $e]);
+
                     return ScraperResult::failure($e->getMessage(), ScrapeMethod::API);
                 }
 
                 if (! $discoveryResult->isSuccess()) {
                     Log::warning('RFP portal discovery returned no portal.', $context);
+
                     return ScraperResult::failure(
                         "Procurement portal URL for '{$universityName}' on platform '{$platform}' was not found in database.",
                         ScrapeMethod::API

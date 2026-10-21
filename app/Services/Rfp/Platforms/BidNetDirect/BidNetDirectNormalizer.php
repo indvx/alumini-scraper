@@ -270,6 +270,10 @@ class BidNetDirectNormalizer implements RfpNormalizer
 
         $value = trim($value);
 
+        if (in_array(strtolower($value), ['not available', 'n/a', 'na', 'tbd', 'none', 'not stated', 'pending', 'closing', 'closed'], true)) {
+            return null;
+        }
+
         foreach (['m/d/Y', 'n/j/Y', 'Y-m-d', 'm-d-Y'] as $format) {
             try {
                 $date = Carbon::createFromFormat('!'.$format, $value);
@@ -282,9 +286,11 @@ class BidNetDirectNormalizer implements RfpNormalizer
         }
 
         try {
-            return Carbon::parse($value)->toDateString();
+            $parsed = Carbon::parse($value);
+
+            return $parsed->year > 1970 ? $parsed->toDateString() : null;
         } catch (Throwable) {
-            return $value;
+            return null;
         }
     }
 

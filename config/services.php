@@ -38,4 +38,8 @@ return [
         'api_key' => env('OPENAI_API_KEY'),
     ],
 
+    'bidnet' => [
+        'waf_token' => env('BIDNET_WAF_TOKEN'),
+    ],
+
 ];

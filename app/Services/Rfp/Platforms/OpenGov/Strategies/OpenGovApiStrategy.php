@@ -2,8 +2,6 @@
 
 namespace App\Services\Rfp\Platforms\OpenGov\Strategies;
 
-
-use Illuminate\Support\Facades\Log;
 use App\Data\Rfp\RfpScrapeData;
 use App\Data\Scraper\ScraperResult;
 use App\Enums\Rfp\RfpStatus;
@@ -12,6 +10,7 @@ use App\Services\Rfp\Contracts\RfpExtractionStrategy;
 use App\Services\Rfp\Platforms\OpenGov\OpenGovConfig;
 use App\Services\Rfp\Platforms\OpenGov\OpenGovNormalizer;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OpenGovApiStrategy implements RfpExtractionStrategy
 {
@@ -76,6 +75,7 @@ class OpenGovApiStrategy implements RfpExtractionStrategy
             Log::debug('OpenGov API response received.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
             if (! $response->successful()) {
                 Log::warning('OpenGov API request returned unsuccessful HTTP status.', ['institution' => $scrapeData->universityName, 'http_status' => $response->status()]);
+
                 return ScraperResult::failure("HTTP request failed with status {$response->status()}", ScrapeMethod::API);
             }
 

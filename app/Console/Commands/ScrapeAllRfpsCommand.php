@@ -2,14 +2,13 @@
 
 namespace App\Console\Commands;
 
-
-use Illuminate\Support\Facades\Log;
 use App\Enums\Rfp\RfpStatus;
 use App\Models\Institution;
 use App\Models\RFPsPlatform;
-use App\Services\Rfp\RfpScraperManager;
 use App\Services\Rfp\Platforms\BidNetDirect\BidNetDirectConfig;
+use App\Services\Rfp\RfpScraperManager;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ScrapeAllRfpsCommand extends Command
@@ -22,7 +21,10 @@ class ScrapeAllRfpsCommand extends Command
                             {--limit=all : Maximum number of institutions to scrape}
                             {--from= : Start date filter (YYYY-MM-DD)}
                             {--to= : End date filter (YYYY-MM-DD)}
-                            {--delay=0 : Delay between scraping runs in seconds}';
+                            {--delay=0 : Delay between scraping runs in seconds}
+                            {--waf-token= : Optional aws-waf-token cookie to bypass AWS WAF challenge}
+                            {--html-file= : Optional path to local saved HTML file to parse directly without HTTP request}
+                            {--headless : Run browser automation in headless mode without GUI popup}';
 
     protected $description = 'Scrape RFPs for all institutions across all registered platforms based on institution country';
 
@@ -67,6 +69,20 @@ class ScrapeAllRfpsCommand extends Command
             $failed = false;
 
             foreach ($listingTypes as $listingType) {
+                $options = [
+                    'platform' => 'BidNet Direct',
+                    'location' => $stateName,
+                    'headless' => (bool) $this->option('headless'),
+                ];
+
+                if (! empty($this->option('waf-token'))) {
+                    $options['waf_token'] = $this->option('waf-token');
+                }
+
+                if (! empty($this->option('html-file')) && file_exists($this->option('html-file'))) {
+                    $options['html'] = file_get_contents($this->option('html-file'));
+                }
+
                 $result = $manager->scrapeUniversity(
                     universityName: 'BidNet Direct',
                     platform: 'BidNet Direct',
@@ -77,7 +93,7 @@ class ScrapeAllRfpsCommand extends Command
                     institution: null,
                     platformRecord: $platformRecord,
                     customPortalUrl: null,
-                    options: ['platform' => 'BidNet Direct', 'location' => $stateName]
+                    options: $options
                 );
 
                 if ($result->isFailure()) {
@@ -97,6 +113,7 @@ class ScrapeAllRfpsCommand extends Command
             $this->info("BidNet Direct scrape completed. Total RFPs saved or updated: {$total}");
 
             Log::info('CLI BidNet Direct scrape-all completed.', ['total_rfps' => $total, 'failed' => $failed, 'duration_seconds' => round(microtime(true) - $startedAt, 2)]);
+
             return $failed ? Command::FAILURE : Command::SUCCESS;
         }
 
@@ -104,13 +121,13 @@ class ScrapeAllRfpsCommand extends Command
         $institutionQuery = Institution::query()
             ->whereRaw('LOWER(TRIM(state)) = ?', [strtolower($stateName)])
             ->with(['rfpPlatforms' => function ($query) use ($platformFilter) {
-            if (! empty($platformFilter)) {
-                $query->where(function ($q) use ($platformFilter) {
-                    $q->where('platform_type', 'like', "%{$platformFilter}%")
-                        ->orWhere('name', 'like', "%{$platformFilter}%");
-                });
-            }
-        }]);
+                if (! empty($platformFilter)) {
+                    $query->where(function ($q) use ($platformFilter) {
+                        $q->where('platform_type', 'like', "%{$platformFilter}%")
+                            ->orWhere('name', 'like', "%{$platformFilter}%");
+                    });
+                }
+            }]);
 
         if (! empty($institutionFilter)) {
             $institutionQuery->where('name', 'like', "%{$institutionFilter}%");

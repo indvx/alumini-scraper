@@ -2,13 +2,12 @@
 
 namespace App\Services\Rfp\Platforms\OpenGov;
 
-
-use Illuminate\Support\Facades\Log;
 use App\Data\Rfp\RfpScrapeData;
 use App\Data\Scraper\ScraperResult;
 use App\Enums\Scraper\ScrapeMethod;
 use App\Services\Rfp\Contracts\RfpPlatformScraper;
 use App\Services\Rfp\Platforms\OpenGov\Strategies\OpenGovApiStrategy;
+use Illuminate\Support\Facades\Log;
 
 class OpenGovScraper implements RfpPlatformScraper
 {

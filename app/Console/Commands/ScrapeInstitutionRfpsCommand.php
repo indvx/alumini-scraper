@@ -2,13 +2,12 @@
 
 namespace App\Console\Commands;
 
-
-use Illuminate\Support\Facades\Log;
 use App\Enums\Rfp\RfpStatus;
 use App\Models\Institution;
 use App\Models\RFPsPlatform;
 use App\Services\Rfp\RfpScraperManager;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ScrapeInstitutionRfpsCommand extends Command

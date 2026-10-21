@@ -6,7 +6,7 @@ class BidNetDirectConfig
 {
     public const ROOT_URL = 'https://www.bidnetdirect.com';
 
-    public const BASE_URL = 'https://www.bidnetdirect.com/public/solicitations';
+    public const BASE_URL = 'https://www.bidnetdirect.com/solicitations';
 
     public const CONTENT_GROUP_MEMBER_AGENCY = '2085061601';
 
@@ -164,8 +164,8 @@ class BidNetDirectConfig
     public static function getPublicPortalUrl(string $type = 'open'): string
     {
         return match (strtolower($type)) {
-            'past', 'closed' => self::BASE_URL . '/closed',
-            default => self::BASE_URL . '/open',
+            'past', 'closed' => self::BASE_URL.'/closed-bids',
+            default => self::BASE_URL.'/open-bids',
         };
     }
 
@@ -192,21 +192,21 @@ class BidNetDirectConfig
         $parts = parse_url($base);
 
         $origin = ($parts['scheme'] ?? 'https')
-            . '://'
-            . ($parts['host'] ?? 'www.bidnetdirect.com');
+            .'://'
+            .($parts['host'] ?? 'www.bidnetdirect.com');
 
         if (str_starts_with($url, '//')) {
-            return ($parts['scheme'] ?? 'https') . ':' . $url;
+            return ($parts['scheme'] ?? 'https').':'.$url;
         }
 
         if (str_starts_with($url, '/')) {
-            return $origin . $url;
+            return $origin.$url;
         }
 
         $path = $parts['path'] ?? '/';
         $directory = rtrim(str_replace('\\', '/', dirname($path)), '/');
 
-        return $origin . ($directory ? $directory . '/' : '/') . $url;
+        return $origin.($directory ? $directory.'/' : '/').$url;
     }
 
     /**
@@ -221,14 +221,15 @@ class BidNetDirectConfig
 
         $parts = parse_url($baseUrl);
         $path = rtrim($parts['path'] ?? '', '/');
+        $path = (string) preg_replace('~/page\d+$~i', '', $path);
         $origin = ($parts['scheme'] ?? 'https')
-            . '://'
-            . ($parts['host'] ?? 'www.bidnetdirect.com');
+            .'://'
+            .($parts['host'] ?? 'www.bidnetdirect.com');
 
-        $url = $origin . $path . '/page' . $page;
+        $url = $origin.$path.'/page'.$page;
 
         if (! empty($parts['query'])) {
-            $url .= '?' . $parts['query'];
+            $url .= '?'.$parts['query'];
         }
 
         return $url;
@@ -280,6 +281,6 @@ class BidNetDirectConfig
             return $baseUrl;
         }
 
-        return $baseUrl . '?' . http_build_query($queryParams);
+        return $baseUrl.'?'.http_build_query($queryParams);
     }
 }
